@@ -1,9 +1,10 @@
 import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from '@pronestor/react-zoom-pan-pinch';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { GameConfig, GameMap } from '../../types/gameTypes';
 
 import styles from './GameCanvas.module.scss';
 import Cell from './Cell';
+import hexToPx from '../../helpers/hexToPx';
 
 interface OwnProps {
   map: GameMap
@@ -18,31 +19,31 @@ export default function GameCanvas({
 }: OwnProps) {
   const transformWrapperRef = useRef<ReactZoomPanPinchRef>(null);
 
-  // useEffect(() => {
-  //   const bot = map.robots.find((_, i) => i === diff)
-  //   if ((bot == null) || (transformWrapperRef.current == null)) return
-  //
-  //   const { position: { x, y } } = bot
-  //   const [px, py] = hexToPx(x, y)
-  //
-  //   const { clientWidth, clientHeight } = transformWrapperRef.current.instance.wrapperComponent!
-  //   transformWrapperRef.current?.setTransform(
-  //     -px + clientWidth / 2,
-  //     -py + clientHeight / 2,
-  //     1,
-  //     400,
-  //     'easeOut'
-  //   )
-  // }, [diff, map.robots])
+  useEffect(() => {
+    const bot = map.robots.find((_, i) => i === diff);
+    if ((bot == null) || (transformWrapperRef.current == null)) return;
+
+    const { position: { x, y } } = bot;
+    const [px, py] = hexToPx(x, y);
+
+    const { clientWidth, clientHeight } = transformWrapperRef.current.instance.wrapperComponent!;
+    transformWrapperRef.current?.setTransform(
+      -px + clientWidth / 2,
+      -py + clientHeight / 2,
+      1,
+      400,
+      'easeOut',
+    );
+  }, [diff, map.robots]);
 
   return (
     <TransformWrapper
-        // onZoom={handleZoom}
+      // onZoom={handleZoom}
       doubleClick={{ disabled: true }}
       limitToBounds
-        // maxScale={scale}
+      // maxScale={scale}
       minScale={0.1}
-        // initialScale={minScale}
+      // initialScale={minScale}
       ref={transformWrapperRef}
     >
       <TransformComponent wrapperClass={styles.wrapper}>

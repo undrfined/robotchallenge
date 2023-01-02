@@ -2,7 +2,6 @@ import * as Comlink from 'comlink';
 import {
   Wrapper, Pointer, IWrapper, AbstractStructType,
 } from 'wasm-ffi';
-// @ts-ignore
 import { init, WASI } from '@wasmer/wasi';
 import {
   EnergyStationStruct, GameConfigStruct, GameConfigStructType, MapStruct,
@@ -50,8 +49,10 @@ const PlayerWorker = {
         energy_stations: new Pointer([EnergyStationStruct, energyStations.length], energyStations),
       }), robotToMoveIndex);
 
+      // eslint-disable-next-line no-console
       console.log('[instance]', wasi.getStdoutString());
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.error('[instance]', wasi.getStderrString());
     }
   },
@@ -88,13 +89,12 @@ const PlayerWorker = {
       },
     })));
 
-    console.log(wrapper);
-
     wrapper.use(instance);
 
     try {
       wrapper.init_game(gameConfigToStruct(gameConfig), owner);
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.warn('[instance]', e);
     }
 

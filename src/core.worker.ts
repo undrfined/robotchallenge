@@ -1,6 +1,5 @@
 import * as Comlink from 'comlink';
 import { Wrapper, IWrapper } from 'wasm-ffi';
-// @ts-ignore
 import { init, WASI } from '@wasmer/wasi';
 import core from './core.wasm';
 import { GameConfig, GameMap } from './types/gameTypes';
@@ -36,16 +35,22 @@ const doStep = async (owner: number, robotToMoveIndex: number, map: MapStructTyp
     await Promise.race(
       [
         playerWorkers[owner].comlink.doStep(mapStructToObject(map), robotToMoveIndex),
-        new Promise((_, reject) => setTimeout(() => reject('Timeout'), 1000)),
+        new Promise((_, reject) => {
+          setTimeout(() => reject(Error('Timeout')), 1000);
+        }),
       ],
     );
+    // eslint-disable-next-line no-console
     console.log('[wcore] step stop!');
     wrapper.done_step();
+    // eslint-disable-next-line no-console
     console.log(wasi.getStdoutString());
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.error('[wcore] step error!', e);
     playerWorkers[owner].worker.terminate();
     wrapper.done_step();
+    // eslint-disable-next-line no-console
     console.log(wasi.getStdoutString());
   }
 
@@ -60,7 +65,9 @@ const CoreWorker = {
   },
   doRound: () => {
     wrapper.do_round();
+    // eslint-disable-next-line no-console
     console.log('[wcore] done round');
+    // eslint-disable-next-line no-console
     console.log(wasi.getStdoutString());
   },
   initGame: async (gameConfig: GameConfig, algos: (File | Blob)[]) => {
@@ -86,8 +93,11 @@ const CoreWorker = {
     try {
       wrapper.init_game(gameConfigToStruct(gameConfig));
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.error('[wcore] log', wasi.getStdoutString());
+      // eslint-disable-next-line no-console
       console.error('[wcore] init error!', wasi.getStderrString());
+      // eslint-disable-next-line no-console
       console.warn(e);
     }
   },
@@ -120,6 +130,7 @@ const CoreWorker = {
       robotchallenge: {
         round_finished: onRoundFinished,
         update_map: wrap([null, [MapStruct]], (map: MapStructType) => {
+          // eslint-disable-next-line no-console
           console.log('[wcore] update map', map);
           updateMap(mapStructToObject(map));
         }),

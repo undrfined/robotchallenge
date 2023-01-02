@@ -13,7 +13,7 @@
     "@types/jest": "^27.4.1",
     "@types/node": "^16.11.26",
     "@types/react": "^17.0.44",
-    "@wasmer/wasi": "file:src/vendor/wasmer-js",
+    "@wasmer/wasi": "file:vendor/wasmer-js",
     "@wasmer/wasm-transformer": "^0.12.0",
     "asyncify-wasm": "^1.2.1",
     "babel-jest": "^27.4.2",
