@@ -5,11 +5,11 @@ import './App.css';
 import * as Comlink from 'comlink';
 import wasm from './test_rust.wasm';
 import GamePage from './components/pages/GamePage/GamePage';
-import { CoreWorkerType } from './core.worker';
+import { CoreWorkerType } from './workers/core.worker';
 import Button from './components/common/Button/Button';
 import { GameConfig, GameMap } from './types/gameTypes';
 
-const coreWorker = new Worker(new URL('./core.worker.ts', import.meta.url));
+const coreWorker = new Worker(new URL('./workers/core.worker.ts', import.meta.url));
 const Core = Comlink.wrap<CoreWorkerType>(coreWorker);
 
 function App() {

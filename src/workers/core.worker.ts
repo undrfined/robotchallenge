@@ -1,15 +1,15 @@
 import * as Comlink from 'comlink';
 import { Wrapper, IWrapper } from 'wasm-ffi';
 import { init, WASI } from '@wasmer/wasi';
-import core from './core.wasm';
-import { GameConfig, GameMap } from './types/gameTypes';
+import core from '../core.wasm';
+import { GameConfig, GameMap } from '../types/gameTypes';
 import {
   GameConfigStruct,
   GameConfigStructType, MapStruct,
   MapStructType,
-} from './helpers/ffiStructs';
+} from '../helpers/ffiStructs';
 import type { PlayerWorkerType } from './player.worker';
-import { gameConfigToStruct, mapStructToObject } from './helpers/ffiConverters';
+import { gameConfigToStruct, mapStructToObject } from '../helpers/ffiConverters';
 
 type Exports = {
   init_mod: () => void,

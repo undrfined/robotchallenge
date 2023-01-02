@@ -8,9 +8,9 @@ import {
   MapStructType,
   PositionStruct,
   RobotStruct,
-} from './helpers/ffiStructs';
-import { GameConfig, GameMap } from './types/gameTypes';
-import { gameConfigToStruct } from './helpers/ffiConverters';
+} from '../helpers/ffiStructs';
+import { GameConfig, GameMap } from '../types/gameTypes';
+import { gameConfigToStruct } from '../helpers/ffiConverters';
 
 type Exports = {
   init_game: (gameConfig: AbstractStructType<GameConfigStructType>, owner: number) => void,
