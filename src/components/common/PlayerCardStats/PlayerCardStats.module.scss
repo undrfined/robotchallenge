@@ -1,0 +1,24 @@
+.root {
+  display: flex;
+  gap: 10px;
+}
+
+.icon-wrapper {
+  background: #FFC147;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  place-content: center;
+}
+
+.icon {
+  color: #000;
+  width: 16px;
+}
+
+.text {
+  color: white;
+  font-weight: 500;
+  font-size: 18px;
+}

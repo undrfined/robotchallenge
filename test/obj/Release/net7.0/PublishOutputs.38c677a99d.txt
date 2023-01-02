@@ -1,0 +1,3 @@
+/Users/undrfined/Projects/NULP/robotchallenge/test/bin/Release/net7.0/publish/test.dll
+/Users/undrfined/Projects/NULP/robotchallenge/test/bin/Release/net7.0/publish/test.deps.json
+/Users/undrfined/Projects/NULP/robotchallenge/test/bin/Release/net7.0/publish/test.pdb

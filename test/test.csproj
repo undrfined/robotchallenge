@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+        <PackageId>test</PackageId>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Wasi.Sdk" Version="0.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+      <UpToDateCheckInput Include="native\*.c" />
+    </ItemGroup>
+
+    <ItemGroup>
+    <WasiNativeFileReference Include="$(MSBuildThisFileDirectory).\native\test.c" />
+    <WasiAfterRuntimeLoaded Include="load_runtime" />
+  </ItemGroup>
+
+</Project>

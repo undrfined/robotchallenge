@@ -1,0 +1,22 @@
+.root {
+  display: flex;
+  place-content: center;
+  color: #fff;
+  padding: 20px;
+  line-height: 20px;
+  font-size: 16px;
+  border-radius: 12px;
+  border: none;
+  background: url(./ButtonStroke.svg);
+  font-family: var(--font-family-header);
+  cursor: pointer;
+  transition: 0.1s ease-in-out background-color, 0.1s ease-out transform;
+
+  &:hover, &:focus {
+    background-color: #E524BB;
+  }
+
+  &:active, &:focus {
+    transform: scale(0.95);
+  }
+}

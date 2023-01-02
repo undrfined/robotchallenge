@@ -1,0 +1,47 @@
+.root {
+  margin: 10px;
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+  max-width: 450px;
+  height: 100%;
+  border-radius: 40px;
+  background: rgba(255, 255, 255, 0.06) url(./SelectGameCardStroke.svg);
+  color: #fff;
+}
+
+.animation {
+  position: absolute;
+  width: 140px;
+  height: 140px;
+  transform: translateX(50px);
+}
+
+.title {
+  margin-top: 260px;
+}
+
+.description {
+  color: #BAB9BF;
+}
+
+.button {
+  margin-top: auto;
+}
+
+.prize {
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  margin-bottom: 3rem;
+}
+
+.diamond-animation {
+  margin-right: 0.75rem;
+  width: 32px;
+  height: 32px;
+}
+
+.prize-text {
+  font-family: var(--font-family-header);
+}

@@ -1,0 +1,25 @@
+.root {
+  display: flex;
+  gap: 1rem;
+  height: 100%;
+}
+.playerList {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  overflow: auto;
+  padding: 0 4rem;
+  padding-top: 2rem;
+  min-width: 450px;
+}
+
+.field {
+  min-width: 0;
+  margin-bottom: 5rem;
+}
+
+canvas {
+  height: 100%;
+  width: 100%;
+}

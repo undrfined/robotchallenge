@@ -187,6 +187,9 @@ module.exports = function (webpackEnv) {
   };
 
   return {
+    externals: {
+      'wasmer_wasi_js_bg.wasm': true
+    },
     target: ['browserslist'],
     mode: isEnvProduction ? 'production' : isEnvDevelopment && 'development',
     // Stop compilation early in production
@@ -291,6 +294,9 @@ module.exports = function (webpackEnv) {
       ],
     },
     resolve: {
+      fallback: {
+        buffer: require.resolve('buffer/'),
+      },
       // This allows you to set a fallback for where webpack should look for modules.
       // We placed these paths second because we want `node_modules` to "win"
       // if there are any conflicts. This matches Node resolution mechanism.
@@ -337,6 +343,10 @@ module.exports = function (webpackEnv) {
     module: {
       strictExportPresence: true,
       rules: [
+        {
+          test: /\.wasm$/,
+          type: "asset/inline",
+        },
         // Handle node_modules packages that contain sourcemaps
         shouldUseSourceMap && {
           enforce: 'pre',
@@ -374,31 +384,43 @@ module.exports = function (webpackEnv) {
               },
             },
             {
-              test: /\.svg$/,
-              use: [
-                {
-                  loader: require.resolve('@svgr/webpack'),
-                  options: {
-                    prettier: false,
-                    svgo: false,
-                    svgoConfig: {
-                      plugins: [{ removeViewBox: false }],
-                    },
-                    titleProp: true,
-                    ref: true,
-                  },
-                },
-                {
-                  loader: require.resolve('file-loader'),
-                  options: {
-                    name: 'static/media/[name].[hash].[ext]',
-                  },
-                },
-              ],
-              issuer: {
-                and: [/\.(ts|tsx|js|jsx|md|mdx)$/],
-              },
+              test: /\.svg$/i,
+              issuer: /\.[jt]sx?$/,
+              use: [{
+                loader: '@svgr/webpack',
+                options: {
+                  typescript: true,
+                  ext: "tsx",
+                  // named: true,
+                }
+              }],
             },
+            // {
+            //   test: /\.svg$/,
+            //   use: [
+            //     {
+            //       loader: require.resolve('@svgr/webpack'),
+            //       options: {
+            //         prettier: false,
+            //         svgo: false,
+            //         svgoConfig: {
+            //           plugins: [{ removeViewBox: false }],
+            //         },
+            //         titleProp: true,
+            //         ref: true,
+            //       },
+            //     },
+            //     {
+            //       loader: require.resolve('file-loader'),
+            //       options: {
+            //         name: 'static/media/[name].[hash].[ext]',
+            //       },
+            //     },
+            //   ],
+            //   issuer: {
+            //     and: [/\.(ts|tsx|js|jsx|md|mdx)$/],
+            //   },
+            // },
             // Process application JS with Babel.
             // The preset includes JSX, Flow, TypeScript, and some ESnext features.
             {
@@ -417,7 +439,7 @@ module.exports = function (webpackEnv) {
                     },
                   ],
                 ],
-                
+
                 plugins: [
                   isEnvDevelopment &&
                     shouldUseReactRefresh &&
@@ -451,7 +473,7 @@ module.exports = function (webpackEnv) {
                 cacheDirectory: true,
                 // See #6846 for context on why cacheCompression is disabled
                 cacheCompression: false,
-                
+
                 // Babel sourcemaps are needed for debugging into node_modules
                 // code.  Without the options below, debuggers like VSCode
                 // show incorrect code and set breakpoints on the wrong lines.
@@ -476,6 +498,7 @@ module.exports = function (webpackEnv) {
                   : isEnvDevelopment,
                 modules: {
                   mode: 'icss',
+                  exportLocalsConvention: 'camelCase',
                 },
               }),
               // Don't consider CSS imports dead code even if the
@@ -495,6 +518,7 @@ module.exports = function (webpackEnv) {
                   : isEnvDevelopment,
                 modules: {
                   mode: 'local',
+                  exportLocalsConvention: 'camelCase',
                   getLocalIdent: getCSSModuleLocalIdent,
                 },
               }),
@@ -513,6 +537,7 @@ module.exports = function (webpackEnv) {
                     : isEnvDevelopment,
                   modules: {
                     mode: 'icss',
+                    exportLocalsConvention: 'camelCase',
                   },
                 },
                 'sass-loader'
@@ -535,6 +560,7 @@ module.exports = function (webpackEnv) {
                     : isEnvDevelopment,
                   modules: {
                     mode: 'local',
+                    exportLocalsConvention: 'camelCase',
                     getLocalIdent: getCSSModuleLocalIdent,
                   },
                 },
@@ -561,6 +587,9 @@ module.exports = function (webpackEnv) {
       ].filter(Boolean),
     },
     plugins: [
+      new webpack.ProvidePlugin({
+        Buffer: ['buffer', 'Buffer'],
+      }),
       // Generates an `index.html` file with the <script> injected.
       new HtmlWebpackPlugin(
         Object.assign(

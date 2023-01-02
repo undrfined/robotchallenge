@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+        <mask id="player_card_mask">
+                <rect width="100%" height="100%" x="0" y="0" fill="white"/>
+                <circle r="52px" cx="34px" cy="50%" fill="black"/>
+        </mask>
+        <mask id="clip1">
+                <rect mask="url(#player_card_mask)" rx="40px" width="100%" height="100%" x="0" y="0" fill="none" stroke="white" stroke-width="2px"/>
+                <circle mask="url(#player_card_mask)" r="52px" cx="34px" cy="50%" fill="none" stroke="white" stroke-width="2px"/>
+        </mask>
+        <rect width="100%" height="100%" fill="rgba(255, 255, 255, 0.1)" mask="url(#clip1)"/>
+</svg>

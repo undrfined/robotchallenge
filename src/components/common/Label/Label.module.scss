@@ -1,0 +1,15 @@
+.root {
+  font-weight: 500;
+}
+
+.label-text {
+  z-index: 1;
+  position: absolute;
+  top: 50%;
+  left: calc(50% + 1px);
+  transform: translate(-50%, -50%);
+  color: #fff;
+}
+
+.label-icon {
+}
