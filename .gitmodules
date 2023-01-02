@@ -1,5 +1,5 @@
 [submodule "wasmer"]
-	path = ./src/vendor/wasmer
+	path = src/vendor/wasmer
 	url = git@github.com:undrfined/wasmer.git
 [submodule "wasmer-js"]
     path = src/vendor/wasmer-js
