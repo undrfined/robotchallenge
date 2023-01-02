@@ -1,9 +1,9 @@
-import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from '@pronestor/react-zoom-pan-pinch'
-import React, { useEffect, useRef } from 'react'
-import { GameConfig, GameMap } from '../../types/gameTypes'
+import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from '@pronestor/react-zoom-pan-pinch';
+import React, { useRef } from 'react';
+import { GameConfig, GameMap } from '../../types/gameTypes';
 
-import styles from './GameCanvas.module.scss'
-import Cell from './Cell'
+import styles from './GameCanvas.module.scss';
+import Cell from './Cell';
 
 interface OwnProps {
   map: GameMap
@@ -11,12 +11,12 @@ interface OwnProps {
   diff: number
 }
 
-export default function GameCanvas ({
+export default function GameCanvas({
   map,
   gameConfig,
-  diff
+  diff,
 }: OwnProps) {
-  const transformWrapperRef = useRef<ReactZoomPanPinchRef>(null)
+  const transformWrapperRef = useRef<ReactZoomPanPinchRef>(null);
 
   // useEffect(() => {
   //   const bot = map.robots.find((_, i) => i === diff)
@@ -35,25 +35,27 @@ export default function GameCanvas ({
   //   )
   // }, [diff, map.robots])
 
-  return <TransformWrapper
+  return (
+    <TransformWrapper
         // onZoom={handleZoom}
-        doubleClick={{ disabled: true }}
-        limitToBounds={true}
+      doubleClick={{ disabled: true }}
+      limitToBounds
         // maxScale={scale}
-        minScale={0.1}
+      minScale={0.1}
         // initialScale={minScale}
-        ref={transformWrapperRef}
+      ref={transformWrapperRef}
     >
-        <TransformComponent wrapperClass={styles.wrapper}>
-            <Cell
-                width={gameConfig.width}
-                height={gameConfig.height}
-                robots={map.robots}
-                energyStations={map.energyStations}
-            />
+      <TransformComponent wrapperClass={styles.wrapper}>
+        <Cell
+          width={gameConfig.width}
+          height={gameConfig.height}
+          robots={map.robots}
+          energyStations={map.energyStations}
+        />
 
-            {/* <canvas ref={canvasRef} width={0} height={0} className={styles.canvas}/> */}
-            {/* <canvas ref={playerCanvasRef} width={0} height={0} className={styles.playerCanvas}/> */}
-        </TransformComponent>
+        {/* <canvas ref={canvasRef} width={0} height={0} className={styles.canvas}/> */}
+        {/* <canvas ref={playerCanvasRef} width={0} height={0} className={styles.playerCanvas}/> */}
+      </TransformComponent>
     </TransformWrapper>
+  );
 }

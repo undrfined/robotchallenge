@@ -1,138 +1,139 @@
-import {init, WASI} from "./dist/Library.esm.min";
-import * as Comlink from "comlink";
-import {Wrapper, IWrapper} from 'wasm-ffi';
+import * as Comlink from 'comlink';
+import { Wrapper, IWrapper } from 'wasm-ffi';
+// @ts-ignore
+import { init, WASI } from '@wasmer/wasi';
 import core from './core.wasm';
-import {GameConfig, GameMap} from "./types/gameTypes";
+import { GameConfig, GameMap } from './types/gameTypes';
 import {
-    GameConfigStruct,
-    GameConfigStructType, MapStruct,
-    MapStructType,
-} from "./helpers/ffiStructs";
-import type {PlayerWorkerType} from "./player.worker";
-import {gameConfigToStruct, mapStructToObject} from "./helpers/ffiConverters";
+  GameConfigStruct,
+  GameConfigStructType, MapStruct,
+  MapStructType,
+} from './helpers/ffiStructs';
+import type { PlayerWorkerType } from './player.worker';
+import { gameConfigToStruct, mapStructToObject } from './helpers/ffiConverters';
 
 type Exports = {
-    init_mod: () => void,
-    init_game: (gameConfig: GameConfigStructType) => void,
-    do_round: VoidFunction,
-    get_map: () => MapStructType,
-    done_step: VoidFunction,
-    move_robot: (x: number, y: number) => number,
-    clone_robot: (energy: number) => number,
-    collect_energy: () => number;
+  init_mod: () => void,
+  init_game: (gameConfig: GameConfigStructType) => void,
+  do_round: VoidFunction,
+  get_map: () => MapStructType,
+  done_step: VoidFunction,
+  move_robot: (x: number, y: number) => number,
+  clone_robot: (energy: number) => number,
+  collect_energy: () => number;
 };
 
 let wasi: WASI;
 let instance: WebAssembly.Instance;
 let wrapper: IWrapper<Exports>;
 let playerWorkers: {
-    worker: Worker;
-    comlink: PlayerWorkerType;
+  worker: Worker;
+  comlink: PlayerWorkerType;
 }[] = [];
 
 const doStep = async (owner: number, robotToMoveIndex: number, map: MapStructType) => {
-    try {
-        await Promise.race(
-            [
-                playerWorkers[owner].comlink.doStep(mapStructToObject(map), robotToMoveIndex),
-                new Promise((_, reject) => setTimeout(() => reject("Timeout"), 1000)),
-            ]
-        )
-        console.log('[wcore] step stop!');
-        wrapper.done_step();
-        console.log(wasi.getStdoutString());
-    } catch(e) {
-        console.error('[wcore] step error!', e);
-        playerWorkers[owner].worker.terminate();
-        wrapper.done_step();
-        console.log(wasi.getStdoutString());
-    }
+  try {
+    await Promise.race(
+      [
+        playerWorkers[owner].comlink.doStep(mapStructToObject(map), robotToMoveIndex),
+        new Promise((_, reject) => setTimeout(() => reject('Timeout'), 1000)),
+      ],
+    );
+    console.log('[wcore] step stop!');
+    wrapper.done_step();
+    console.log(wasi.getStdoutString());
+  } catch (e) {
+    console.error('[wcore] step error!', e);
+    playerWorkers[owner].worker.terminate();
+    wrapper.done_step();
+    console.log(wasi.getStdoutString());
+  }
 
-    return 1;
-}
+  return 1;
+};
 
 const CoreWorker = {
-    getMap: async () => {
-        const map = wrapper.get_map();
+  getMap: async () => {
+    const map = wrapper.get_map();
 
-        return mapStructToObject(map);
-    },
-    doRound: () => {
-        wrapper.do_round();
-        console.log('[wcore] done round')
-        console.log(wasi.getStdoutString());
-    },
-    initGame: async (gameConfig: GameConfig, algos: (File | Blob)[]) => {
-        playerWorkers = await Promise.all(algos.map(async (algo, i) => {
-            const worker = new Worker(new URL('./player.worker.ts', import.meta.url));
-            const comlink = Comlink.wrap<PlayerWorkerType>(worker);
+    return mapStructToObject(map);
+  },
+  doRound: () => {
+    wrapper.do_round();
+    console.log('[wcore] done round');
+    console.log(wasi.getStdoutString());
+  },
+  initGame: async (gameConfig: GameConfig, algos: (File | Blob)[]) => {
+    playerWorkers = await Promise.all(algos.map(async (algo, i) => {
+      const worker = new Worker(new URL('./player.worker.ts', import.meta.url));
+      const comlink = Comlink.wrap<PlayerWorkerType>(worker);
 
-            await comlink.initWasi(
-                algo,
-                gameConfig,
-                i,
-                Comlink.proxy(wrapper.move_robot.bind(wrapper)),
-                Comlink.proxy(wrapper.collect_energy.bind(wrapper)),
-                Comlink.proxy(wrapper.clone_robot.bind(wrapper))
-            );
+      await comlink.initWasi(
+        algo,
+        gameConfig,
+        i,
+        Comlink.proxy(wrapper.move_robot.bind(wrapper)),
+        Comlink.proxy(wrapper.collect_energy.bind(wrapper)),
+        Comlink.proxy(wrapper.clone_robot.bind(wrapper)),
+      );
 
-            return {
-                comlink,
-                worker,
-            }
-        }));
+      return {
+        comlink,
+        worker,
+      };
+    }));
 
-        try {
-            wrapper.init_game(gameConfigToStruct(gameConfig));
-        } catch(e) {
-            console.error('[wcore] log', wasi.getStdoutString());
-            console.error('[wcore] init error!', wasi.getStderrString());
-            console.warn(e);
-        }
-    },
-    initCore: async (
-        updateMap: (map: GameMap) => void,
-        onRoundFinished: () => void,
-    ) => {
-        await init();
-
-        wasi = new WASI({
-            env: {
-            },
-            args: [],
-        });
-
-        const module = await WebAssembly.compileStreaming(fetch(core));
-
-        wrapper = new Wrapper<Exports>({
-            init_mod: [null],
-            init_game: [null, [GameConfigStruct]],
-            do_round: [null],
-            get_map: [MapStruct],
-            done_step: [null],
-            move_robot: ['u32', ['i32', 'i32']],
-            clone_robot: ['u32', ['u32']],
-            collect_energy: ['u32', []]
-        })
-
-        instance = await wasi.instantiate(module, wrapper.imports((wrap) => ({
-            robotchallenge: {
-                round_finished: onRoundFinished,
-                update_map: wrap([null, [MapStruct]], (map: MapStructType) => {
-                    console.log('[wcore] update map', map);
-                    updateMap(mapStructToObject(map));
-                }),
-                do_step: wrap(['u32', ['u32', 'usize', MapStruct]], doStep),
-            },
-        })));
-
-        wrapper.use(instance);
-
-        wrapper.init_mod();
-
-        return true;
+    try {
+      wrapper.init_game(gameConfigToStruct(gameConfig));
+    } catch (e) {
+      console.error('[wcore] log', wasi.getStdoutString());
+      console.error('[wcore] init error!', wasi.getStderrString());
+      console.warn(e);
     }
-}
+  },
+  initCore: async (
+    updateMap: (map: GameMap) => void,
+    onRoundFinished: () => void,
+  ) => {
+    await init();
+
+    wasi = new WASI({
+      env: {
+      },
+      args: [],
+    });
+
+    const module = await WebAssembly.compileStreaming(fetch(core));
+
+    wrapper = new Wrapper<Exports>({
+      init_mod: [null],
+      init_game: [null, [GameConfigStruct]],
+      do_round: [null],
+      get_map: [MapStruct],
+      done_step: [null],
+      move_robot: ['u32', ['i32', 'i32']],
+      clone_robot: ['u32', ['u32']],
+      collect_energy: ['u32', []],
+    });
+
+    instance = await wasi.instantiate(module, wrapper.imports((wrap) => ({
+      robotchallenge: {
+        round_finished: onRoundFinished,
+        update_map: wrap([null, [MapStruct]], (map: MapStructType) => {
+          console.log('[wcore] update map', map);
+          updateMap(mapStructToObject(map));
+        }),
+        do_step: wrap(['u32', ['u32', 'usize', MapStruct]], doStep),
+      },
+    })));
+
+    wrapper.use(instance);
+
+    wrapper.init_mod();
+
+    return true;
+  },
+};
 
 export type CoreWorkerType = typeof CoreWorker;
 
