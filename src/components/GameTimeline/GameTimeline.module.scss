@@ -1,0 +1,99 @@
+.root {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  right: 1rem;
+  z-index: 2;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 76px;
+  padding: 26px;
+  background: rgb(33 31 51);
+  border-radius: 12px;
+  gap: 1rem;
+}
+
+.control-button {
+  flex-shrink: 0;
+}
+
+// Reset
+.timeline {
+  -webkit-appearance: none;
+  width: 100%;
+  background: transparent;
+}
+
+.timeline::-webkit-slider-thumb {
+  -webkit-appearance: none;
+}
+
+.timeline:focus {
+  outline: none;
+}
+
+.timeline::-ms-track {
+  width: 100%;
+  cursor: pointer;
+
+  /* Hides the slider so custom styles can be added */
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+
+.timeline-wrapper {
+  position: relative;
+  flex-grow: 1;
+  margin: 0 1rem;
+
+  display: flex;
+  align-items: center;
+}
+
+.timeline {
+  height: 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+// Slider thumb
+@mixin drag-styles {
+  width: 20px;
+  height: 20px;
+  background: #FFFFFF;
+  border-radius: 50%;
+  box-shadow: 0 7px 25px rgba(157, 164, 184, 0.31);
+  cursor: pointer;
+}
+
+.timeline::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  @include drag-styles;
+}
+
+.timeline::-moz-range-thumb {
+  @include drag-styles;
+}
+
+.timeline::-ms-thumb {
+  @include drag-styles;
+}
+
+// Track
+.timeline-fill-track {
+  position: absolute;
+  width: calc(var(--progress, 0) * 100%);
+  height: 10px;
+  border-radius: 10px;
+  background: #F000E6;
+  z-index: -1;
+}
+
+.round-number {
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 14px;
+}

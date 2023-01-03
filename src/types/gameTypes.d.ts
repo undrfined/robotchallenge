@@ -30,4 +30,5 @@ export type GameConfig = {
   rngSeed: number,
   energyStationsPerRobot: number,
   energyLossToCloneRobot: number,
+  maxRobotsCount: number,
 };

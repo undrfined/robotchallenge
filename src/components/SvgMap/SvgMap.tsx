@@ -1,10 +1,10 @@
 import React from 'react';
 import { GameEnergyStation, GameRobot } from '../../types/gameTypes';
 import { PLAYER_COLORS } from '../../helpers/playerColors';
-import styles from './GameCanvas.module.scss';
+import styles from './SvgMap.module.scss';
 import hexToPx from '../../helpers/hexToPx';
 
-export default function Cell({
+export default function SvgMap({
   width, height, robots, energyStations,
 }: {
   width: number

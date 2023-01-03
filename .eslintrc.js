@@ -79,6 +79,7 @@ module.exports = {
     'import/named': 'off',
     'import/no-webpack-loader-syntax': 'off',
     'react/prop-types': 'off',
+    'react/jsx-no-bind': 'off',
     'react/jsx-one-expression-per-line': 'off',
     'react/button-has-type': 'off',
     'react/require-default-props': 'off',

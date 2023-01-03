@@ -19,6 +19,7 @@ function App() {
   const [map, setMap] = useState<GameMap>();
   const [changes, setChanges] = useState<GameMap[]>([]);
   const [diff] = useState(0);
+  const [roundNumber, setRoundNumber] = useState(0);
 
   const gameConfig: GameConfig = {
     width: 32,
@@ -30,6 +31,7 @@ function App() {
     rngSeed: 123,
     energyStationsPerRobot: 1,
     energyLossToCloneRobot: 10,
+    maxRobotsCount: 100,
   };
 
   const showNextChange = useCallback(() => {
@@ -66,6 +68,7 @@ function App() {
         setChanges((c) => [...c, gameMap]);
       }), Comlink.proxy(async () => {
         // console.log('finished!');
+        setRoundNumber((no) => no + 1);
         setIsFinished(true);
         // if(!isWatching) {
         //   setMap(await Core.getMap());
@@ -93,14 +96,20 @@ function App() {
   //   e.currentTarget.value = '';
   // };
 
-  const wow = async () => {
+  useEffect(() => {
     if (!isStarted) {
       start();
-      return;
     }
-    setIsFinished(false);
-    await Core.doRound();
-  };
+  }, []);
+
+  // const wow = async () => {
+  //   if (!isStarted) {
+  //     start();
+  //     return;
+  //   }
+  //   setIsFinished(false);
+  //   await Core.doRound();
+  // };
 
   const watch = async () => {
     setIsFinished(false);
@@ -114,9 +123,17 @@ function App() {
       {/* {formatBytes(window.performance.memory.usedJSHeapSize)
       + '/' + formatBytes(window.performance.memory.jsHeapSizeLimit)} */}
 
-      <Button onClick={watch} disabled={!isFinished}>Watch</Button>
-      <Button onClick={wow} disabled={!isFinished}>{isStarted ? 'Step' : 'Start'}</Button>
-      {map && <GamePage map={map} gameConfig={gameConfig} diff={diff} />}
+      <Button onClick={watch} disabled={!isFinished} className="test-button">Watch</Button>
+
+      {map && (
+        <GamePage
+          map={map}
+          gameConfig={gameConfig}
+          diff={diff}
+          roundNumber={roundNumber}
+          onChangeRoundNumber={setRoundNumber}
+        />
+      )}
 
       {/* <input type="file" accept="application/wasm" onChange={handleChange}/> */}
       {/* {files.map(file => { */}

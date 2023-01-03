@@ -48,6 +48,7 @@ pub struct GameConfig {
     rng_seed: u32,
     energy_stations_per_robot: u32,
     energy_loss_to_clone_robot: u32,
+    max_robots_count: u32,
 }
 
 #[derive(Debug)]
@@ -357,7 +358,9 @@ pub fn clone_robot(new_bot_energy: u32) -> u32 {
             return 1;
         }
 
-        if (game_state.get_robots_by_owner(current_robot.owner).len() >= 100) {
+        if (game_state.get_robots_by_owner(current_robot.owner).len()
+            >= game_state.config.max_robots_count.try_into().unwrap())
+        {
             println!("Robot tried to clone too many robots");
             return 2;
         }

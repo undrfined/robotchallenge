@@ -58,6 +58,7 @@ export type GameConfigStructType = {
   rng_seed: number,
   energy_stations_per_robot: number,
   energy_loss_to_clone_robot: number,
+  max_robots_count: number,
 };
 
 export const GameConfigStruct = new Struct<GameConfigStructType>({
@@ -70,4 +71,5 @@ export const GameConfigStruct = new Struct<GameConfigStructType>({
   rng_seed: 'u32',
   energy_stations_per_robot: 'u32',
   energy_loss_to_clone_robot: 'u32',
+  max_robots_count: 'u32',
 });

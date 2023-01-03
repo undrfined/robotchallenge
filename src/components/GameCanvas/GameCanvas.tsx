@@ -3,8 +3,8 @@ import React, { useEffect, useRef } from 'react';
 import { GameConfig, GameMap } from '../../types/gameTypes';
 
 import styles from './GameCanvas.module.scss';
-import Cell from './Cell';
 import hexToPx from '../../helpers/hexToPx';
+import SvgMap from '../SvgMap/SvgMap';
 
 interface OwnProps {
   map: GameMap
@@ -47,15 +47,12 @@ export default function GameCanvas({
       ref={transformWrapperRef}
     >
       <TransformComponent wrapperClass={styles.wrapper}>
-        <Cell
+        <SvgMap
           width={gameConfig.width}
           height={gameConfig.height}
           robots={map.robots}
           energyStations={map.energyStations}
         />
-
-        {/* <canvas ref={canvasRef} width={0} height={0} className={styles.canvas}/> */}
-        {/* <canvas ref={playerCanvasRef} width={0} height={0} className={styles.playerCanvas}/> */}
       </TransformComponent>
     </TransformWrapper>
   );
