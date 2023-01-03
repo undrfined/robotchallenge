@@ -105,9 +105,13 @@ fn do_step(map: Map, robot_to_move_index: usize) {
     // println!("map: {:#?}", map);
     println!("current bot {:#?}", robot);
     // println!("my bots count: {:?}", &map.robots.iter().filter(|r| r.owner == (*CURRENT_OWNER.lock().unwrap()).expect("Game hasn't started yet")).count());
-    move_robot(robot.position.x, robot.position.y + 1).expect("Couldn't move robot");
-    collect_energy();
-    clone_robot(robot.energy - 10);
+    if robot_to_move_index % 2 == 0 {
+        collect_energy();
+    } else {
+        move_robot(robot.position.x + 4, robot.position.y + 5).expect("Couldn't move robot");
+    }
+    // collect_energy();
+    // clone_robot(robot.energy - 10);
 }
 
 fn console_error_panic_hook(info: &panic::PanicInfo) {

@@ -3,6 +3,7 @@ import { GameEnergyStation, GameRobot } from '../../types/gameTypes';
 import { PLAYER_COLORS } from '../../helpers/playerColors';
 import styles from './SvgMap.module.scss';
 import hexToPx from '../../helpers/hexToPx';
+import Energy from '../../assets/icons/EnergyIcon.svg';
 
 export default function SvgMap({
   width, height, robots, energyStations,
@@ -18,7 +19,7 @@ export default function SvgMap({
   return (
     <svg
       width={100 * (5 / 6) * width}
-      height={height * size * Math.sqrt(3) + size}
+      height={height * size * Math.sqrt(3) + size * 4}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
@@ -45,31 +46,42 @@ export default function SvgMap({
         {energyStations.map((energyStation) => {
           const { position: { x, y } } = energyStation;
           const [px, py] = hexToPx(x, y);
+          // TODO center energy station text somehow
           return (
-            <path
+            <g
               key={`station_${x}_${y}`}
               transform={`translate(${px}, ${py})`}
-              fill="#DBEB28"
-              // eslint-disable-next-line max-len
-              d="M93.8453 22.6987L117.691 64L93.8453 105.301L46.1547 105.301L22.3094 64L46.1547 22.6987L93.8453 22.6987Z"
-            />
+            >
+              <path
+                fill="#DBEB28"
+                // eslint-disable-next-line max-len
+                d="M93.8453 22.6987L117.691 64L93.8453 105.301L46.1547 105.301L22.3094 64L46.1547 22.6987L93.8453 22.6987Z"
+              />
+              <Energy width="48" height="48" x="46" y="40" style={{ color: 'black' }} transform="scale(5)" />
+              <text className={styles.energyText} x="52" y="42">{energyStation.energy}</text>
+            </g>
           );
         })}
       </g>
       <g>
-        {robots.map((robot) => {
+        {robots.map((robot, i) => {
           const { position: { x, y }, owner } = robot;
           const color = PLAYER_COLORS[owner];
           const [px, py] = hexToPx(x, y);
           return (
-            <path
-              key={`robot_${x}_${y}`}
-              className={styles.robot}
+            <g
+              // eslint-disable-next-line react/no-array-index-key
+              key={`robot_${i}`}
               style={{ '--x': `${px}px`, '--y': `${py}px` }}
-              fill={color}
-              // eslint-disable-next-line max-len
-              d="M93.8453 22.6987L117.691 64L93.8453 105.301L46.1547 105.301L22.3094 64L46.1547 22.6987L93.8453 22.6987Z"
-            />
+              className={styles.robot}
+            >
+              <path
+                fill={color}
+                // eslint-disable-next-line max-len
+                d="M93.8453 22.6987L117.691 64L93.8453 105.301L46.1547 105.301L22.3094 64L46.1547 22.6987L93.8453 22.6987Z"
+              />
+              <text className={styles.robotText} x="52" y="42">{robot.energy}</text>
+            </g>
           );
         })}
       </g>

@@ -10,7 +10,7 @@ type OwnProps = {
   roundNumber: number;
   isPaused: boolean;
   gameConfig: GameConfig;
-  onPauseClick: VoidFunction;
+  onTogglePause: VoidFunction;
   onChange: (roundNumber: number) => void;
 };
 
@@ -18,7 +18,7 @@ export default function GameTimeline({
   roundNumber,
   isPaused,
   gameConfig,
-  onPauseClick,
+  onTogglePause,
   onChange,
 }: OwnProps) {
   function handleForwardsClick() {
@@ -45,7 +45,7 @@ export default function GameTimeline({
   return (
     <div className={styles.root}>
       <Backwards onClick={handleBackwardsClick} className={styles.controlButton} />
-      <PlayComponent onClick={onPauseClick} className={styles.controlButton} />
+      <PlayComponent onClick={onTogglePause} className={styles.controlButton} />
       <Forwards onClick={handleForwardsClick} className={styles.controlButton} />
       <div className={styles.timelineWrapper}>
         <div className={styles.timelineFillTrack} style={{ '--progress': roundNumber / gameConfig.roundsCount }} />

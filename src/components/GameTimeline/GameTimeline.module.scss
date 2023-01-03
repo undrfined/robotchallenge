@@ -13,10 +13,18 @@
   background: rgb(33 31 51);
   border-radius: 12px;
   gap: 1rem;
+  opacity: 0;
+
+  transition: 0.15s ease-out opacity;
+  &:hover {
+    opacity: 1;
+  }
+
 }
 
 .control-button {
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 // Reset

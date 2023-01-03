@@ -12,6 +12,8 @@ type OwnProps = {
   diff: number;
   roundNumber: number;
   onChangeRoundNumber: (roundNumber: number) => void;
+  onTogglePause: VoidFunction;
+  isPaused: boolean;
 };
 
 export default function GamePage({
@@ -20,6 +22,8 @@ export default function GamePage({
   diff,
   roundNumber,
   onChangeRoundNumber,
+  onTogglePause,
+  isPaused,
 }: OwnProps) {
   const playerStats = useMemo(() => {
     return Array(gameConfig.playersCount).fill(undefined).map((_, i) => ({
@@ -36,9 +40,9 @@ export default function GamePage({
         <GameCanvas map={map} gameConfig={gameConfig} diff={diff} />
         <GameTimeline
           onChange={onChangeRoundNumber}
-          onPauseClick={() => {}}
+          onTogglePause={onTogglePause}
           gameConfig={gameConfig}
-          isPaused
+          isPaused={isPaused}
           roundNumber={roundNumber}
         />
       </div>

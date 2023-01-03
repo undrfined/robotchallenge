@@ -6,7 +6,6 @@ import * as Comlink from 'comlink';
 import wasm from './test_rust.wasm';
 import GamePage from './components/pages/GamePage/GamePage';
 import { CoreWorkerType } from './workers/core.worker';
-import Button from './components/common/Button/Button';
 import { GameConfig, GameMap } from './types/gameTypes';
 
 const coreWorker = new Worker(new URL('./workers/core.worker.ts', import.meta.url));
@@ -14,10 +13,11 @@ const Core = Comlink.wrap<CoreWorkerType>(coreWorker);
 
 function App() {
   const [isFinished, setIsFinished] = useState(true);
-  const [, setIsWatching] = useState(false);
+  const [isGameFinished, setIsGameFinished] = useState(false);
+  const [isWatching, setIsWatching] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
   const [map, setMap] = useState<GameMap>();
-  const [changes, setChanges] = useState<GameMap[]>([]);
+  const [changes] = useState<GameMap[]>([]);
   const [diff] = useState(0);
   const [roundNumber, setRoundNumber] = useState(0);
 
@@ -32,6 +32,7 @@ function App() {
     energyStationsPerRobot: 1,
     energyLossToCloneRobot: 10,
     maxRobotsCount: 100,
+    timeout: 10,
   };
 
   const showNextChange = useCallback(() => {
@@ -65,11 +66,14 @@ function App() {
     (async () => {
       await Core.initCore(Comlink.proxy((gameMap: GameMap) => {
         // console.log('wow');
-        setChanges((c) => [...c, gameMap]);
+        setMap(gameMap);
+        // setChanges((c) => [...c, gameMap]);
       }), Comlink.proxy(async () => {
         // console.log('finished!');
         setRoundNumber((no) => no + 1);
+
         setIsFinished(true);
+        setIsWatching(false);
         // if(!isWatching) {
         //   setMap(await Core.getMap());
         // }
@@ -84,6 +88,12 @@ function App() {
       setIsStarted(true);
     })();
   }, [gameConfig]);
+
+  useEffect(() => {
+    if (roundNumber === gameConfig.roundsCount) {
+      setIsGameFinished(true);
+    }
+  }, [roundNumber, gameConfig.roundsCount]);
 
   // const [files, setFiles] = useState<File[]>([]);
 
@@ -112,6 +122,8 @@ function App() {
   // };
 
   const watch = async () => {
+    if (isWatching) return;
+
     setIsFinished(false);
     setIsWatching(true);
     await Core.doRound();
@@ -123,8 +135,7 @@ function App() {
       {/* {formatBytes(window.performance.memory.usedJSHeapSize)
       + '/' + formatBytes(window.performance.memory.jsHeapSizeLimit)} */}
 
-      <Button onClick={watch} disabled={!isFinished} className="test-button">Watch</Button>
-
+      {isGameFinished && <div>Game finished!</div>}
       {map && (
         <GamePage
           map={map}
@@ -132,6 +143,8 @@ function App() {
           diff={diff}
           roundNumber={roundNumber}
           onChangeRoundNumber={setRoundNumber}
+          onTogglePause={watch}
+          isPaused={!isWatching}
         />
       )}
 

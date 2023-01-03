@@ -25,6 +25,7 @@ type Exports = {
 let wasi: WASI;
 let instance: WebAssembly.Instance;
 let wrapper: IWrapper<Exports>;
+let currentGameConfig: GameConfig;
 let playerWorkers: {
   worker: Worker;
   comlink: PlayerWorkerType;
@@ -36,7 +37,7 @@ const doStep = async (owner: number, robotToMoveIndex: number, map: MapStructTyp
       [
         playerWorkers[owner].comlink.doStep(mapStructToObject(map), robotToMoveIndex),
         new Promise((_, reject) => {
-          setTimeout(() => reject(Error('Timeout')), 1000);
+          setTimeout(() => reject(Error('Timeout')), currentGameConfig.timeout);
         }),
       ],
     );
@@ -69,6 +70,8 @@ const CoreWorker = {
     console.log('[wcore] done round');
     // eslint-disable-next-line no-console
     console.log(wasi.getStdoutString());
+    // eslint-disable-next-line no-console
+    console.error(wasi.getStderrString());
   },
   initGame: async (gameConfig: GameConfig, algos: (File | Blob)[]) => {
     playerWorkers = await Promise.all(algos.map(async (algo, i) => {
@@ -91,6 +94,7 @@ const CoreWorker = {
     }));
 
     try {
+      currentGameConfig = gameConfig;
       wrapper.init_game(gameConfigToStruct(gameConfig));
     } catch (e) {
       // eslint-disable-next-line no-console

@@ -1,7 +1,7 @@
 .robot {
   position: relative;
   transition: 0.25s ease-out transform;
-  transition-delay: 600ms;
+  //transition-delay: 600ms;
   transform-origin: calc(var(--x) + 70px) calc(var(--y) + 64px);
   transform: translate(var(--x), var(--y));
 
@@ -12,4 +12,16 @@
   &:hover {
     fill: #ffc107;
   }
+}
+
+.energy-text {
+  font-size: 1.25rem;
+  font-weight: 500;
+  fill: black;
+}
+
+.robotText {
+  font-size: 1.25rem;
+  font-weight: 500;
+  fill: white;
 }

@@ -31,4 +31,5 @@ export type GameConfig = {
   energyStationsPerRobot: number,
   energyLossToCloneRobot: number,
   maxRobotsCount: number,
+  timeout: number,
 };

@@ -5,7 +5,7 @@ use std::os::raw::c_void;
 use std::panic;
 use std::sync::RwLock;
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 #[repr(C)]
 pub struct Position {
     x: i32,
@@ -185,6 +185,13 @@ impl GameState {
         None
     }
 
+    fn get_energy_stations_around(&mut self, x: i32, y: i32) -> Vec<&mut EnergyStation> {
+        self.energy_stations
+            .iter_mut()
+            .filter(|e| evenq_distance(e.position, Position { x, y }) <= 1)
+            .collect()
+    }
+
     fn add_robot(&mut self, owner: u32, x: i32, y: i32, energy: u32) -> usize {
         let new_robot = Robot {
             position: Position { x, y },
@@ -290,6 +297,11 @@ pub fn do_round() {
     println!("[core] do_round");
 
     with_game_state!(game_state, {
+        if (game_state.round >= game_state.config.rounds_count) {
+            eprintln!("[core] do_round: game is over");
+            return;
+        }
+
         if (game_state.current_robot_index >= game_state.robots.len()) {
             println!("[core] do_round finished");
             game_state.current_robot_index = 0;
@@ -395,7 +407,25 @@ pub fn clone_robot(new_bot_energy: u32) -> u32 {
 #[no_mangle]
 pub fn collect_energy() -> u32 {
     game_action!(game_state, current_robot, {
-        // println!("[core] collect_energy {:?}", current_robot);
+        println!("[core] collect_energy {:?}", current_robot);
+
+        let energy_stations_around = game_state
+            .get_energy_stations_around(current_robot.position.x, current_robot.position.y);
+
+        if energy_stations_around.is_empty() {
+            println!("Robot tried to collect energy but there is no energy station around");
+            return 1;
+        }
+
+        let mut total_energy = 0;
+        for energy_station in energy_stations_around {
+            let energy = energy_station.energy;
+            energy_station.energy = 0;
+            total_energy += energy;
+        }
+
+        let current_robot = &mut game_state.robots[game_state.current_robot_index];
+        current_robot.energy += total_energy;
     });
     return 0;
 }
