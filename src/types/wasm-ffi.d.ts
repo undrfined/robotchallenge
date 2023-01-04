@@ -22,7 +22,7 @@ declare module 'wasm-ffi' {
     }
 
     export class Pointer<T> {
-      constructor(a: [AbstractStructCtor<T>, number], b: AbstractStructType<T>[]);
+      constructor(a: [AbstractStructCtor<T>, number], b: AbstractStructType<T>[] | undefined);
       ref(): number;
       wrapper: IWrapper;
 

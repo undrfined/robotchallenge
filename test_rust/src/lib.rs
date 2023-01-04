@@ -55,7 +55,6 @@ pub struct GameConfig {
     energy_stations_per_robot: u32,
 }
 
-
 mod imports {
     #[link(wasm_import_module = "robotchallenge")]
     extern {

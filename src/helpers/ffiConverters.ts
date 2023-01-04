@@ -1,14 +1,24 @@
 import {
+  CloneRobotFailedStruct,
+  CloneRobotStruct,
+  CollectEnergyFailedStruct,
+  CollectEnergyStruct,
   EnergyStationStructType,
   GameConfigStructType,
   MapStructType,
+  PlayerActionMove,
+  PlayerActionMoveFailedStruct,
+  PlayerActionMoveStruct,
+  PlayerActionsType,
+  PlayerActionTypeEnum,
   PositionStructType,
   RobotStructType,
 } from './ffiStructs';
 import {
-  GameConfig, GameEnergyStation, GameMap, GamePosition, GameRobot,
+  GameConfig, GameEnergyStation, GameMap, GamePlayerActions, GamePosition, GameRobot,
 } from '../types/gameTypes';
 import ffiReadArray from './ffiReadArray';
+import ffiReadEnumArray from './ffiReadEnumArray';
 
 export function gameConfigToStruct(gameConfig: GameConfig): GameConfigStructType {
   return {
@@ -25,18 +35,22 @@ export function gameConfigToStruct(gameConfig: GameConfig): GameConfigStructType
   };
 }
 
-export function mapStructToObject(map: MapStructType): GameMap {
-  const positionStructToObject = (position: PositionStructType): GamePosition => ({
+function positionStructToObject(position: PositionStructType): GamePosition {
+  return {
     x: position.x,
     y: position.y,
-  });
+  };
+}
 
-  const robotStructToObject = (robot: RobotStructType): GameRobot => ({
+function robotStructToObject(robot: RobotStructType): GameRobot {
+  return {
     energy: robot.energy,
     owner: robot.owner,
     position: positionStructToObject(robot.position),
-  });
+  };
+}
 
+export function mapStructToObject(map: MapStructType): GameMap {
   const energyStationStructToObject = (energyStation: EnergyStationStructType): GameEnergyStation => ({
     energy: energyStation.energy,
     recoveryRate: energyStation.recovery_rate,
@@ -50,4 +64,55 @@ export function mapStructToObject(map: MapStructType): GameMap {
     robots,
     energyStations,
   };
+}
+
+function playerActionStructToObject(playerAction: PlayerActionTypeEnum): GamePlayerActions | undefined {
+  switch (playerAction.id) {
+    case 0:
+      return {
+        type: 'move',
+        robotId: playerAction.robot_id,
+        newPosition: positionStructToObject(playerAction.new_position),
+      };
+    case 1:
+      return {
+        type: 'moveFailed',
+        robotId: playerAction.robot_id,
+        newPosition: positionStructToObject(playerAction.new_position),
+      };
+    case 2:
+      return {
+        type: 'cloneRobot',
+        robotId: playerAction.robot_id,
+        newRobot: robotStructToObject(playerAction.new_robot),
+      };
+    case 3:
+      return {
+        type: 'cloneRobotFailed',
+        robotId: playerAction.robot_id,
+      };
+    case 4:
+      return {
+        type: 'collectEnergy',
+        robotId: playerAction.robot_id,
+      };
+    case 5:
+      return {
+        type: 'collectEnergyFailed',
+        robotId: playerAction.robot_id,
+      };
+    default:
+      return undefined;
+  }
+}
+
+export function playerActionsStructToObject(playerActions: PlayerActionsType): any {
+  return ffiReadEnumArray(playerActions.player_actions_len, playerActions.player_actions, [
+    PlayerActionMoveStruct,
+    PlayerActionMoveFailedStruct,
+    CloneRobotStruct,
+    CloneRobotFailedStruct,
+    CollectEnergyStruct,
+    CollectEnergyFailedStruct,
+  ]).map(playerActionStructToObject);
 }

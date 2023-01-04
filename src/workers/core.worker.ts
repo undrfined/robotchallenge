@@ -6,10 +6,10 @@ import { GameConfig, GameMap } from '../types/gameTypes';
 import {
   GameConfigStruct,
   GameConfigStructType, MapStruct,
-  MapStructType,
+  MapStructType, PlayerActionsStruct, PlayerActionsType,
 } from '../helpers/ffiStructs';
 import type { PlayerWorkerType } from './player.worker';
-import { gameConfigToStruct, mapStructToObject } from '../helpers/ffiConverters';
+import { gameConfigToStruct, mapStructToObject, playerActionsStructToObject } from '../helpers/ffiConverters';
 
 type Exports = {
   init_mod: () => void,
@@ -20,6 +20,7 @@ type Exports = {
   move_robot: (x: number, y: number) => number,
   clone_robot: (energy: number) => number,
   collect_energy: () => number;
+  test: () => PlayerActionsType,
 };
 
 let wasi: WASI;
@@ -105,6 +106,9 @@ const CoreWorker = {
       console.warn(e);
     }
   },
+  test: () => {
+    console.log(playerActionsStructToObject(wrapper.test()));
+  },
   initCore: async (
     updateMap: (map: GameMap) => void,
     onRoundFinished: () => void,
@@ -128,6 +132,7 @@ const CoreWorker = {
       move_robot: ['u32', ['i32', 'i32']],
       clone_robot: ['u32', ['u32']],
       collect_energy: ['u32', []],
+      test: [PlayerActionsStruct],
     });
 
     instance = await wasi.instantiate(module, wrapper.imports((wrap) => ({

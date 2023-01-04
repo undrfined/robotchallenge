@@ -72,6 +72,8 @@ function App() {
         // console.log('finished!');
         setRoundNumber((no) => no + 1);
 
+        Core.test();
+
         setIsFinished(true);
         setIsWatching(false);
         // if(!isWatching) {

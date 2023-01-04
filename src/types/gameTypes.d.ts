@@ -1,3 +1,8 @@
+import { Struct } from 'wasm-ffi';
+import {
+  PositionStruct, PositionStructType, RobotStruct, RobotStructType,
+} from '../helpers/ffiStructs';
+
 export type GamePosition = {
   x: number;
   y: number;
@@ -33,3 +38,40 @@ export type GameConfig = {
   maxRobotsCount: number,
   timeout: number,
 };
+
+export type GamePlayerActionMove = {
+  type: 'move',
+  robotId: number,
+  newPosition: GamePosition,
+};
+
+export type GamePlayerActionMoveFailed = {
+  type: 'moveFailed',
+  robotId: number,
+  newPosition: GamePosition,
+};
+
+export type GameCloneRobot = {
+  type: 'cloneRobot',
+  robotId: number,
+  newRobot: GameRobot,
+};
+
+export type GameCloneRobotFailed = {
+  type: 'cloneRobotFailed',
+  robotId: number,
+};
+
+export type GameCollectEnergy = {
+  type: 'collectEnergy',
+  robotId: number,
+};
+
+export type GameCollectEnergyFailed = {
+  type: 'collectEnergyFailed',
+  robotId: number,
+};
+
+export type GamePlayerActions =
+    GamePlayerActionMove | GamePlayerActionMoveFailed | GameCloneRobot | GameCloneRobotFailed |
+    GameCollectEnergy | GameCollectEnergyFailed;

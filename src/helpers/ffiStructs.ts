@@ -48,6 +48,85 @@ export const MapStruct = new Struct<MapStructType>({
   energy_stations: types.pointer(EnergyStationStruct),
 });
 
+export type PlayerActionMove = {
+  id: 0,
+  robot_id: number,
+  new_position: PositionStructType,
+};
+
+export const PlayerActionMoveStruct = new Struct<PlayerActionMove>({
+  id: 'u32',
+  robot_id: 'usize',
+  new_position: PositionStruct,
+});
+
+export type PlayerActionMoveFailed = {
+  id: 1,
+  robot_id: number,
+  new_position: PositionStructType,
+};
+
+export const PlayerActionMoveFailedStruct = new Struct<PlayerActionMoveFailed>({
+  id: 'u32',
+  robot_id: 'usize',
+  new_position: PositionStruct,
+});
+
+export type CloneRobot = {
+  id: 2,
+  robot_id: number,
+  new_robot: RobotStructType,
+};
+
+export const CloneRobotStruct = new Struct<CloneRobot>({
+  id: 'u32',
+  robot_id: 'usize',
+  new_robot: RobotStruct,
+});
+
+export type CloneRobotFailed = {
+  id: 3,
+  robot_id: number,
+};
+
+export const CloneRobotFailedStruct = new Struct<CloneRobotFailed>({
+  id: 'u32',
+  robot_id: 'usize',
+});
+
+export type CollectEnergy = {
+  id: 4,
+  robot_id: number,
+};
+
+export const CollectEnergyStruct = new Struct<CollectEnergy>({
+  id: 'u32',
+  robot_id: 'usize',
+});
+
+export type CollectEnergyFailed = {
+  id: 5,
+  robot_id: number,
+};
+
+export const CollectEnergyFailedStruct = new Struct<CollectEnergyFailed>({
+  id: 'u32',
+  robot_id: 'usize',
+});
+
+export type PlayerActionTypeEnum =
+    (PlayerActionMove | PlayerActionMoveFailed | CloneRobot | CloneRobotFailed | CollectEnergy | CollectEnergyFailed);
+
+export type PlayerActionsType = {
+  player_actions_len: number,
+  player_actions: Pointer<number>,
+};
+
+export const PlayerActionsStruct = new Struct<PlayerActionsType>({
+  player_actions_len: 'usize',
+  player_actions: types.pointer('usize'),
+});
+
 export type GameConfigStructType = {
   width: number,
   height: number,

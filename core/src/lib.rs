@@ -1,6 +1,7 @@
 use lazy_static::lazy_static;
 use rand::prelude::*;
 use rand_chacha::ChaCha8Rng;
+use std::collections::HashMap;
 use std::os::raw::c_void;
 use std::panic;
 use std::sync::RwLock;
@@ -12,7 +13,7 @@ pub struct Position {
     y: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 #[repr(C)]
 pub struct Robot {
     position: Position,
@@ -51,6 +52,56 @@ pub struct GameConfig {
     max_robots_count: u32,
 }
 
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+struct PlayerActionMove {
+    robot_id: usize,
+    new_position: Position,
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+struct PlayerActionMoveFailed {
+    robot_id: usize,
+    new_position: Position,
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+struct CloneRobot {
+    robot_id: usize,
+    new_robot: Robot,
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+struct CloneRobotFailed {
+    robot_id: usize,
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+struct CollectEnergy {
+    robot_id: usize,
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+struct CollectEnergyFailed {
+    robot_id: usize,
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+enum PlayerActions {
+    PlayerActionMove(PlayerActionMove),
+    PlayerActionMoveFailed(PlayerActionMoveFailed),
+    CloneRobot(CloneRobot),
+    CloneRobotFailed(CloneRobotFailed),
+    CollectEnergy(CollectEnergy),
+    CollectEnergyFailed(CollectEnergyFailed),
+}
+
 #[derive(Debug)]
 struct GameState {
     round: u32,
@@ -60,6 +111,7 @@ struct GameState {
     rng: ChaCha8Rng,
     current_robot_index: usize,
     current_robot_done_action: bool,
+    player_actions: HashMap<u32, Vec<PlayerActions>>,
 }
 
 #[derive(Copy, Clone)]
@@ -129,6 +181,7 @@ impl GameState {
             config: config,
             current_robot_index: 0,
             current_robot_done_action: false,
+            player_actions: HashMap::new(),
         }
     }
 
@@ -320,6 +373,7 @@ pub fn do_round() {
                 get_map_ffi(game_state),
             )
         };
+        println!("[core] player_actions: {:#?}", game_state.player_actions);
     });
 
     println!("[core] do_round done");
@@ -360,6 +414,16 @@ macro_rules! game_action {
     }
 }
 
+macro_rules! add_player_action {
+    ($game_state: ident, $action: expr) => {
+        (*$game_state
+            .player_actions
+            .entry($game_state.round)
+            .or_insert(Vec::new()))
+        .push($action);
+    };
+}
+
 #[no_mangle]
 pub fn clone_robot(new_bot_energy: u32) -> u32 {
     game_action!(game_state, current_robot, {
@@ -367,6 +431,12 @@ pub fn clone_robot(new_bot_energy: u32) -> u32 {
 
         if (current_robot.energy < loss) {
             println!("Robot tried to clone with too much energy");
+            add_player_action!(
+                game_state,
+                PlayerActions::CloneRobotFailed(CloneRobotFailed {
+                    robot_id: game_state.current_robot_index,
+                })
+            );
             return 1;
         }
 
@@ -374,6 +444,12 @@ pub fn clone_robot(new_bot_energy: u32) -> u32 {
             >= game_state.config.max_robots_count.try_into().unwrap())
         {
             println!("Robot tried to clone too many robots");
+            add_player_action!(
+                game_state,
+                PlayerActions::CloneRobotFailed(CloneRobotFailed {
+                    robot_id: game_state.current_robot_index,
+                })
+            );
             return 2;
         }
 
@@ -382,6 +458,12 @@ pub fn clone_robot(new_bot_energy: u32) -> u32 {
 
         if (free_cell.is_none()) {
             println!("Robot tried to clone but there is no free cell");
+            add_player_action!(
+                game_state,
+                PlayerActions::CloneRobotFailed(CloneRobotFailed {
+                    robot_id: game_state.current_robot_index,
+                })
+            );
             return 3;
         }
 
@@ -400,6 +482,14 @@ pub fn clone_robot(new_bot_energy: u32) -> u32 {
         let new_robot = &game_state.robots[new_robot_index];
         let current_robot = &game_state.robots[game_state.current_robot_index];
 
+        add_player_action!(
+            game_state,
+            PlayerActions::CloneRobot(CloneRobot {
+                robot_id: game_state.current_robot_index,
+                new_robot: new_robot.clone(),
+            })
+        );
+
         println!("[core] clone_robot {:?} {:?}", current_robot, new_robot);
     });
 }
@@ -413,6 +503,12 @@ pub fn collect_energy() -> u32 {
             .get_energy_stations_around(current_robot.position.x, current_robot.position.y);
 
         if energy_stations_around.is_empty() {
+            add_player_action!(
+                game_state,
+                PlayerActions::CollectEnergyFailed(CollectEnergyFailed {
+                    robot_id: game_state.current_robot_index,
+                })
+            );
             println!("Robot tried to collect energy but there is no energy station around");
             return 1;
         }
@@ -426,6 +522,13 @@ pub fn collect_energy() -> u32 {
 
         let current_robot = &mut game_state.robots[game_state.current_robot_index];
         current_robot.energy += total_energy;
+
+        add_player_action!(
+            game_state,
+            PlayerActions::CollectEnergy(CollectEnergy {
+                robot_id: game_state.current_robot_index,
+            })
+        );
     });
     return 0;
 }
@@ -438,6 +541,13 @@ pub fn move_robot(x: i32, y: i32) -> u32 {
         let energy = current_robot.energy;
 
         if !game_state.is_empty(x, y) {
+            add_player_action!(
+                game_state,
+                PlayerActions::PlayerActionMoveFailed(PlayerActionMoveFailed {
+                    robot_id: game_state.current_robot_index,
+                    new_position: Position { x, y },
+                })
+            );
             println!("[core] move_robot cell is occupied {:?}", current_robot);
             return 1;
         }
@@ -445,6 +555,13 @@ pub fn move_robot(x: i32, y: i32) -> u32 {
         let loss = game_state.calculate_loss(old_x, old_y, x, y);
 
         if loss > energy {
+            add_player_action!(
+                game_state,
+                PlayerActions::PlayerActionMoveFailed(PlayerActionMoveFailed {
+                    robot_id: game_state.current_robot_index,
+                    new_position: Position { x, y },
+                })
+            );
             println!("[core] not enough energy {:?}", current_robot);
             return 2;
         }
@@ -453,6 +570,14 @@ pub fn move_robot(x: i32, y: i32) -> u32 {
         current_robot.position.x = x;
         current_robot.position.y = y;
         current_robot.energy -= loss;
+
+        add_player_action!(
+            game_state,
+            PlayerActions::PlayerActionMove(PlayerActionMove {
+                robot_id: game_state.current_robot_index,
+                new_position: Position { x, y },
+            })
+        );
     });
     return 1;
 }
@@ -489,4 +614,27 @@ fn get_map_ffi(game_state: &GameState) -> *mut MapFFI {
     };
 
     Box::into_raw(Box::new(map_ffi))
+}
+
+#[repr(C)]
+pub struct PlayerActionsFFI {
+    player_actions_len: usize,
+    player_actions_values: *const PlayerActions,
+}
+
+#[no_mangle]
+fn test() -> *mut PlayerActionsFFI {
+    let guard = &mut *CURRENT_GAME_STATE.write().unwrap();
+    let game_state = guard.as_ref().unwrap();
+
+    get_player_actions_ffi(game_state, &0)
+}
+
+fn get_player_actions_ffi(game_state: &GameState, key: &u32) -> *mut PlayerActionsFFI {
+    let player_actions_ffi = PlayerActionsFFI {
+        player_actions_len: game_state.player_actions.get(key).unwrap().len(),
+        player_actions_values: game_state.player_actions.get(key).unwrap().as_ptr(),
+    };
+
+    Box::into_raw(Box::new(player_actions_ffi))
 }
