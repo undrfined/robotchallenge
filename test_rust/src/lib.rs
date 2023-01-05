@@ -1,8 +1,10 @@
+use lazy_static::lazy_static;
+use rand::prelude::*;
+use rand_chacha::ChaCha8Rng;
 use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_void};
-use lazy_static::lazy_static;
-use std::sync::Mutex;
 use std::panic;
+use std::sync::Mutex;
 
 #[derive(Debug)]
 #[repr(C)]
@@ -42,8 +44,7 @@ pub struct MapFFI {
 }
 
 #[repr(C)]
-#[derive(Debug)]
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct GameConfig {
     width: i32,
     height: i32,
@@ -57,7 +58,7 @@ pub struct GameConfig {
 
 mod imports {
     #[link(wasm_import_module = "robotchallenge")]
-    extern {
+    extern "C" {
         pub fn clone_robot(new_bot_energy: u32);
         pub fn collect_energy();
         pub fn move_robot(x: i32, y: i32) -> u32;
@@ -67,8 +68,16 @@ mod imports {
 pub fn ffi_to_map(map_ffi: &mut MapFFI) -> Map {
     unsafe {
         let map = Map {
-            robots: Vec::<Robot>::from_raw_parts(map_ffi.robots, map_ffi.robots_len, map_ffi.robots_len),
-            energy_stations: Vec::<EnergyStation>::from_raw_parts(map_ffi.energy_stations, map_ffi.energy_stations_len, map_ffi.energy_stations_len),
+            robots: Vec::<Robot>::from_raw_parts(
+                map_ffi.robots,
+                map_ffi.robots_len,
+                map_ffi.robots_len,
+            ),
+            energy_stations: Vec::<EnergyStation>::from_raw_parts(
+                map_ffi.energy_stations,
+                map_ffi.energy_stations_len,
+                map_ffi.energy_stations_len,
+            ),
         };
         map
     }
@@ -97,6 +106,7 @@ pub fn move_robot(x: i32, y: i32) -> Result<bool, String> {
 
 lazy_static! {
     static ref CURRENT_OWNER: Mutex<Option<u32>> = Mutex::new(None);
+    static ref RANDOM: Mutex<ChaCha8Rng> = Mutex::new(ChaCha8Rng::from_entropy());
 }
 
 fn do_step(map: Map, robot_to_move_index: usize) {
@@ -107,7 +117,10 @@ fn do_step(map: Map, robot_to_move_index: usize) {
     if robot_to_move_index % 2 == 0 {
         collect_energy();
     } else {
-        move_robot(robot.position.x + 4, robot.position.y + 5).expect("Couldn't move robot");
+        let rnd_x = (*RANDOM).lock().unwrap().gen_range(-3..3);
+        let rnd_y = (*RANDOM).lock().unwrap().gen_range(-1..2);
+        move_robot(robot.position.x + rnd_x, robot.position.y + rnd_y)
+            .expect("Couldn't move robot");
     }
     // collect_energy();
     // clone_robot(robot.energy - 10);
@@ -118,13 +131,13 @@ fn console_error_panic_hook(info: &panic::PanicInfo) {
 }
 
 #[no_mangle]
-pub extern fn init_game(game_config: GameConfig, owner: u32) {
+pub extern "C" fn init_game(game_config: GameConfig, owner: u32) {
     panic::set_hook(Box::new(console_error_panic_hook));
     *CURRENT_OWNER.lock().unwrap() = Some(owner);
 }
 
 #[no_mangle]
-pub extern fn do_step_ffi(map_ffi: *mut MapFFI, robot_to_move_index: usize) {
+pub extern "C" fn do_step_ffi(map_ffi: *mut MapFFI, robot_to_move_index: usize) {
     unsafe {
         let map = ffi_to_map(&mut *map_ffi);
         do_step(map, robot_to_move_index);

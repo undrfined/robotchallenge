@@ -2,7 +2,7 @@ import * as Comlink from 'comlink';
 import { Wrapper, IWrapper } from 'wasm-ffi';
 import { init, WASI } from '@wasmer/wasi';
 import core from '../core.wasm';
-import { GameConfig, GameMap } from '../types/gameTypes';
+import { GameConfig, GameMap, GamePlayerActions } from '../types/gameTypes';
 import {
   GameConfigStruct,
   GameConfigStructType, MapStruct,
@@ -23,6 +23,8 @@ type Exports = {
   get_player_actions: (round: number) => PlayerActionsType,
 };
 
+type RoundFinishedCallback = (map: GameMap, playerActions: GamePlayerActions[]) => void;
+
 let wasi: WASI;
 let instance: WebAssembly.Instance;
 let wrapper: IWrapper<Exports>;
@@ -31,6 +33,7 @@ let playerWorkers: {
   worker: Worker;
   comlink: PlayerWorkerType;
 }[] = [];
+let onRoundFinished: RoundFinishedCallback;
 
 const doStep = async (owner: number, robotToMoveIndex: number, map: MapStructType) => {
   try {
@@ -109,9 +112,12 @@ const CoreWorker = {
   get_player_actions: (round: number) => {
     return playerActionsStructToObject(wrapper.get_player_actions(round));
   },
+  setCallbacks: (
+    onRoundFinishedCallback: RoundFinishedCallback,
+  ) => {
+    onRoundFinished = onRoundFinishedCallback;
+  },
   initCore: async (
-    updateMap: (map: GameMap) => void,
-    onRoundFinished: () => void,
   ) => {
     await init();
 
@@ -136,11 +142,10 @@ const CoreWorker = {
 
     instance = await wasi.instantiate(module, wrapper.imports((wrap) => ({
       robotchallenge: {
-        round_finished: onRoundFinished,
-        update_map: wrap([null, [MapStruct]], (map: MapStructType) => {
-          // eslint-disable-next-line no-console
-          console.log('[wcore] update map', map);
-          updateMap(mapStructToObject(map));
+        round_finished: wrap([null, [MapStruct, PlayerActionsStruct]], (
+          map: MapStructType, playerActions: PlayerActionsType,
+        ) => {
+          onRoundFinished(mapStructToObject(map), playerActionsStructToObject(playerActions));
         }),
         do_step: wrap(['u32', ['u32', 'usize', MapStruct]], doStep),
       },

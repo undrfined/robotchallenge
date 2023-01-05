@@ -35,3 +35,27 @@ canvas {
   height: 100%;
   width: 100%;
 }
+
+.player-actions {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.5rem;
+  padding: 1rem;
+  z-index: 1;
+  position: absolute;
+  right: 0;
+  height: 100%;
+  width: 16rem;
+}
+
+.player-action {
+  background: linear-gradient(180.45deg, #131714 28.45%, #0D0D0D 99.62%);
+  border-radius: 1rem;
+  border: 1px solid #0D0D0D;
+  padding: 0.5rem;
+  transition: 0.25s ease-out opacity;
+
+  &.hiding {
+    opacity: 0;
+  }
+}

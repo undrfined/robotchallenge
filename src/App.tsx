@@ -6,19 +6,21 @@ import * as Comlink from 'comlink';
 import wasm from './test_rust.wasm';
 import GamePage from './components/pages/GamePage/GamePage';
 import { CoreWorkerType } from './workers/core.worker';
-import { GameConfig, GameMap } from './types/gameTypes';
+import { GameConfig, GameMap, GamePlayerActions } from './types/gameTypes';
 
 const coreWorker = new Worker(new URL('./workers/core.worker.ts', import.meta.url));
 const Core = Comlink.wrap<CoreWorkerType>(coreWorker);
 
+export type MapState = {
+  map: GameMap;
+  playerActions: GamePlayerActions[];
+};
+
 function App() {
-  const [isFinished, setIsFinished] = useState(true);
   const [isGameFinished, setIsGameFinished] = useState(false);
   const [isWatching, setIsWatching] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
-  const [map, setMap] = useState<GameMap>();
-  const [changes] = useState<GameMap[]>([]);
-  const [diff] = useState(0);
+  const [mapStates, setMapStates] = useState<MapState[]>([]);
   const [roundNumber, setRoundNumber] = useState(0);
 
   const gameConfig: GameConfig = {
@@ -35,59 +37,49 @@ function App() {
     timeout: 10,
   };
 
-  const showNextChange = useCallback(() => {
-    // const a = changes.shift();
-    // setChanges(changes);
-
-    // console.log(a);
-
-    // if (a) {
-    //   if (map) {
-    //     const diff = a.robots.findIndex((robot, i) => robot.position.x !== map.robots[i]
-    //     .position.x
-    //     || robot.position.y !== map.robots[i].position.y);
-    //     if (diff !== -1) {
-    //       setDiff(diff);
-    //       // console.log(diff, a, map);
-    //     }
-    //     setMap(a);
-    //   }
-    // }
-  }, [changes, map]);
-
-  useEffect(() => {
-    if (isFinished && changes.length) {
-      // console.log('done!');
-      setTimeout(showNextChange, 1500);
-    }
-  }, [changes.length, isFinished, showNextChange]);
+  // useEffect(() => {
+  //   if (isFinished && changes.length) {
+  //     // console.log('done!');
+  //     setTimeout(showNextChange, 1500);
+  //   }
+  // }, [changes.length, isFinished, showNextChange]);
 
   const start = useCallback(() => {
     (async () => {
-      await Core.initCore(Comlink.proxy((gameMap: GameMap) => {
-        // console.log('wow');
-        setMap(gameMap);
-        // setChanges((c) => [...c, gameMap]);
-      }), Comlink.proxy(async () => {
-        // console.log('finished!');
-        setRoundNumber((no) => no + 1);
-
-        setIsFinished(true);
-        setIsWatching(false);
-        // if(!isWatching) {
-        //   setMap(await Core.getMap());
-        // }
-      }));
+      await Core.initCore();
 
       const algos = [
         await fetch(wasm).then((l) => l.blob()),
         await fetch(wasm).then((l) => l.blob()),
       ];
       await Core.initGame(gameConfig, algos);
-      setMap(await Core.getMap());
+      setMapStates([{
+        map: await Core.getMap(),
+        playerActions: [],
+      }]);
       setIsStarted(true);
     })();
   }, [gameConfig]);
+
+  useEffect(() => {
+    Core.setCallbacks(Comlink.proxy(async (gameMap: GameMap, playerActions: GamePlayerActions[]) => {
+      setRoundNumber((no) => no + 1);
+      setMapStates((states) => {
+        const other = states.slice(0, -1);
+        const last = states[states.length - 1];
+
+        return [...other, {
+          ...last,
+          playerActions,
+        }, {
+          map: gameMap,
+          playerActions: [],
+        }];
+      });
+
+      setIsWatching(false);
+    }));
+  }, [roundNumber]);
 
   useEffect(() => {
     if (isStarted) {
@@ -118,19 +110,9 @@ function App() {
     }
   }, []);
 
-  // const wow = async () => {
-  //   if (!isStarted) {
-  //     start();
-  //     return;
-  //   }
-  //   setIsFinished(false);
-  //   await Core.doRound();
-  // };
-
   const watch = async () => {
     if (isWatching) return;
 
-    setIsFinished(false);
     setIsWatching(true);
     await Core.doRound();
   };
@@ -142,11 +124,10 @@ function App() {
       + '/' + formatBytes(window.performance.memory.jsHeapSizeLimit)} */}
 
       {isGameFinished && <div>Game finished!</div>}
-      {map && (
+      {mapStates?.length && (
         <GamePage
-          map={map}
+          mapStates={mapStates}
           gameConfig={gameConfig}
-          diff={diff}
           roundNumber={roundNumber}
           onChangeRoundNumber={setRoundNumber}
           onTogglePause={watch}

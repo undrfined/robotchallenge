@@ -1,6 +1,6 @@
 .robot {
   position: relative;
-  transition: 0.25s ease-out transform;
+  transition: 0.5s linear transform, 1s ease-in-out stroke;
   //transition-delay: 600ms;
   transform-origin: calc(var(--x) + 70px) calc(var(--y) + 64px);
   transform: translate(var(--x), var(--y));
@@ -12,6 +12,28 @@
   &:hover {
     fill: #ffc107;
   }
+}
+
+@keyframes pulse {
+  from {
+    transform: translate(var(--x), var(--y)) scale(1);
+  }
+
+  50% {
+    transform:translate(var(--x), var(--y))  scale(1.1);
+    stroke-opacity: 1;
+    stroke-width: 8;
+    stroke: red;
+  }
+
+  to {
+    transform: translate(var(--x), var(--y)) scale(1);
+  }
+}
+
+.selectedCell {
+  transform-origin: 70px 64px;
+  animation: pulse 1s forwards;
 }
 
 .energy-text {

@@ -28,6 +28,7 @@
     "comlink": "^4.3.1",
     "css-loader": "^6.5.1",
     "css-minimizer-webpack-plugin": "^3.2.0",
+    "deep-clone": "^3.0.3",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
     "eslint-config-react-app": "^7.0.0",

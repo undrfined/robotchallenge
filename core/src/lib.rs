@@ -54,46 +54,46 @@ pub struct GameConfig {
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-struct PlayerActionMove {
+pub struct PlayerActionMove {
     robot_id: usize,
     new_position: Position,
 }
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-struct PlayerActionMoveFailed {
+pub struct PlayerActionMoveFailed {
     robot_id: usize,
     new_position: Position,
 }
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-struct CloneRobot {
+pub struct CloneRobot {
     robot_id: usize,
     new_robot: Robot,
 }
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-struct CloneRobotFailed {
+pub struct CloneRobotFailed {
     robot_id: usize,
 }
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-struct CollectEnergy {
+pub struct CollectEnergy {
     robot_id: usize,
 }
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-struct CollectEnergyFailed {
+pub struct CollectEnergyFailed {
     robot_id: usize,
 }
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-enum PlayerActions {
+pub enum PlayerActions {
     PlayerActionMove(PlayerActionMove),
     PlayerActionMoveFailed(PlayerActionMoveFailed),
     CloneRobot(CloneRobot),
@@ -112,6 +112,12 @@ struct GameState {
     current_robot_index: usize,
     current_robot_done_action: bool,
     player_actions: HashMap<u32, Vec<PlayerActions>>,
+}
+
+#[repr(C)]
+pub struct PlayerActionsFFI {
+    player_actions_len: usize,
+    player_actions_values: *const PlayerActions,
 }
 
 #[derive(Copy, Clone)]
@@ -313,12 +319,11 @@ lazy_static! {
 }
 
 mod imports {
-    use crate::MapFFI;
+    use crate::{MapFFI, PlayerActionsFFI};
     #[link(wasm_import_module = "robotchallenge")]
     extern "C" {
         pub fn do_step(owner: u32, robot_to_move_index: usize, map: *mut MapFFI) -> u32;
-        pub fn update_map(map: *mut MapFFI);
-        pub fn round_finished();
+        pub fn round_finished(map: *mut MapFFI, player_actions: *mut PlayerActionsFFI);
     }
 }
 
@@ -360,8 +365,10 @@ pub fn do_round() {
             game_state.current_robot_index = 0;
             game_state.round += 1;
             unsafe {
-                imports::update_map(get_map_ffi(game_state));
-                imports::round_finished();
+                imports::round_finished(
+                    get_map_ffi(game_state),
+                    get_player_actions_ffi(game_state, &(game_state.round - 1)),
+                );
             }
             return;
         }
@@ -404,10 +411,6 @@ macro_rules! game_action {
             $block
 
             $name.current_robot_done_action = true;
-
-            unsafe {
-                imports::update_map(get_map_ffi($name));
-            }
 
             return 0;
         });
@@ -540,6 +543,18 @@ pub fn move_robot(x: i32, y: i32) -> u32 {
         let old_y = current_robot.position.y;
         let energy = current_robot.energy;
 
+        if old_x == x && old_y == y {
+            println!("Robot tried to move to the same cell");
+            add_player_action!(
+                game_state,
+                PlayerActions::PlayerActionMoveFailed(PlayerActionMoveFailed {
+                    robot_id: game_state.current_robot_index,
+                    new_position: Position { x, y },
+                })
+            );
+            return 1;
+        }
+
         if !game_state.is_empty(x, y) {
             add_player_action!(
                 game_state,
@@ -614,12 +629,6 @@ fn get_map_ffi(game_state: &GameState) -> *mut MapFFI {
     };
 
     Box::into_raw(Box::new(map_ffi))
-}
-
-#[repr(C)]
-pub struct PlayerActionsFFI {
-    player_actions_len: usize,
-    player_actions_values: *const PlayerActions,
 }
 
 #[no_mangle]

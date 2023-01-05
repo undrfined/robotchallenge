@@ -8,21 +8,27 @@ import { GameConfig } from '../../types/gameTypes';
 
 type OwnProps = {
   roundNumber: number;
+  calculatedRounds: number;
   isPaused: boolean;
   gameConfig: GameConfig;
+  step: number;
   onTogglePause: VoidFunction;
   onChange: (roundNumber: number) => void;
+  onChangeStep: (step: number) => void;
 };
 
 export default function GameTimeline({
   roundNumber,
+  calculatedRounds,
   isPaused,
+  step,
   gameConfig,
   onTogglePause,
   onChange,
+  onChangeStep,
 }: OwnProps) {
   function handleForwardsClick() {
-    if (roundNumber < gameConfig.roundsCount) {
+    if (roundNumber < calculatedRounds) {
       onChange(roundNumber + 1);
     }
   }
@@ -35,7 +41,7 @@ export default function GameTimeline({
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = Number(e.target.value);
-    if (value >= 0 && value <= gameConfig.roundsCount) {
+    if (value >= 0 && value <= calculatedRounds) {
       onChange(value);
     }
   }
@@ -45,10 +51,19 @@ export default function GameTimeline({
   return (
     <div className={styles.root}>
       <Backwards onClick={handleBackwardsClick} className={styles.controlButton} />
+      <Backwards onClick={() => onChangeStep(step - 1)} className={styles.controlButton} />
       <PlayComponent onClick={onTogglePause} className={styles.controlButton} />
+      <Forwards onClick={() => onChangeStep(step + 1)} className={styles.controlButton} />
       <Forwards onClick={handleForwardsClick} className={styles.controlButton} />
       <div className={styles.timelineWrapper}>
-        <div className={styles.timelineFillTrack} style={{ '--progress': roundNumber / gameConfig.roundsCount }} />
+        <div
+          className={styles.timelineFillTrackCalculated}
+          style={{ '--progress': calculatedRounds / gameConfig.roundsCount }}
+        />
+        <div
+          className={styles.timelineFillTrack}
+          style={{ '--progress': roundNumber / gameConfig.roundsCount }}
+        />
 
         <input
           type="range"
@@ -58,7 +73,7 @@ export default function GameTimeline({
           onChange={handleChange}
         />
       </div>
-      <div className={styles.roundNumber}>Round #{roundNumber}</div>
+      <div className={styles.roundNumber}>Round #{roundNumber}(${step})</div>
     </div>
   );
 }

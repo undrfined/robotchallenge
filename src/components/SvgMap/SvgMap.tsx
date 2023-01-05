@@ -1,17 +1,18 @@
 import React from 'react';
-import { GameEnergyStation, GameRobot } from '../../types/gameTypes';
+import { GameEnergyStation, GamePosition, GameRobot } from '../../types/gameTypes';
 import { PLAYER_COLORS } from '../../helpers/playerColors';
 import styles from './SvgMap.module.scss';
 import hexToPx from '../../helpers/hexToPx';
 import Energy from '../../assets/icons/EnergyIcon.svg';
 
 export default function SvgMap({
-  width, height, robots, energyStations,
+  width, height, robots, energyStations, selectedPath,
 }: {
-  width: number
-  height: number
-  robots: GameRobot[]
-  energyStations: GameEnergyStation[]
+  width: number;
+  height: number;
+  robots: GameRobot[];
+  selectedPath: GamePosition[];
+  energyStations: GameEnergyStation[];
 }) {
   // 140 128
   // size = half width
@@ -27,13 +28,18 @@ export default function SvgMap({
         {Array(width).fill(undefined).map((_, x) => {
           return Array(height).fill(undefined).map((__, y) => {
             const [px, py] = hexToPx(x, y);
+
+            const isSelected = selectedPath.find((pos) => pos.x === x && pos.y === y);
+
             return (
               <path
                 // eslint-disable-next-line react/no-array-index-key
                 key={`cell_${x}_${y}`}
                 transform={`translate(${px}, ${py})`}
                 stroke="#FF0AE6"
-                strokeOpacity="0.8"
+                className={isSelected ? styles.selectedCell : undefined}
+                strokeOpacity={0.8}
+                style={{ '--x': `${px}px`, '--y': `${py}px` }}
                 strokeWidth="4"
                 // eslint-disable-next-line max-len
                 d="M93.8453 22.6987L117.691 64L93.8453 105.301L46.1547 105.301L22.3094 64L46.1547 22.6987L93.8453 22.6987Z"
