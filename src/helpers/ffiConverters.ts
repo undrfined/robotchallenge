@@ -6,7 +6,6 @@ import {
   EnergyStationStructType,
   GameConfigStructType,
   MapStructType,
-  PlayerActionMove,
   PlayerActionMoveFailedStruct,
   PlayerActionMoveStruct,
   PlayerActionsType,

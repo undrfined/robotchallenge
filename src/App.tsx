@@ -72,8 +72,6 @@ function App() {
         // console.log('finished!');
         setRoundNumber((no) => no + 1);
 
-        Core.test();
-
         setIsFinished(true);
         setIsWatching(false);
         // if(!isWatching) {
@@ -92,6 +90,12 @@ function App() {
   }, [gameConfig]);
 
   useEffect(() => {
+    if (isStarted) {
+      (async () => {
+        await Core.get_player_actions(roundNumber - 1);
+      })();
+    }
+
     if (roundNumber === gameConfig.roundsCount) {
       setIsGameFinished(true);
     }

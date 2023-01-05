@@ -20,7 +20,7 @@ type Exports = {
   move_robot: (x: number, y: number) => number,
   clone_robot: (energy: number) => number,
   collect_energy: () => number;
-  test: () => PlayerActionsType,
+  get_player_actions: (round: number) => PlayerActionsType,
 };
 
 let wasi: WASI;
@@ -106,8 +106,8 @@ const CoreWorker = {
       console.warn(e);
     }
   },
-  test: () => {
-    console.log(playerActionsStructToObject(wrapper.test()));
+  get_player_actions: (round: number) => {
+    return playerActionsStructToObject(wrapper.get_player_actions(round));
   },
   initCore: async (
     updateMap: (map: GameMap) => void,
@@ -116,8 +116,7 @@ const CoreWorker = {
     await init();
 
     wasi = new WASI({
-      env: {
-      },
+      env: {},
       args: [],
     });
 
@@ -132,7 +131,7 @@ const CoreWorker = {
       move_robot: ['u32', ['i32', 'i32']],
       clone_robot: ['u32', ['u32']],
       collect_energy: ['u32', []],
-      test: [PlayerActionsStruct],
+      get_player_actions: [PlayerActionsStruct, ['u32']],
     });
 
     instance = await wasi.instantiate(module, wrapper.imports((wrap) => ({

@@ -1,8 +1,3 @@
-import { Struct } from 'wasm-ffi';
-import {
-  PositionStruct, PositionStructType, RobotStruct, RobotStructType,
-} from '../helpers/ffiStructs';
-
 export type GamePosition = {
   x: number;
   y: number;

@@ -623,11 +623,11 @@ pub struct PlayerActionsFFI {
 }
 
 #[no_mangle]
-fn test() -> *mut PlayerActionsFFI {
+fn get_player_actions(round: u32) -> *mut PlayerActionsFFI {
     let guard = &mut *CURRENT_GAME_STATE.write().unwrap();
     let game_state = guard.as_ref().unwrap();
 
-    get_player_actions_ffi(game_state, &0)
+    get_player_actions_ffi(game_state, &round)
 }
 
 fn get_player_actions_ffi(game_state: &GameState, key: &u32) -> *mut PlayerActionsFFI {
