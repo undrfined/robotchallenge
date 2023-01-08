@@ -29,8 +29,8 @@ export default function GameCanvas({
   const [collectingEnergyFrom, setCollectingEnergyFrom] = React.useState<GamePosition[]>([]);
   const [collectingEnergyTo, setCollectingEnergyTo] = React.useState<GamePosition | undefined>();
 
-  const map = useMemo(() => {
-    return (isUpdated
+  function calculateMap(shouldIncludeCurrent = false) {
+    return (shouldIncludeCurrent
       ? [...previousActions, currentPlayerAction!].filter(Boolean)
       : previousActions).reduce((acc, action) => {
       if (action.type === 'move') {
@@ -49,6 +49,10 @@ export default function GameCanvas({
       }
       return acc;
     }, deepClone(startingMap));
+  }
+
+  const map = useMemo(() => {
+    return calculateMap(isUpdated);
   }, [previousActions, currentPlayerAction, isUpdated]);
 
   function moveCamera(x: number, y: number, animationType: 'linear' | 'easeOut' = 'linear') {
@@ -68,10 +72,11 @@ export default function GameCanvas({
   useEffect(() => {
     if (!transformWrapperRef.current) return;
     setIsUpdated(false);
+    const mapCurrent = calculateMap();
 
     switch (currentPlayerAction?.type) {
       case 'move': {
-        const currentRobot = startingMap.robots[currentPlayerAction.robotId];
+        const currentRobot = mapCurrent.robots[currentPlayerAction.robotId];
         const { x, y } = currentRobot.position;
 
         moveCamera(x, y, 'easeOut');
@@ -86,7 +91,7 @@ export default function GameCanvas({
         break;
       }
       case 'moveFailed': {
-        const currentRobot = startingMap.robots[currentPlayerAction.robotId];
+        const currentRobot = mapCurrent.robots[currentPlayerAction.robotId];
 
         const { x, y } = currentRobot.position;
         moveCamera(x, y, 'easeOut');
@@ -103,7 +108,7 @@ export default function GameCanvas({
         break;
       }
       case 'collectEnergyFailed': {
-        const { x, y } = startingMap.robots[currentPlayerAction.robotId].position;
+        const { x, y } = mapCurrent.robots[currentPlayerAction.robotId].position;
 
         moveCamera(x, y, 'easeOut');
 
@@ -126,7 +131,7 @@ export default function GameCanvas({
         break;
       }
       case 'collectEnergy': {
-        const { x, y } = startingMap.robots[currentPlayerAction.robotId].position;
+        const { x, y } = mapCurrent.robots[currentPlayerAction.robotId].position;
 
         moveCamera(x, y, 'easeOut');
 
@@ -135,7 +140,9 @@ export default function GameCanvas({
           for (let dx = -gameConfig.energyCollectDistance; dx <= gameConfig.energyCollectDistance; dx++) {
             for (let dy = -gameConfig.energyCollectDistance; dy <= gameConfig.energyCollectDistance; dy++) {
               if (evenqDistance({ x, y }, { x: x + dx, y: y + dy }) <= gameConfig.energyCollectDistance) {
-                if (map.energyStations.find((e) => e.position.x === x + dx && e.position.y === y + dy)) {
+                if (
+                  mapCurrent.energyStations.find((e) => e.energy > 0
+                      && e.position.x === x + dx && e.position.y === y + dy)) {
                   d.push({ x: x + dx, y: y + dy });
                 }
               }

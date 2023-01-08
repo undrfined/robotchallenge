@@ -30,6 +30,10 @@ export default function GamePage({
   const previousActions = mapStates[roundNumber].playerActions.slice(0, step);
   const shownActions = mapStates[roundNumber].playerActions.slice(Math.max(0, step - 6), step);
   const currentPlayerAction = mapStates[roundNumber].playerActions[step];
+  const handleChangeRoundNumber = (newRoundNumber: number) => {
+    setStep(0);
+    onChangeRoundNumber(newRoundNumber);
+  };
 
   const playerStats = useMemo(() => {
     return Array(gameConfig.playersCount).fill(undefined).map((_, i) => ({
@@ -50,7 +54,7 @@ export default function GamePage({
           currentPlayerAction={currentPlayerAction}
         />
         <GameTimeline
-          onChange={onChangeRoundNumber}
+          onChange={handleChangeRoundNumber}
           onTogglePause={onTogglePause}
           gameConfig={gameConfig}
           isPaused={isPaused}

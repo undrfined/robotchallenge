@@ -367,6 +367,9 @@ pub fn do_round() {
             println!("[core] do_round finished");
             game_state.current_robot_index = 0;
             game_state.round += 1;
+            game_state.energy_stations.iter_mut().for_each(|e| {
+                e.energy += e.recovery_rate;
+            });
             unsafe {
                 imports::round_finished(
                     get_map_ffi(game_state),
@@ -517,6 +520,17 @@ pub fn collect_energy() -> u32 {
             );
             println!("Robot tried to collect energy but there is no energy station around");
             return 1;
+        }
+
+        if !energy_stations_around.iter().any(|e| e.energy > 0) {
+            add_player_action!(
+                game_state,
+                PlayerActions::CollectEnergyFailed(CollectEnergyFailed {
+                    robot_id: game_state.current_robot_index,
+                })
+            );
+            println!("Robot tried to collect energy but there is no energy in energy stations");
+            return 2;
         }
 
         let mut total_energy = 0;
