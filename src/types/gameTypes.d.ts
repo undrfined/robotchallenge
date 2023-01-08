@@ -32,6 +32,7 @@ export type GameConfig = {
   energyLossToCloneRobot: number,
   maxRobotsCount: number,
   timeout: number,
+  energyCollectDistance: number,
 };
 
 export type GamePlayerActionMove = {

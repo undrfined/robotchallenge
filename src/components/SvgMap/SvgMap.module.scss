@@ -14,6 +14,29 @@
   }
 }
 
+.energy-station {
+  transition: 0.25s ease-in-out filter;
+}
+.empty-energy-station {
+  filter: brightness(0.5);
+}
+
+@keyframes collecting-energy {
+  from {
+  }
+  to {
+    transform: translate(var(--to-x), var(--to-y));
+    opacity: 0;
+  }
+}
+.collecting-energy {
+  stroke: white;
+  stroke-width: 2;
+  paint-order: stroke;
+
+  animation: 0.25s linear forwards collecting-energy;
+}
+
 @keyframes pulse {
   from {
     transform: translate(var(--x), var(--y)) scale(1);

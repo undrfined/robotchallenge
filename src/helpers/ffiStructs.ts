@@ -138,6 +138,7 @@ export type GameConfigStructType = {
   energy_stations_per_robot: number,
   energy_loss_to_clone_robot: number,
   max_robots_count: number,
+  energy_collect_distance: number,
 };
 
 export const GameConfigStruct = new Struct<GameConfigStructType>({
@@ -151,4 +152,5 @@ export const GameConfigStruct = new Struct<GameConfigStructType>({
   energy_stations_per_robot: 'u32',
   energy_loss_to_clone_robot: 'u32',
   max_robots_count: 'u32',
+  energy_collect_distance: 'u32',
 });

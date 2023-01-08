@@ -1,4 +1,5 @@
 import React from 'react';
+import cn from 'classnames';
 import { GameEnergyStation, GamePosition, GameRobot } from '../../types/gameTypes';
 import { PLAYER_COLORS } from '../../helpers/playerColors';
 import styles from './SvgMap.module.scss';
@@ -6,12 +7,14 @@ import hexToPx from '../../helpers/hexToPx';
 import Energy from '../../assets/icons/EnergyIcon.svg';
 
 export default function SvgMap({
-  width, height, robots, energyStations, selectedPath,
+  width, height, robots, energyStations, selectedPath, collectingEnergyFrom, collectingEnergyTo,
 }: {
   width: number;
   height: number;
   robots: GameRobot[];
   selectedPath: GamePosition[];
+  collectingEnergyFrom: GamePosition[];
+  collectingEnergyTo: GamePosition | undefined;
   energyStations: GameEnergyStation[];
 }) {
   // 140 128
@@ -57,6 +60,10 @@ export default function SvgMap({
             <g
               key={`station_${x}_${y}`}
               transform={`translate(${px}, ${py})`}
+              className={cn(
+                styles.energyStation,
+                energyStation.energy === 0 && styles.emptyEnergyStation,
+              )}
             >
               <path
                 fill="#DBEB28"
@@ -87,6 +94,37 @@ export default function SvgMap({
                 d="M93.8453 22.6987L117.691 64L93.8453 105.301L46.1547 105.301L22.3094 64L46.1547 22.6987L93.8453 22.6987Z"
               />
               <text className={styles.robotText} x="52" y="42">{robot.energy}</text>
+            </g>
+          );
+        })}
+      </g>
+      <g>
+        {collectingEnergyTo && collectingEnergyFrom.map(({ x, y }) => {
+          const [px, py] = hexToPx(x, y);
+          const [toPx, toPy] = hexToPx(collectingEnergyTo.x, collectingEnergyTo.y);
+          return (
+            <g
+              key={`collect_${x}_${y}`}
+              transform={`translate(${px}, ${py})`}
+            >
+              {/* <path */}
+              {/*  fill="#DBEB28" */}
+              {/*  // eslint-disable-next-line max-len */}
+              {/*  d="M93.8453 22.6987L117.691 64L93.8453 105.301L46.1547 105.301L22.3094 64L46.1547 22.6987L93.8453 22.6987Z" */}
+              {/* /> */}
+              <g
+                style={{ '--to-x': `${toPx - px}px`, '--to-y': `${toPy - py}px` }}
+                className={styles.collectingEnergy}
+              >
+                <Energy
+                  width="48"
+                  height="48"
+                  x="46"
+                  y="40"
+                  style={{ color: 'black' }}
+                />
+              </g>
+              {/* <text className={styles.energyText} x="52" y="42">{energyStation.energy}</text> */}
             </g>
           );
         })}

@@ -31,6 +31,7 @@ export function gameConfigToStruct(gameConfig: GameConfig): GameConfigStructType
     energy_stations_per_robot: gameConfig.energyStationsPerRobot,
     energy_loss_to_clone_robot: gameConfig.energyLossToCloneRobot,
     max_robots_count: gameConfig.maxRobotsCount,
+    energy_collect_distance: gameConfig.energyCollectDistance,
   };
 }
 

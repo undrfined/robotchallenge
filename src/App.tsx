@@ -31,10 +31,11 @@ function App() {
     initialRobotsCount: 10,
     startEnergy: 100,
     rngSeed: 123,
-    energyStationsPerRobot: 1,
+    energyStationsPerRobot: 10,
     energyLossToCloneRobot: 10,
     maxRobotsCount: 100,
     timeout: 10,
+    energyCollectDistance: 2,
   };
 
   // useEffect(() => {

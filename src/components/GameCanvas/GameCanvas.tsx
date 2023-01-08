@@ -8,6 +8,7 @@ import {
 import styles from './GameCanvas.module.scss';
 import SvgMap from '../SvgMap/SvgMap';
 import hexToPx from '../../helpers/hexToPx';
+import { evenqDistance } from '../../helpers/hexUtils';
 
 interface OwnProps {
   startingMap: GameMap;
@@ -25,6 +26,8 @@ export default function GameCanvas({
   const transformWrapperRef = useRef<ReactZoomPanPinchRef>(null);
   const [isUpdated, setIsUpdated] = React.useState(false);
   const [selectedPath, setSelectedPath] = React.useState<GamePosition[]>([]);
+  const [collectingEnergyFrom, setCollectingEnergyFrom] = React.useState<GamePosition[]>([]);
+  const [collectingEnergyTo, setCollectingEnergyTo] = React.useState<GamePosition | undefined>();
 
   const map = useMemo(() => {
     return (isUpdated
@@ -32,15 +35,23 @@ export default function GameCanvas({
       : previousActions).reduce((acc, action) => {
       if (action.type === 'move') {
         acc.robots[action.robotId].position = action.newPosition;
-      }
-      if (action.type === 'collectEnergyFailed') {
-        acc.robots[action.robotId].energy -= 100;
+      } else if (action.type === 'collectEnergy') {
+        const position = acc.robots[action.robotId].position;
+        acc.energyStations.forEach((station, index) => {
+          if (evenqDistance(station.position, position) <= gameConfig.energyCollectDistance) {
+            acc.robots[action.robotId].energy += station.energy;
+            acc.energyStations[index].energy = 0;
+          }
+        });
+      } else if (action.type === 'cloneRobot') {
+        acc.robots[action.robotId].energy -= gameConfig.energyLossToCloneRobot + action.newRobot.energy;
+        acc.robots.push(action.newRobot);
       }
       return acc;
     }, deepClone(startingMap));
   }, [previousActions, currentPlayerAction, isUpdated]);
 
-  function moveCamera(x: number, y: number) {
+  function moveCamera(x: number, y: number, animationType: 'linear' | 'easeOut' = 'linear') {
     if (!transformWrapperRef.current) return;
     const { clientWidth, clientHeight } = transformWrapperRef.current.instance.wrapperComponent!;
     const [px, py] = hexToPx(x, y);
@@ -50,7 +61,7 @@ export default function GameCanvas({
       -py + clientHeight / 2 - 50,
       1,
       500,
-      'linear',
+      animationType,
     );
   }
 
@@ -58,31 +69,88 @@ export default function GameCanvas({
     if (!transformWrapperRef.current) return;
     setIsUpdated(false);
 
-    if (currentPlayerAction?.type === 'move') {
-      const currentRobot = startingMap.robots[currentPlayerAction.robotId];
-      const { x, y } = currentRobot.position;
+    switch (currentPlayerAction?.type) {
+      case 'move': {
+        const currentRobot = startingMap.robots[currentPlayerAction.robotId];
+        const { x, y } = currentRobot.position;
 
-      moveCamera(x, y);
+        moveCamera(x, y, 'easeOut');
 
-      setTimeout(() => {
-        const { x: xNew, y: yNew } = currentPlayerAction.newPosition;
-
-        setIsUpdated(true);
-
-        moveCamera(xNew, yNew);
-      }, 1000);
-    } else if (currentPlayerAction?.type === 'collectEnergyFailed') {
-      const { x, y } = startingMap.robots[currentPlayerAction.robotId].position;
-
-      moveCamera(x, y);
-
-      setTimeout(() => {
-        setSelectedPath([{ x, y }, { x: x + 1, y }, { x: x + 2, y }, { x: x + 3, y }, { x: x + 4, y }]);
         setTimeout(() => {
-          setSelectedPath([]);
+          const { x: xNew, y: yNew } = currentPlayerAction.newPosition;
+
           setIsUpdated(true);
+
+          moveCamera(xNew, yNew);
         }, 1000);
-      }, 1000);
+        break;
+      }
+      case 'moveFailed': {
+        const currentRobot = startingMap.robots[currentPlayerAction.robotId];
+
+        const { x, y } = currentRobot.position;
+        moveCamera(x, y, 'easeOut');
+
+        setTimeout(() => {
+          setSelectedPath([currentPlayerAction.newPosition]);
+          moveCamera(currentPlayerAction.newPosition.x, currentPlayerAction.newPosition.y);
+
+          setTimeout(() => {
+            setSelectedPath([]);
+            setIsUpdated(true);
+          }, 1000);
+        }, 1000);
+        break;
+      }
+      case 'collectEnergyFailed': {
+        const { x, y } = startingMap.robots[currentPlayerAction.robotId].position;
+
+        moveCamera(x, y, 'easeOut');
+
+        setTimeout(() => {
+          const d = [];
+          for (let dx = -gameConfig.energyCollectDistance; dx <= gameConfig.energyCollectDistance; dx++) {
+            for (let dy = -gameConfig.energyCollectDistance; dy <= gameConfig.energyCollectDistance; dy++) {
+              if (evenqDistance({ x, y }, { x: x + dx, y: y + dy }) <= gameConfig.energyCollectDistance) {
+                d.push({ x: x + dx, y: y + dy });
+              }
+            }
+          }
+
+          setSelectedPath(d);
+          setTimeout(() => {
+            setSelectedPath([]);
+            setIsUpdated(true);
+          }, 1000);
+        }, 1000);
+        break;
+      }
+      case 'collectEnergy': {
+        const { x, y } = startingMap.robots[currentPlayerAction.robotId].position;
+
+        moveCamera(x, y, 'easeOut');
+
+        setTimeout(() => {
+          const d = [];
+          for (let dx = -gameConfig.energyCollectDistance; dx <= gameConfig.energyCollectDistance; dx++) {
+            for (let dy = -gameConfig.energyCollectDistance; dy <= gameConfig.energyCollectDistance; dy++) {
+              if (evenqDistance({ x, y }, { x: x + dx, y: y + dy }) <= gameConfig.energyCollectDistance) {
+                if (map.energyStations.find((e) => e.position.x === x + dx && e.position.y === y + dy)) {
+                  d.push({ x: x + dx, y: y + dy });
+                }
+              }
+            }
+          }
+          setCollectingEnergyFrom(d);
+          setCollectingEnergyTo({ x, y });
+          setIsUpdated(true);
+          // moveCamera(x + gameConfig.energyCollectDistance, y);
+          // setTimeout(() => {
+          // }, 1000);
+        }, 1000);
+
+        break;
+      }
     }
     // const bot = map.robots.find((_, i) => i === diff);
     // if ((bot == null) || (transformWrapperRef.current == null)) return;
@@ -98,7 +166,7 @@ export default function GameCanvas({
     //   400,
     //   'easeOut',
     // );
-  }, [currentPlayerAction]);
+  }, [gameConfig, currentPlayerAction]);
 
   return (
     <TransformWrapper
@@ -115,6 +183,8 @@ export default function GameCanvas({
           width={gameConfig.width}
           height={gameConfig.height}
           selectedPath={selectedPath}
+          collectingEnergyFrom={collectingEnergyFrom}
+          collectingEnergyTo={collectingEnergyTo}
           robots={map.robots}
           energyStations={map.energyStations}
         />

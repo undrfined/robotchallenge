@@ -50,6 +50,7 @@ pub struct GameConfig {
     energy_stations_per_robot: u32,
     energy_loss_to_clone_robot: u32,
     max_robots_count: u32,
+    energy_collect_distance: i32,
 }
 
 #[repr(C)]
@@ -247,7 +248,9 @@ impl GameState {
     fn get_energy_stations_around(&mut self, x: i32, y: i32) -> Vec<&mut EnergyStation> {
         self.energy_stations
             .iter_mut()
-            .filter(|e| evenq_distance(e.position, Position { x, y }) <= 1)
+            .filter(|e| {
+                evenq_distance(e.position, Position { x, y }) <= self.config.energy_collect_distance
+            })
             .collect()
     }
 
