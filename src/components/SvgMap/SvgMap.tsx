@@ -3,62 +3,75 @@ import cn from 'classnames';
 import { GameEnergyStation, GamePosition, GameRobot } from '../../types/gameTypes';
 import { PLAYER_COLORS } from '../../helpers/playerColors';
 import styles from './SvgMap.module.scss';
-import hexToPx from '../../helpers/hexToPx';
+import { axialToPixel } from '../../helpers/hexToPx';
 import Energy from '../../assets/icons/EnergyIcon.svg';
 
-export default function SvgMap({
-  width, height, robots, energyStations, selectedPath, collectingEnergyFrom, collectingEnergyTo,
-}: {
+type OwnProps = {
   width: number;
-  height: number;
   robots: GameRobot[];
   selectedPath: GamePosition[];
   collectingEnergyFrom: GamePosition[];
   collectingEnergyTo: GamePosition | undefined;
   energyStations: GameEnergyStation[];
-}) {
+};
+
+export default function SvgMap({
+  width, robots, energyStations, selectedPath, collectingEnergyFrom, collectingEnergyTo,
+}: OwnProps) {
   // 140 128
   // size = half width
   const size = 50;
+  const s = width;
+  const totalWidth = 100 * (5 / 6) * s * 2;
+  const totalHeight = s * 2 * size * Math.sqrt(3) + size * 4;
   return (
     <svg
-      width={100 * (5 / 6) * width}
-      height={height * size * Math.sqrt(3) + size * 4}
+      width={totalWidth}
+      height={totalHeight}
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
       <g filter="url(#shadow_filter)">
-        {Array(width).fill(undefined).map((_, x) => {
-          return Array(height).fill(undefined).map((__, y) => {
-            const [px, py] = hexToPx(x, y);
+        {(() => {
+          const a = [];
+          for (let q = -s + 1; q < s; q++) {
+            const r1 = Math.max(-s, -q - s);
+            const r2 = Math.min(s, -q + s);
 
-            const isSelected = selectedPath.find((pos) => pos.x === x && pos.y === y);
+            for (let r = r1 + 1; r < r2; r++) {
+              const [px, py] = axialToPixel({ q, r });
 
-            return (
-              <path
-                // eslint-disable-next-line react/no-array-index-key
-                key={`cell_${x}_${y}`}
-                transform={`translate(${px}, ${py})`}
-                stroke="#FF0AE6"
-                className={isSelected ? styles.selectedCell : undefined}
-                strokeOpacity={0.8}
-                style={{ '--x': `${px}px`, '--y': `${py}px` }}
-                strokeWidth="4"
-                // eslint-disable-next-line max-len
-                d="M93.8453 22.6987L117.691 64L93.8453 105.301L46.1547 105.301L22.3094 64L46.1547 22.6987L93.8453 22.6987Z"
-              />
-            );
-          });
-        }).flat()}
+              const isSelected = selectedPath.find((pos) => pos.q === q && pos.r === r);
+
+              const o = (
+                <path
+                  // eslint-disable-next-line react/no-array-index-key
+                  key={`cell_${q}_${r}`}
+                  transform={`translate(${px}, ${py})`}
+                  stroke="#FF0AE6"
+                  className={isSelected ? styles.selectedCell : undefined}
+                  strokeOpacity={0.8}
+                  style={{ '--x': `${px}px`, '--y': `${py}px` }}
+                  strokeWidth="4"
+                  // eslint-disable-next-line max-len
+                  d="M93.8453 22.6987L117.691 64L93.8453 105.301L46.1547 105.301L22.3094 64L46.1547 22.6987L93.8453 22.6987Z"
+                />
+              );
+
+              a.push(o);
+            }
+          }
+          return a;
+        })()}
       </g>
       <g>
         {energyStations.map((energyStation) => {
-          const { position: { x, y } } = energyStation;
-          const [px, py] = hexToPx(x, y);
+          const { position } = energyStation;
+          const [px, py] = axialToPixel(position);
           // TODO center energy station text somehow
           return (
             <g
-              key={`station_${x}_${y}`}
+              key={`station_${position.q}_${position.r}`}
               transform={`translate(${px}, ${py})`}
               className={cn(
                 styles.energyStation,
@@ -78,9 +91,10 @@ export default function SvgMap({
       </g>
       <g>
         {robots.map((robot, i) => {
-          const { position: { x, y }, owner } = robot;
+          const { position, owner } = robot;
+          const [px, py] = axialToPixel(position);
+
           const color = PLAYER_COLORS[owner];
-          const [px, py] = hexToPx(x, y);
           return (
             <g
               // eslint-disable-next-line react/no-array-index-key
@@ -93,18 +107,18 @@ export default function SvgMap({
                 // eslint-disable-next-line max-len
                 d="M93.8453 22.6987L117.691 64L93.8453 105.301L46.1547 105.301L22.3094 64L46.1547 22.6987L93.8453 22.6987Z"
               />
-              <text className={styles.robotText} x="52" y="42">{robot.energy}</text>
+              <text className={styles.robotText} x="52" y="42">{position.q} {position.r}</text> {/* {robot.energy} */}
             </g>
           );
         })}
       </g>
       <g>
-        {collectingEnergyTo && collectingEnergyFrom.map(({ x, y }) => {
-          const [px, py] = hexToPx(x, y);
-          const [toPx, toPy] = hexToPx(collectingEnergyTo.x, collectingEnergyTo.y);
+        {collectingEnergyTo && collectingEnergyFrom.map((position) => {
+          const [px, py] = axialToPixel(position);
+          const [toPx, toPy] = axialToPixel(collectingEnergyTo);
           return (
             <g
-              key={`collect_${x}_${y}`}
+              key={`collect_${position.q}_${position.r}`}
               transform={`translate(${px}, ${py})`}
             >
               {/* <path */}

@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 
 export default function useResizeObserver($target: HTMLElement, onResize?: VoidFunction) {
   const resizeObserver = useRef<ResizeObserver | undefined>(undefined);
-  const [size, setSize] = useState({});
+  const [size, setSize] = useState<{ width: number; height: number; }>({
+    width: 0,
+    height: 0,
+  });
 
   useEffect(() => {
     setSize({ width: $target.clientWidth, height: $target.clientHeight });

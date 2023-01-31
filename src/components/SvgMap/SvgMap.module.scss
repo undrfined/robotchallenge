@@ -5,12 +5,24 @@
   transform-origin: calc(var(--x) + 70px) calc(var(--y) + 64px);
   transform: translate(var(--x), var(--y));
 
+  animation: 0.25s ease-in-out appear;
+
   &.hidden {
     transform: rotate(60deg) scale(0) translate(var(--x), var(--y));
   }
 
   &:hover {
     fill: #ffc107;
+  }
+}
+
+@keyframes appear {
+  from {
+    transform: scale(0) translate(var(--x), var(--y));
+  }
+
+  to {
+    transform: scale(1) translate(var(--x), var(--y));
   }
 }
 

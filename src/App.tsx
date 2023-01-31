@@ -28,16 +28,15 @@ function App() {
   }>>({});
 
   const gameConfig = useMemo((): GameConfig => ({
-    width: 32,
-    height: 32,
-    roundsCount: 5,
+    width: 16,
+    roundsCount: 50,
     playersCount: 2,
-    initialRobotsCount: 10,
-    startEnergy: 100,
+    initialRobotsCount: 1,
+    startEnergy: 1000000,
     rngSeed: 123,
     energyStationsPerRobot: 1,
-    energyLossToCloneRobot: 10,
-    maxRobotsCount: 100,
+    energyLossToCloneRobot: 1,
+    maxRobotsCount: 10000,
     timeout: 100,
     maxTimeoutsCount: 5,
     energyCollectDistance: 2,

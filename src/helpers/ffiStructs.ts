@@ -1,13 +1,13 @@
 import { Pointer, Struct, types } from 'wasm-ffi';
 
 export type PositionStructType = {
-  x: number;
-  y: number;
+  q: number;
+  r: number;
 };
 
 export const PositionStruct = new Struct<PositionStructType>({
-  x: 'i32',
-  y: 'i32',
+  q: 'i32',
+  r: 'i32',
 });
 
 export type RobotStructType = {
@@ -149,7 +149,6 @@ export const PlayerActionsStruct = new Struct<PlayerActionsType>({
 
 export type GameConfigStructType = {
   width: number,
-  height: number,
   rounds_count: number,
   players_count: number,
   initial_robots_count: number,
@@ -163,7 +162,6 @@ export type GameConfigStructType = {
 
 export const GameConfigStruct = new Struct<GameConfigStructType>({
   width: 'i32',
-  height: 'i32',
   rounds_count: 'u32',
   players_count: 'u32',
   initial_robots_count: 'u32',

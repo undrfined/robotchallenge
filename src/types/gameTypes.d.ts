@@ -1,6 +1,6 @@
 export type GamePosition = {
-  x: number;
-  y: number;
+  q: number;
+  r: number;
 };
 
 export type GameRobot = {
@@ -22,7 +22,6 @@ export type GameMap = {
 
 export type GameConfig = {
   width: number,
-  height: number,
   roundsCount: number,
   playersCount: number,
   initialRobotsCount: number,

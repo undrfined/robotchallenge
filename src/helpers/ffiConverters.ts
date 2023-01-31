@@ -22,7 +22,6 @@ import ffiReadEnumArray from './ffiReadEnumArray';
 export function gameConfigToStruct(gameConfig: GameConfig): GameConfigStructType {
   return {
     width: gameConfig.width,
-    height: gameConfig.height,
     rounds_count: gameConfig.roundsCount,
     players_count: gameConfig.playersCount,
     initial_robots_count: gameConfig.initialRobotsCount,
@@ -37,8 +36,8 @@ export function gameConfigToStruct(gameConfig: GameConfig): GameConfigStructType
 
 function positionStructToObject(position: PositionStructType): GamePosition {
   return {
-    x: position.x,
-    y: position.y,
+    q: position.q,
+    r: position.r,
   };
 }
 

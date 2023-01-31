@@ -8,15 +8,8 @@ use std::sync::RwLock;
 
 #[derive(Debug, Copy, Clone)]
 #[repr(C)]
-pub struct Position {
-    x: i32,
-    y: i32,
-}
-
-#[derive(Debug, Copy, Clone)]
-#[repr(C)]
 pub struct Robot {
-    position: Position,
+    position: Hex,
     energy: u32,
     owner: u32,
 }
@@ -24,7 +17,7 @@ pub struct Robot {
 #[derive(Debug)]
 #[repr(C)]
 pub struct EnergyStation {
-    position: Position,
+    position: Hex,
     recovery_rate: u32,
     energy: u32,
 }
@@ -41,7 +34,6 @@ pub struct MapFFI {
 #[derive(Debug, Clone)]
 pub struct GameConfig {
     width: i32,
-    height: i32,
     rounds_count: u32,
     players_count: u32,
     initial_robots_count: u32,
@@ -57,7 +49,7 @@ pub struct GameConfig {
 #[derive(Debug, Copy, Clone)]
 pub struct PlayerActionMove {
     robot_id: usize,
-    new_position: Position,
+    new_position: Hex,
     loss: u32,
 }
 
@@ -65,7 +57,7 @@ pub struct PlayerActionMove {
 #[derive(Debug, Copy, Clone)]
 pub struct PlayerActionMoveFailed {
     robot_id: usize,
-    new_position: Position,
+    new_position: Hex,
 }
 
 #[repr(C)]
@@ -130,8 +122,9 @@ pub struct PlayerActionsFFI {
     player_actions_values: *const PlayerActions,
 }
 
-#[derive(Copy, Clone)]
-struct Hex {
+#[derive(Debug, Copy, Clone)]
+#[repr(C)]
+pub struct Hex {
     q: i32,
     r: i32,
 }
@@ -164,27 +157,10 @@ fn axial_neighbor(hex: Hex, direction: usize) -> Hex {
     axial_add(hex, axial_direction(direction))
 }
 
-// https://www.redblobgames.com/grids/hexagons/#conversions-offset
-fn axial_to_evenq(hex: Hex) -> Position {
-    let x = hex.q;
-    let y = hex.r + (hex.q + (hex.q & 1)) / 2;
-    Position { x, y }
-}
-
-fn evenq_to_axial(position: Position) -> Hex {
-    let q = position.x;
-    let r = position.y - (position.x + !(position.x & 1)) / 2;
-    Hex { q, r }
-}
-
 fn axial_distance(a: Hex, b: Hex) -> i32 {
     (((a.q - b.q).abs() + (a.q + a.r - b.q - b.r).abs() + (a.r - b.r).abs()) / 2)
         .try_into()
         .unwrap()
-}
-
-fn evenq_distance(a: Position, b: Position) -> i32 {
-    return axial_distance(evenq_to_axial(a), evenq_to_axial(b));
 }
 
 impl GameState {
@@ -201,50 +177,51 @@ impl GameState {
         }
     }
 
-    fn is_empty(&self, x: i32, y: i32) -> bool {
-        self.is_valid_position(x, y)
+    fn is_empty(&self, q: i32, r: i32) -> bool {
+        self.is_valid_position(q, r)
             && !self
                 .robots
                 .iter()
-                .any(|r| r.position.x == x && r.position.y == y)
+                .any(|robot| robot.position.q == q && robot.position.r == r)
             && !self
                 .energy_stations
                 .iter()
-                .any(|e| e.position.x == x && e.position.y == y)
+                .any(|e| e.position.q == q && e.position.r == r)
     }
 
-    fn is_valid_position(&self, x: i32, y: i32) -> bool {
-        x >= 0 && y >= 0 && x < self.config.width && y < self.config.height
+    fn is_valid_position(&self, q: i32, r: i32) -> bool {
+        axial_distance(Hex { q, r }, Hex { q: 0, r: 0 }) < self.config.width
     }
 
-    fn calculate_loss(&self, x: i32, y: i32, new_x: i32, new_y: i32) -> u32 {
-        return evenq_distance(Position { x, y }, Position { x: new_x, y: new_y }) as u32;
+    fn calculate_loss(&self, q: i32, r: i32, new_q: i32, new_r: i32) -> u32 {
+        return axial_distance(Hex { q, r }, Hex { q: new_q, r: new_r }) as u32;
     }
 
     fn get_robots_by_owner(&self, owner: u32) -> Vec<&Robot> {
         self.robots.iter().filter(|r| r.owner == owner).collect()
     }
 
-    fn find_free_cell(&self, near_x: i32, near_y: i32) -> Option<Position> {
+    fn find_free_cell(&self, near_q: i32, near_r: i32) -> Option<Hex> {
         let mut distance = 1;
-        while distance <= self.config.width.max(self.config.height) {
+        while distance <= self.config.width {
             for dx in -distance..=distance {
                 for dy in -distance..=distance {
-                    let new_x = near_x + dx;
-                    let new_y = near_y + dy;
+                    let new_q = near_q + dx;
+                    let new_r = near_r + dy;
 
-                    if evenq_distance(
-                        Position {
-                            x: near_x,
-                            y: near_y,
-                        },
-                        Position { x: new_x, y: new_y },
-                    ) > distance
+                    if !self.is_empty(new_q, new_r)
+                        || axial_distance(
+                            Hex {
+                                q: near_q,
+                                r: near_r,
+                            },
+                            Hex { q: new_q, r: new_r },
+                        ) > distance
                     {
                         continue;
                     }
 
-                    return Some(Position { x: new_x, y: new_y });
+                    return Some(Hex { q: new_q, r: new_r });
                 }
             }
 
@@ -254,18 +231,18 @@ impl GameState {
         None
     }
 
-    fn get_energy_stations_around(&mut self, x: i32, y: i32) -> Vec<&mut EnergyStation> {
+    fn get_energy_stations_around(&mut self, q: i32, r: i32) -> Vec<&mut EnergyStation> {
         self.energy_stations
             .iter_mut()
             .filter(|e| {
-                evenq_distance(e.position, Position { x, y }) <= self.config.energy_collect_distance
+                axial_distance(e.position, Hex { q, r }) <= self.config.energy_collect_distance
             })
             .collect()
     }
 
-    fn add_robot(&mut self, owner: u32, x: i32, y: i32, energy: u32) -> usize {
+    fn add_robot(&mut self, owner: u32, q: i32, r: i32, energy: u32) -> usize {
         let new_robot = Robot {
-            position: Position { x, y },
+            position: Hex { q, r },
             energy,
             owner,
         };
@@ -279,11 +256,11 @@ impl GameState {
             * self.config.energy_stations_per_robot;
 
         for _ in 0..energy_stations_count {
-            let x = self.rng.gen_range(0..self.config.width);
-            let y = self.rng.gen_range(0..self.config.height);
-            if self.is_empty(x, y) {
+            let q = self.rng.gen_range(-self.config.width..self.config.width);
+            let r = self.rng.gen_range(-self.config.width..self.config.width);
+            if self.is_empty(q, r) {
                 self.energy_stations.push(EnergyStation {
-                    position: Position { x, y },
+                    position: Hex { q, r },
                     recovery_rate: self.rng.gen_range(1..10), // TODO calculate
                     energy: 200,                              // TODO calculate
                 });
@@ -293,10 +270,10 @@ impl GameState {
         for _ in 0..self.config.initial_robots_count {
             for owner in 0..self.config.players_count {
                 loop {
-                    let x = (&mut self.rng).gen_range(0..self.config.width);
-                    let y = (&mut self.rng).gen_range(0..self.config.height);
-                    if self.is_empty(x, y) {
-                        self.add_robot(owner, x, y, self.config.start_energy);
+                    let q = (&mut self.rng).gen_range(-self.config.width..self.config.width);
+                    let r = (&mut self.rng).gen_range(-self.config.width..self.config.width);
+                    if self.is_empty(q, r) {
+                        self.add_robot(owner, q, r, self.config.start_energy);
 
                         // let distance: i32 = 3;
                         // for dx in -distance..=distance {
@@ -472,6 +449,16 @@ pub fn clone_robot(new_bot_energy: u32) -> u32 {
     game_action!(game_state, current_robot, {
         let loss = game_state.config.energy_loss_to_clone_robot + new_bot_energy;
 
+        if (new_bot_energy == 0) {
+            add_player_action!(
+                game_state,
+                PlayerActions::CloneRobotFailed(CloneRobotFailed {
+                    robot_id: game_state.current_robot_index,
+                })
+            );
+            return 1;
+        }
+
         if (current_robot.energy < loss) {
             println!("Robot tried to clone with too much energy");
             add_player_action!(
@@ -497,7 +484,7 @@ pub fn clone_robot(new_bot_energy: u32) -> u32 {
         }
 
         let free_cell =
-            game_state.find_free_cell(current_robot.position.x, current_robot.position.y);
+            game_state.find_free_cell(current_robot.position.q, current_robot.position.r);
 
         if (free_cell.is_none()) {
             println!("Robot tried to clone but there is no free cell");
@@ -514,8 +501,8 @@ pub fn clone_robot(new_bot_energy: u32) -> u32 {
 
         let new_robot_index = game_state.add_robot(
             current_robot.owner,
-            free_cell.x,
-            free_cell.y,
+            free_cell.q,
+            free_cell.r,
             new_bot_energy,
         );
 
@@ -543,7 +530,7 @@ pub fn collect_energy() -> u32 {
         println!("[core] collect_energy {:?}", current_robot);
 
         let energy_stations_around = game_state
-            .get_energy_stations_around(current_robot.position.x, current_robot.position.y);
+            .get_energy_stations_around(current_robot.position.q, current_robot.position.r);
 
         if energy_stations_around.is_empty() {
             add_player_action!(
@@ -588,44 +575,44 @@ pub fn collect_energy() -> u32 {
 }
 
 #[no_mangle]
-pub fn move_robot(x: i32, y: i32) -> u32 {
+pub fn move_robot(q: i32, r: i32) -> u32 {
     game_action!(game_state, current_robot, {
-        let old_x = current_robot.position.x;
-        let old_y = current_robot.position.y;
+        let old_q = current_robot.position.q;
+        let old_r = current_robot.position.r;
         let energy = current_robot.energy;
 
-        if old_x == x && old_y == y {
+        if old_q == q && old_r == r {
             println!("Robot tried to move to the same cell");
             add_player_action!(
                 game_state,
                 PlayerActions::PlayerActionMoveFailed(PlayerActionMoveFailed {
                     robot_id: game_state.current_robot_index,
-                    new_position: Position { x, y },
+                    new_position: Hex { q, r },
                 })
             );
             return 1;
         }
 
-        if !game_state.is_empty(x, y) {
+        if !game_state.is_empty(q, r) {
             add_player_action!(
                 game_state,
                 PlayerActions::PlayerActionMoveFailed(PlayerActionMoveFailed {
                     robot_id: game_state.current_robot_index,
-                    new_position: Position { x, y },
+                    new_position: Hex { q, r },
                 })
             );
             println!("[core] move_robot cell is occupied {:?}", current_robot);
             return 1;
         }
 
-        let loss = game_state.calculate_loss(old_x, old_y, x, y);
+        let loss = game_state.calculate_loss(old_q, old_r, q, r);
 
         if loss > energy {
             add_player_action!(
                 game_state,
                 PlayerActions::PlayerActionMoveFailed(PlayerActionMoveFailed {
                     robot_id: game_state.current_robot_index,
-                    new_position: Position { x, y },
+                    new_position: Hex { q, r },
                 })
             );
             println!("[core] not enough energy {:?}", current_robot);
@@ -633,15 +620,15 @@ pub fn move_robot(x: i32, y: i32) -> u32 {
         }
 
         let current_robot = &mut game_state.robots[game_state.current_robot_index];
-        current_robot.position.x = x;
-        current_robot.position.y = y;
+        current_robot.position.q = q;
+        current_robot.position.r = r;
         current_robot.energy -= loss;
 
         add_player_action!(
             game_state,
             PlayerActions::PlayerActionMove(PlayerActionMove {
                 robot_id: game_state.current_robot_index,
-                new_position: Position { x, y },
+                new_position: Hex { q, r },
                 loss,
             })
         );

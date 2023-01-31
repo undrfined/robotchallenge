@@ -95,9 +95,9 @@ pub fn collect_energy() {
     }
 }
 
-pub fn move_robot(x: i32, y: i32) -> Result<bool, String> {
+pub fn move_robot(q: i32, r: i32) -> Result<bool, String> {
     unsafe {
-        match imports::move_robot(x, y) {
+        match imports::move_robot(q, r) {
             0 => Ok(true),
             _ => Err("Move not possible".to_string()),
         }
@@ -117,22 +117,25 @@ fn do_step(map: Map, robot_to_move_index: usize, round_no: u32) {
         round_no, robot_to_move_index
     );
     println!("current bot {:#?}", robot);
-    let owner = (*CURRENT_OWNER.lock().unwrap()).expect("Game hasn't started yet");
-    // println!("my bots count: {:?}", &map.robots.iter().filter(|r| r.owner == (*CURRENT_OWNER.lock().unwrap()).expect("Game hasn't started yet")).count());
-    if robot_to_move_index % 3 == 0 && owner == 0 {
-        println!("Doing dumb shit!");
-        loop {}
-    }
-    if robot_to_move_index % 2 == 0 {
-        println!("Collecting!");
-        collect_energy();
-    } else {
-        let rnd_x = (*RANDOM).lock().unwrap().gen_range(-3..3);
-        let rnd_y = (*RANDOM).lock().unwrap().gen_range(-1..2);
-        println!("Moving to: {}, {}", rnd_x, rnd_y);
-        move_robot(robot.position.x + rnd_x, robot.position.y + rnd_y)
-            .expect("Couldn't move robot");
-    }
+    // let owner = (*CURRENT_OWNER.lock().unwrap()).expect("Game hasn't started yet");
+    // // println!("my bots count: {:?}", &map.robots.iter().filter(|r| r.owner == (*CURRENT_OWNER.lock().unwrap()).expect("Game hasn't started yet")).count());
+    // if robot_to_move_index % 3 == 0 && owner == 0 {
+    //     println!("Doing dumb shit!");
+    //     // loop {}
+    // }
+    //
+    // if robot_to_move_index % 2 == 0 {
+    //     println!("Collecting!");
+    //     collect_energy();
+    // } else {
+    //     let rnd_x = (*RANDOM).lock().unwrap().gen_range(-3..3);
+    //     let rnd_y = (*RANDOM).lock().unwrap().gen_range(-1..2);
+    //     println!("Moving to: {}, {}", rnd_x, rnd_y);
+    //     // move_robot(robot.position.x + rnd_x, robot.position.y + rnd_y)
+    //     //     .expect("Couldn't move robot");
+    // }
+    clone_robot(1);
+
     // collect_energy();
     // clone_robot(robot.energy - 10);
 }

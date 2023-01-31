@@ -41,8 +41,8 @@ const PlayerWorker = {
   doStep: async (map: GameMap, robotToMoveIndex: number, roundNo: number): Promise<void> => {
     const robots = map.robots.map((robot) => new RobotStruct({
       position: new PositionStruct({
-        x: robot.position.x,
-        y: robot.position.y,
+        q: robot.position.q,
+        r: robot.position.r,
       }),
       energy: robot.energy,
       owner: robot.owner,
@@ -50,8 +50,8 @@ const PlayerWorker = {
 
     const energyStations = map.energyStations.map((energyStation) => new EnergyStationStruct({
       position: new PositionStruct({
-        x: energyStation.position.x,
-        y: energyStation.position.y,
+        q: energyStation.position.q,
+        r: energyStation.position.r,
       }),
       recovery_rate: energyStation.recoveryRate,
       energy: energyStation.energy,
