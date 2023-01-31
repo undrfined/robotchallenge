@@ -4,6 +4,7 @@
   height: 100%;
 }
 .playerList {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -37,6 +38,7 @@ canvas {
 }
 
 .player-actions {
+  pointer-events: none;
   display: flex;
   flex-direction: column-reverse;
   gap: 0.5rem;

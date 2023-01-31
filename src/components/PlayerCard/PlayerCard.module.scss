@@ -39,7 +39,7 @@
 }
 
 .info {
-  margin-inline: 1rem 3rem;
+  margin-inline: 1rem 1rem;
   width: 100%;
   display: flex;
   align-items: center;
@@ -63,4 +63,8 @@
   right: -1px;
   top: 16px;
   --color-label: var(--player-color);
+}
+
+.more {
+  cursor: pointer;
 }

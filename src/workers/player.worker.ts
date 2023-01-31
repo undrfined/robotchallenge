@@ -14,13 +14,20 @@ import { gameConfigToStruct } from '../helpers/ffiConverters';
 
 type Exports = {
   init_game: (gameConfig: AbstractStructType<GameConfigStructType>, owner: number) => void,
-  do_step_ffi: (map: AbstractStructType<MapStructType>, owner: number) => void,
+  do_step_ffi: (map: AbstractStructType<MapStructType>, owner: number, roundNo: number) => void,
 };
 
 let wasi: WASI;
 let instance: WebAssembly.Instance;
 let wrapper: IWrapper<Exports>;
 let actionDoneResolver: VoidFunction | undefined;
+let onLogUpdated: (log: string, errorLog: string) => void;
+
+function addLogs() {
+  const stdout = wasi.getStdoutString();
+  const stderr = wasi.getStderrString();
+  onLogUpdated(stdout + (stdout ? '\n' : ''), stderr + (stderr ? '\n' : ''));
+}
 
 function withPromiseResolver<T extends Array<any>, U>(afterFn: (...args: T) => U) {
   return (...args: T): U => {
@@ -31,7 +38,7 @@ function withPromiseResolver<T extends Array<any>, U>(afterFn: (...args: T) => U
 }
 
 const PlayerWorker = {
-  doStep: async (map: GameMap, robotToMoveIndex: number): Promise<void> => {
+  doStep: async (map: GameMap, robotToMoveIndex: number, roundNo: number): Promise<void> => {
     const robots = map.robots.map((robot) => new RobotStruct({
       position: new PositionStruct({
         x: robot.position.x,
@@ -59,15 +66,12 @@ const PlayerWorker = {
         robots: new Pointer([RobotStruct, robots.length], robots),
         energy_stations_len: energyStations.length,
         energy_stations: new Pointer([EnergyStationStruct, energyStations.length], energyStations),
-      }), robotToMoveIndex);
-
-      // eslint-disable-next-line no-console
-      console.log('[instance]', wasi.getStdoutString(), actionDonePromise);
+      }), robotToMoveIndex, roundNo);
+      addLogs();
 
       return await actionDonePromise;
     } catch (e) {
-      // eslint-disable-next-line no-console
-      console.error('[instance]', wasi.getStderrString());
+      // Do nothing
     }
 
     return Promise.reject();
@@ -79,6 +83,7 @@ const PlayerWorker = {
     onMove: (x: number, y: number) => number,
     onCollectEnergy: () => number,
     onCloneRobot: (energy: number) => number,
+    _onLogUpdated: (log: string, errorLog: string) => void,
   ) => {
     await init();
 
@@ -94,7 +99,7 @@ const PlayerWorker = {
 
     wrapper = new Wrapper<Exports>({
       init_game: [null, [GameConfigStruct, 'u32']],
-      do_step_ffi: [null, [MapStruct, 'usize']],
+      do_step_ffi: [null, [MapStruct, 'usize', 'u32']],
     });
 
     instance = await wasi.instantiate(module, wrapper.imports((wrap) => ({
@@ -108,7 +113,10 @@ const PlayerWorker = {
     wrapper.use(instance);
 
     try {
+      onLogUpdated = _onLogUpdated;
+      // TODO timeout
       wrapper.init_game(gameConfigToStruct(gameConfig), owner);
+      addLogs();
     } catch (e) {
       // eslint-disable-next-line no-console
       console.warn('[instance]', e);

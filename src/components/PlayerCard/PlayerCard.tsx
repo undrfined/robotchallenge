@@ -4,6 +4,9 @@ import Label from '../common/Label/Label';
 import { PlayerCardStats } from '../common/PlayerCardStats/PlayerCardStats';
 import EnergyIcon from '../../assets/icons/EnergyIcon.svg';
 import RobotIcon from '../../assets/icons/RobotIcon.svg';
+import More from '../../assets/icons/More.svg';
+import Log from '../../assets/icons/Log.svg';
+import useContextMenu from '../../hooks/useContextMenu';
 
 type OwnProps = {
   avatar: string;
@@ -13,6 +16,7 @@ type OwnProps = {
   energy: number;
   robotsLeft: number;
   maxRobots: number;
+  onViewLog: VoidFunction;
 };
 
 export default function PlayerCard({
@@ -23,7 +27,19 @@ export default function PlayerCard({
   energy,
   robotsLeft,
   maxRobots,
+  onViewLog,
 }: OwnProps) {
+  const {
+    openContextMenu,
+    contextMenu,
+  } = useContextMenu([
+    {
+      label: 'View log',
+      icon: Log,
+      onClick: onViewLog,
+    },
+  ]);
+
   return (
     <div className={styles.root} style={{ '--player-color': playerColor }}>
       <img src={avatar} alt="Avatar" className={styles.avatar} />
@@ -32,6 +48,8 @@ export default function PlayerCard({
         <div className={styles.stats}>
           <PlayerCardStats icon={EnergyIcon}>{energy}</PlayerCardStats>
           <PlayerCardStats icon={RobotIcon}>{robotsLeft}/{maxRobots}</PlayerCardStats>
+          <More className={styles.more} onClick={openContextMenu} />
+          {contextMenu}
         </div>
       </div>
       <Label className={styles.label}>

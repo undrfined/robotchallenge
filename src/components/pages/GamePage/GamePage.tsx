@@ -9,12 +9,17 @@ import GameTimeline from '../../GameTimeline/GameTimeline';
 import type { MapState } from '../../../App';
 import Timeout from '../../../assets/icons/Timeout.webm';
 import TimeoutTooMuch from '../../../assets/icons/TimeoutTooMuch.webm';
+import Log from '../../Log/Log';
 
 type OwnProps = {
   mapStates: MapState[];
   gameConfig: GameConfig;
   roundNumber: number;
   onChangeRoundNumber: (roundNumber: number) => void;
+  logs: Record<number, {
+    log: string,
+    errorLog: string,
+  }>;
 };
 
 export default function GamePage({
@@ -22,6 +27,7 @@ export default function GamePage({
   gameConfig,
   roundNumber,
   onChangeRoundNumber,
+  logs,
 }: OwnProps) {
   const hasPlayerActions = Boolean(mapStates[roundNumber]?.playerActions?.length);
   const mapState = useMemo(() => {
@@ -31,6 +37,9 @@ export default function GamePage({
   const map = mapState.map;
 
   const [isPaused, setIsPaused] = useState(true);
+
+  const [hasOpenLog, setHasOpenLog] = useState(false);
+  const [viewingLogId, setViewingLogId] = useState<number | undefined>(undefined);
 
   const [step, setStep] = useState<number | undefined>(undefined);
   const previousActions = useMemo(() => {
@@ -73,6 +82,13 @@ export default function GamePage({
   const handleChangeStep = useCallback((newStep: number) => {
     setStep(newStep);
     setIsPaused(true);
+  }, []);
+
+  const handleViewLog = useCallback((id: number) => {
+    return () => {
+      setViewingLogId(id);
+      setHasOpenLog(true);
+    };
   }, []);
 
   const playerStats = useMemo(() => {
@@ -132,9 +148,17 @@ export default function GamePage({
             energy={energy}
             robotsLeft={robotsCount}
             maxRobots={maxRobots}
+            onViewLog={handleViewLog(id)}
           />
         ))}
-
+        <Log
+          isOpen={hasOpenLog}
+          viewingLogId={viewingLogId}
+          logs={logs}
+          onClose={() => {
+            setHasOpenLog(false);
+          }}
+        />
       </div>
 
       {currentPlayerAction && (

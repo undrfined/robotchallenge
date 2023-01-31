@@ -37,6 +37,7 @@ let playerWorkers: {
   timeouts: number;
 }[] = [];
 let onRoundFinished: RoundFinishedCallback;
+let onLogUpdated: (owner: number, log: string, errorLog: string) => void;
 
 const initPlayerWorker = async (algo: Blob, i: number) => {
   const worker = new Worker(new URL('./player.worker.ts', import.meta.url));
@@ -49,6 +50,7 @@ const initPlayerWorker = async (algo: Blob, i: number) => {
     Comlink.proxy(wrapper.move_robot.bind(wrapper)),
     Comlink.proxy(wrapper.collect_energy.bind(wrapper)),
     Comlink.proxy(wrapper.clone_robot.bind(wrapper)),
+    Comlink.proxy((log: string, errorLog: string) => onLogUpdated(i, log, errorLog)),
   );
 
   return {
@@ -59,7 +61,7 @@ const initPlayerWorker = async (algo: Blob, i: number) => {
   };
 };
 
-const doStep = async (owner: number, robotToMoveIndex: number, map: MapStructType) => {
+const doStep = async (owner: number, robotToMoveIndex: number, map: MapStructType, roundNo: number) => {
   try {
     if (playerWorkers[owner]?.timeouts >= currentGameConfig.maxTimeoutsCount) {
       throw Error('Too many timeouts');
@@ -67,7 +69,7 @@ const doStep = async (owner: number, robotToMoveIndex: number, map: MapStructTyp
 
     await Promise.race(
       [
-        playerWorkers[owner].comlink.doStep(mapStructToObject(map), robotToMoveIndex),
+        playerWorkers[owner].comlink.doStep(mapStructToObject(map), robotToMoveIndex, roundNo),
         new Promise((_, reject) => {
           setTimeout(() => reject(Error('Timeout')), currentGameConfig.timeout);
         }),
@@ -79,6 +81,7 @@ const doStep = async (owner: number, robotToMoveIndex: number, map: MapStructTyp
     // eslint-disable-next-line no-console
     console.log(wasi.getStdoutString());
   } catch (e) {
+    onLogUpdated(owner, 'Robot killed because of timeout\n', '');
     // eslint-disable-next-line no-console
     console.log(`[wcore] step error! ${owner} ${playerWorkers[owner].timeouts} ${robotToMoveIndex}`, e);
     playerWorkers[owner].worker.terminate();
@@ -140,8 +143,10 @@ const CoreWorker = {
   },
   setCallbacks: (
     onRoundFinishedCallback: RoundFinishedCallback,
+    onLogUpdatedCallback: (owner: number, log: string, errorLog: string) => void,
   ) => {
     onRoundFinished = onRoundFinishedCallback;
+    onLogUpdated = onLogUpdatedCallback;
   },
   initCore: async (
   ) => {
@@ -180,7 +185,7 @@ const CoreWorker = {
           }
           onRoundFinished(mapStructToObject(map), playerActionsStructToObject(playerActions));
         }),
-        do_step: wrap(['u32', ['u32', 'usize', MapStruct]], doStep),
+        do_step: wrap(['u32', ['u32', 'usize', MapStruct, 'u32']], doStep),
       },
     })));
 

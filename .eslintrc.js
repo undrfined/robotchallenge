@@ -34,6 +34,8 @@ module.exports = {
         ignoreComments: true,
       },
     ],
+    'jsx-a11y/click-events-have-key-events': 'off',
+    'jsx-a11y/no-static-element-interactions': 'off',
     'max-classes-per-file': 'off',
     'array-bracket-newline': [
       2,

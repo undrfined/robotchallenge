@@ -22,6 +22,10 @@ function App() {
   const [isStarted, setIsStarted] = useState(false);
   const [mapStates, setMapStates] = useState<MapState[]>([]);
   const [roundNumber, setRoundNumber] = useState(0);
+  const [logs, setLogs] = useState<Record<number, {
+    log: string,
+    errorLog: string,
+  }>>({});
 
   const gameConfig = useMemo((): GameConfig => ({
     width: 32,
@@ -34,7 +38,7 @@ function App() {
     energyStationsPerRobot: 1,
     energyLossToCloneRobot: 10,
     maxRobotsCount: 100,
-    timeout: 1000,
+    timeout: 100,
     maxTimeoutsCount: 5,
     energyCollectDistance: 2,
   }), []);
@@ -71,6 +75,15 @@ function App() {
           playerActions: [],
         }];
       });
+    }),
+    Comlink.proxy((owner: number, log: string, errorLog: string) => {
+      setLogs((oldLogs) => ({
+        ...oldLogs,
+        [owner]: {
+          log: (oldLogs[owner]?.log || '') + log,
+          errorLog: (oldLogs[owner]?.errorLog || '') + errorLog,
+        },
+      }));
     }));
   }, [roundNumber]);
 
@@ -113,6 +126,7 @@ function App() {
           gameConfig={gameConfig}
           roundNumber={roundNumber}
           onChangeRoundNumber={setRoundNumber}
+          logs={logs}
         />
       )}
 

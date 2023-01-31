@@ -334,7 +334,12 @@ mod imports {
     use crate::{MapFFI, PlayerActionsFFI};
     #[link(wasm_import_module = "robotchallenge")]
     extern "C" {
-        pub fn do_step(owner: u32, robot_to_move_index: usize, map: *mut MapFFI) -> u32;
+        pub fn do_step(
+            owner: u32,
+            robot_to_move_index: usize,
+            map: *mut MapFFI,
+            round_no: u32,
+        ) -> u32;
         pub fn round_finished(map: *mut MapFFI, player_actions: *mut PlayerActionsFFI);
     }
 }
@@ -402,6 +407,7 @@ pub fn do_round() {
                 robot.owner,
                 game_state.current_robot_index,
                 get_map_ffi(game_state),
+                game_state.round,
             )
         };
         // println!("[core] player_actions: {:#?}", game_state.player_actions);

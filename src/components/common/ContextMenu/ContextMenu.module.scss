@@ -1,0 +1,51 @@
+.wrapper {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  transition: 0.25s ease-in-out opacity;
+}
+
+.wrapper-open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.root {
+  position: absolute;
+  background: rgba(33, 33, 33, 0.8);
+  backdrop-filter: blur(10px);
+  width: 200px;
+  left: var(--x, 0);
+  top: var(--y, 0);
+  border-radius: 1rem;
+  padding: 0.5rem;
+  color: #FFFFFF;
+  transform: scale(0.4);
+  transition: 0.25s ease-in-out transform
+}
+
+.open {
+  transform: scale(1);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  cursor: pointer;
+  transition: 0.25s ease-in-out background-color;
+  border-radius: 0.5rem;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.item-icon {
+  width: 24px;
+  height: 24px;
+}

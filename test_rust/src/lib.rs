@@ -109,20 +109,27 @@ lazy_static! {
     static ref RANDOM: Mutex<ChaCha8Rng> = Mutex::new(ChaCha8Rng::from_entropy());
 }
 
-fn do_step(map: Map, robot_to_move_index: usize) {
+fn do_step(map: Map, robot_to_move_index: usize, round_no: u32) {
     let robot = &map.robots[robot_to_move_index];
     // println!("map: {:#?}", map);
+    println!(
+        "----=== round: {}/{} ===----",
+        round_no, robot_to_move_index
+    );
     println!("current bot {:#?}", robot);
     let owner = (*CURRENT_OWNER.lock().unwrap()).expect("Game hasn't started yet");
     // println!("my bots count: {:?}", &map.robots.iter().filter(|r| r.owner == (*CURRENT_OWNER.lock().unwrap()).expect("Game hasn't started yet")).count());
     if robot_to_move_index % 3 == 0 && owner == 0 {
+        println!("Doing dumb shit!");
         loop {}
     }
     if robot_to_move_index % 2 == 0 {
+        println!("Collecting!");
         collect_energy();
     } else {
         let rnd_x = (*RANDOM).lock().unwrap().gen_range(-3..3);
         let rnd_y = (*RANDOM).lock().unwrap().gen_range(-1..2);
+        println!("Moving to: {}, {}", rnd_x, rnd_y);
         move_robot(robot.position.x + rnd_x, robot.position.y + rnd_y)
             .expect("Couldn't move robot");
     }
@@ -141,10 +148,10 @@ pub extern "C" fn init_game(game_config: GameConfig, owner: u32) {
 }
 
 #[no_mangle]
-pub extern "C" fn do_step_ffi(map_ffi: *mut MapFFI, robot_to_move_index: usize) {
+pub extern "C" fn do_step_ffi(map_ffi: *mut MapFFI, robot_to_move_index: usize, round_no: u32) {
     unsafe {
         let map = ffi_to_map(&mut *map_ffi);
-        do_step(map, robot_to_move_index);
+        do_step(map, robot_to_move_index, round_no);
     }
 }
 // #[repr(C)]
