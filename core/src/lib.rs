@@ -58,6 +58,7 @@ pub struct GameConfig {
 pub struct PlayerActionMove {
     robot_id: usize,
     new_position: Position,
+    loss: u32,
 }
 
 #[repr(C)]
@@ -94,6 +95,13 @@ pub struct CollectEnergyFailed {
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
+pub struct Timeout {
+    robot_id: usize,
+    is_timeout_too_much: bool,
+}
+
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
 pub enum PlayerActions {
     PlayerActionMove(PlayerActionMove),
     PlayerActionMoveFailed(PlayerActionMoveFailed),
@@ -101,6 +109,7 @@ pub enum PlayerActions {
     CloneRobotFailed(CloneRobotFailed),
     CollectEnergy(CollectEnergy),
     CollectEnergyFailed(CollectEnergyFailed),
+    Timeout(Timeout),
 }
 
 #[derive(Debug)]
@@ -281,8 +290,8 @@ impl GameState {
             }
         }
 
-        for owner in 0..self.config.players_count {
-            for _ in 0..self.config.initial_robots_count {
+        for _ in 0..self.config.initial_robots_count {
+            for owner in 0..self.config.players_count {
                 loop {
                     let x = (&mut self.rng).gen_range(0..self.config.width);
                     let y = (&mut self.rng).gen_range(0..self.config.height);
@@ -353,11 +362,19 @@ macro_rules! with_game_state {
     }};
 }
 
+macro_rules! with_game_state_drop {
+    ($name: ident, $lock: ident, $block: block) => {{
+        let $lock = &mut *CURRENT_GAME_STATE.write().unwrap();
+        let $name = $lock.as_mut().unwrap();
+        $block
+    }};
+}
+
 #[no_mangle]
 pub fn do_round() {
     println!("[core] do_round");
 
-    with_game_state!(game_state, {
+    with_game_state_drop!(game_state, lock, {
         if (game_state.round >= game_state.config.rounds_count) {
             eprintln!("[core] do_round: game is over");
             return;
@@ -379,6 +396,7 @@ pub fn do_round() {
             return;
         }
         let robot = &game_state.robots[game_state.current_robot_index];
+        // TODO we're too fast, drop lock here
         unsafe {
             imports::do_step(
                 robot.owner,
@@ -386,19 +404,39 @@ pub fn do_round() {
                 get_map_ffi(game_state),
             )
         };
-        println!("[core] player_actions: {:#?}", game_state.player_actions);
+        // println!("[core] player_actions: {:#?}", game_state.player_actions);
     });
 
     println!("[core] do_round done");
 }
 
+macro_rules! add_player_action {
+    ($game_state: ident, $action: expr) => {
+        (*$game_state
+            .player_actions
+            .entry($game_state.round)
+            .or_insert(Vec::new()))
+        .push($action);
+    };
+}
+
 #[no_mangle]
-pub fn done_step() {
+pub fn done_step(is_timeout: bool, is_timeout_too_much: bool) {
     with_game_state!(game_state, {
+        if (is_timeout && !game_state.current_robot_done_action) {
+            add_player_action!(
+                game_state,
+                PlayerActions::Timeout(Timeout {
+                    robot_id: game_state.current_robot_index,
+                    is_timeout_too_much,
+                })
+            );
+            println!("[core] done_step (timeout) {:?}", is_timeout_too_much);
+        } else {
+            println!("[core] done_step");
+        }
         game_state.current_robot_index += 1;
         game_state.current_robot_done_action = false;
-
-        println!("[core] done_step");
     });
 
     do_round();
@@ -421,16 +459,6 @@ macro_rules! game_action {
             return 0;
         });
     }
-}
-
-macro_rules! add_player_action {
-    ($game_state: ident, $action: expr) => {
-        (*$game_state
-            .player_actions
-            .entry($game_state.round)
-            .or_insert(Vec::new()))
-        .push($action);
-    };
 }
 
 #[no_mangle]
@@ -608,6 +636,7 @@ pub fn move_robot(x: i32, y: i32) -> u32 {
             PlayerActions::PlayerActionMove(PlayerActionMove {
                 robot_id: game_state.current_robot_index,
                 new_position: Position { x, y },
+                loss,
             })
         );
     });
@@ -657,6 +686,13 @@ fn get_player_actions(round: u32) -> *mut PlayerActionsFFI {
 }
 
 fn get_player_actions_ffi(game_state: &GameState, key: &u32) -> *mut PlayerActionsFFI {
+    if (game_state.player_actions.get(key).is_none()) {
+        return Box::into_raw(Box::new(PlayerActionsFFI {
+            player_actions_len: 0,
+            player_actions_values: std::ptr::null(),
+        }));
+    }
+
     let player_actions_ffi = PlayerActionsFFI {
         player_actions_len: game_state.player_actions.get(key).unwrap().len(),
         player_actions_values: game_state.player_actions.get(key).unwrap().as_ptr(),

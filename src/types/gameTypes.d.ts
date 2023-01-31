@@ -32,6 +32,7 @@ export type GameConfig = {
   energyLossToCloneRobot: number,
   maxRobotsCount: number,
   timeout: number,
+  maxTimeoutsCount: number,
   energyCollectDistance: number,
 };
 
@@ -39,6 +40,7 @@ export type GamePlayerActionMove = {
   type: 'move',
   robotId: number,
   newPosition: GamePosition,
+  loss: number,
 };
 
 export type GamePlayerActionMoveFailed = {
@@ -68,6 +70,12 @@ export type GameCollectEnergyFailed = {
   robotId: number,
 };
 
+export type Timeout = {
+  type: 'timeout',
+  robotId: number,
+  isTimeoutTooMuch: boolean,
+};
+
 export type GamePlayerActions =
     GamePlayerActionMove | GamePlayerActionMoveFailed | GameCloneRobot | GameCloneRobotFailed |
-    GameCollectEnergy | GameCollectEnergyFailed;
+    GameCollectEnergy | GameCollectEnergyFailed | Timeout;

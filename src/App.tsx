@@ -1,5 +1,5 @@
 import React, {
-  useCallback, useEffect, useState,
+  useCallback, useEffect, useMemo, useState,
 } from 'react';
 import './App.css';
 import * as Comlink from 'comlink';
@@ -7,6 +7,7 @@ import wasm from './test_rust.wasm';
 import GamePage from './components/pages/GamePage/GamePage';
 import { CoreWorkerType } from './workers/core.worker';
 import { GameConfig, GameMap, GamePlayerActions } from './types/gameTypes';
+import formatBytes from './helpers/formatBytes';
 
 const coreWorker = new Worker(new URL('./workers/core.worker.ts', import.meta.url));
 const Core = Comlink.wrap<CoreWorkerType>(coreWorker);
@@ -16,34 +17,27 @@ export type MapState = {
   playerActions: GamePlayerActions[];
 };
 
+let k = false;
 function App() {
-  const [isGameFinished, setIsGameFinished] = useState(false);
-  const [isWatching, setIsWatching] = useState(false);
   const [isStarted, setIsStarted] = useState(false);
   const [mapStates, setMapStates] = useState<MapState[]>([]);
   const [roundNumber, setRoundNumber] = useState(0);
 
-  const gameConfig: GameConfig = {
+  const gameConfig = useMemo((): GameConfig => ({
     width: 32,
     height: 32,
-    roundsCount: 10,
+    roundsCount: 5,
     playersCount: 2,
     initialRobotsCount: 10,
     startEnergy: 100,
     rngSeed: 123,
-    energyStationsPerRobot: 10,
+    energyStationsPerRobot: 1,
     energyLossToCloneRobot: 10,
     maxRobotsCount: 100,
-    timeout: 10,
+    timeout: 1000,
+    maxTimeoutsCount: 5,
     energyCollectDistance: 2,
-  };
-
-  // useEffect(() => {
-  //   if (isFinished && changes.length) {
-  //     // console.log('done!');
-  //     setTimeout(showNextChange, 1500);
-  //   }
-  // }, [changes.length, isFinished, showNextChange]);
+  }), []);
 
   const start = useCallback(() => {
     (async () => {
@@ -64,7 +58,7 @@ function App() {
 
   useEffect(() => {
     Core.setCallbacks(Comlink.proxy(async (gameMap: GameMap, playerActions: GamePlayerActions[]) => {
-      setRoundNumber((no) => no + 1);
+      // setRoundNumber((no) => no + 1);
       setMapStates((states) => {
         const other = states.slice(0, -1);
         const last = states[states.length - 1];
@@ -77,22 +71,8 @@ function App() {
           playerActions: [],
         }];
       });
-
-      setIsWatching(false);
     }));
   }, [roundNumber]);
-
-  useEffect(() => {
-    if (isStarted) {
-      (async () => {
-        await Core.get_player_actions(roundNumber - 1);
-      })();
-    }
-
-    if (roundNumber === gameConfig.roundsCount) {
-      setIsGameFinished(true);
-    }
-  }, [roundNumber, gameConfig.roundsCount]);
 
   // const [files, setFiles] = useState<File[]>([]);
 
@@ -106,33 +86,33 @@ function App() {
   // };
 
   useEffect(() => {
-    if (!isStarted) {
+    if (!isStarted && !k) {
+      k = true;
       start();
+      setInterval(() => {
+        document.title = (`${formatBytes(window.performance.memory.usedJSHeapSize)
+        }/${formatBytes(window.performance.memory.jsHeapSizeLimit)}`);
+      }, 1000);
     }
-  }, []);
+  }, [isStarted, start]);
 
-  const watch = async () => {
-    if (isWatching) return;
-
-    setIsWatching(true);
-    await Core.doRound();
-  };
+  useEffect(() => {
+    if (!isStarted) return;
+    if (mapStates.length <= gameConfig.roundsCount) {
+      Core.doRound();
+    }
+  }, [gameConfig.roundsCount, isStarted, mapStates]);
 
   return (
     <div className="App">
       {/* <SelectGamePage/> */}
-      {/* {formatBytes(window.performance.memory.usedJSHeapSize)
-      + '/' + formatBytes(window.performance.memory.jsHeapSizeLimit)} */}
 
-      {isGameFinished && <div>Game finished!</div>}
       {mapStates?.length && (
         <GamePage
           mapStates={mapStates}
           gameConfig={gameConfig}
           roundNumber={roundNumber}
           onChangeRoundNumber={setRoundNumber}
-          onTogglePause={watch}
-          isPaused={!isWatching}
         />
       )}
 

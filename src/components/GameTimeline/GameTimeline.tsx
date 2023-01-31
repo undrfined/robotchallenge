@@ -11,7 +11,7 @@ type OwnProps = {
   calculatedRounds: number;
   isPaused: boolean;
   gameConfig: GameConfig;
-  step: number;
+  step: number | undefined;
   onTogglePause: VoidFunction;
   onChange: (roundNumber: number) => void;
   onChangeStep: (step: number) => void;
@@ -28,15 +28,11 @@ export default function GameTimeline({
   onChangeStep,
 }: OwnProps) {
   function handleForwardsClick() {
-    if (roundNumber < calculatedRounds) {
-      onChange(roundNumber + 1);
-    }
+    onChange(Math.min(calculatedRounds, roundNumber + 1));
   }
 
   function handleBackwardsClick() {
-    if (roundNumber > 0) {
-      onChange(roundNumber - 1);
-    }
+    onChange(Math.max(0, roundNumber - 1));
   }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -51,9 +47,24 @@ export default function GameTimeline({
   return (
     <div className={styles.root}>
       <Backwards onClick={handleBackwardsClick} className={styles.controlButton} />
-      <Backwards onClick={() => onChangeStep(step - 1)} className={styles.controlButton} />
+      <Backwards
+        onClick={() => {
+          if (step === undefined) return;
+          onChangeStep(step - 1);
+        }}
+        className={styles.controlButton}
+      />
       <PlayComponent onClick={onTogglePause} className={styles.controlButton} />
-      <Forwards onClick={() => onChangeStep(step + 1)} className={styles.controlButton} />
+      <Forwards
+        onClick={() => {
+          if (step === undefined) {
+            onChangeStep(0);
+            return;
+          }
+          onChangeStep(step + 1);
+        }}
+        className={styles.controlButton}
+      />
       <Forwards onClick={handleForwardsClick} className={styles.controlButton} />
       <div className={styles.timelineWrapper}>
         <div
@@ -73,7 +84,7 @@ export default function GameTimeline({
           onChange={handleChange}
         />
       </div>
-      <div className={styles.roundNumber}>Round #{roundNumber}(${step})</div>
+      <div className={styles.roundNumber}>Round #{roundNumber}, Step #{step}</div>
     </div>
   );
 }

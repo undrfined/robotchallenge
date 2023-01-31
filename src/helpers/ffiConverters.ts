@@ -11,7 +11,7 @@ import {
   PlayerActionsType,
   PlayerActionTypeEnum,
   PositionStructType,
-  RobotStructType,
+  RobotStructType, TimeoutStruct,
 } from './ffiStructs';
 import {
   GameConfig, GameEnergyStation, GameMap, GamePlayerActions, GamePosition, GameRobot,
@@ -73,6 +73,7 @@ function playerActionStructToObject(playerAction: PlayerActionTypeEnum): GamePla
         type: 'move',
         robotId: playerAction.robot_id,
         newPosition: positionStructToObject(playerAction.new_position),
+        loss: playerAction.loss,
       };
     case 1:
       return {
@@ -101,6 +102,12 @@ function playerActionStructToObject(playerAction: PlayerActionTypeEnum): GamePla
         type: 'collectEnergyFailed',
         robotId: playerAction.robot_id,
       };
+    case 6:
+      return {
+        type: 'timeout',
+        robotId: playerAction.robot_id,
+        isTimeoutTooMuch: playerAction.is_timeout_too_much,
+      };
     default:
       return undefined;
   }
@@ -114,5 +121,6 @@ export function playerActionsStructToObject(playerActions: PlayerActionsType): a
     CloneRobotFailedStruct,
     CollectEnergyStruct,
     CollectEnergyFailedStruct,
+    TimeoutStruct,
   ]).map(playerActionStructToObject);
 }

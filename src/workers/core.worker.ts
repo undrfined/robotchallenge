@@ -10,13 +10,14 @@ import {
 } from '../helpers/ffiStructs';
 import type { PlayerWorkerType } from './player.worker';
 import { gameConfigToStruct, mapStructToObject, playerActionsStructToObject } from '../helpers/ffiConverters';
+import delay from '../helpers/delay';
 
 type Exports = {
   init_mod: () => void,
   init_game: (gameConfig: GameConfigStructType) => void,
   do_round: VoidFunction,
   get_map: () => MapStructType,
-  done_step: VoidFunction,
+  done_step: (is_timeout: boolean, is_timeout_too_much: boolean) => void,
   move_robot: (x: number, y: number) => number,
   clone_robot: (energy: number) => number,
   collect_energy: () => number;
@@ -32,11 +33,38 @@ let currentGameConfig: GameConfig;
 let playerWorkers: {
   worker: Worker;
   comlink: PlayerWorkerType;
+  algo: Blob;
+  timeouts: number;
 }[] = [];
 let onRoundFinished: RoundFinishedCallback;
 
+const initPlayerWorker = async (algo: Blob, i: number) => {
+  const worker = new Worker(new URL('./player.worker.ts', import.meta.url));
+  const comlink = Comlink.wrap<PlayerWorkerType>(worker);
+
+  await comlink.initWasi(
+    algo,
+    currentGameConfig,
+    i,
+    Comlink.proxy(wrapper.move_robot.bind(wrapper)),
+    Comlink.proxy(wrapper.collect_energy.bind(wrapper)),
+    Comlink.proxy(wrapper.clone_robot.bind(wrapper)),
+  );
+
+  return {
+    comlink,
+    worker,
+    algo,
+    timeouts: (playerWorkers[i]?.timeouts || -1) + 1,
+  };
+};
+
 const doStep = async (owner: number, robotToMoveIndex: number, map: MapStructType) => {
   try {
+    if (playerWorkers[owner]?.timeouts >= currentGameConfig.maxTimeoutsCount) {
+      throw Error('Too many timeouts');
+    }
+
     await Promise.race(
       [
         playerWorkers[owner].comlink.doStep(mapStructToObject(map), robotToMoveIndex),
@@ -46,17 +74,31 @@ const doStep = async (owner: number, robotToMoveIndex: number, map: MapStructTyp
       ],
     );
     // eslint-disable-next-line no-console
-    console.log('[wcore] step stop!');
-    wrapper.done_step();
+    console.log('[wcore] step stop!', robotToMoveIndex);
+    wrapper.done_step(false, false);
     // eslint-disable-next-line no-console
     console.log(wasi.getStdoutString());
   } catch (e) {
     // eslint-disable-next-line no-console
-    console.error('[wcore] step error!', e);
+    console.log(`[wcore] step error! ${owner} ${playerWorkers[owner].timeouts} ${robotToMoveIndex}`, e);
     playerWorkers[owner].worker.terminate();
-    wrapper.done_step();
-    // eslint-disable-next-line no-console
-    console.log(wasi.getStdoutString());
+    const isTimeoutTooMuch = playerWorkers[owner]?.timeouts >= currentGameConfig.maxTimeoutsCount;
+    if (!isTimeoutTooMuch) {
+      playerWorkers[owner].timeouts++;
+      playerWorkers[owner] = await initPlayerWorker(playerWorkers[owner].algo, owner);
+    } else {
+      // TODO we're too fast, lock is not unlocked at this point
+      await delay(1);
+    }
+
+    try {
+      wrapper.done_step(true, isTimeoutTooMuch);
+      // eslint-disable-next-line no-console
+      console.log(wasi.getStdoutString());
+    } catch (e2) {
+      // eslint-disable-next-line no-console
+      console.error(wasi.getStderrString(), robotToMoveIndex);
+    }
   }
 
   return 1;
@@ -78,27 +120,11 @@ const CoreWorker = {
     console.error(wasi.getStderrString());
   },
   initGame: async (gameConfig: GameConfig, algos: (File | Blob)[]) => {
-    playerWorkers = await Promise.all(algos.map(async (algo, i) => {
-      const worker = new Worker(new URL('./player.worker.ts', import.meta.url));
-      const comlink = Comlink.wrap<PlayerWorkerType>(worker);
+    currentGameConfig = gameConfig;
 
-      await comlink.initWasi(
-        algo,
-        gameConfig,
-        i,
-        Comlink.proxy(wrapper.move_robot.bind(wrapper)),
-        Comlink.proxy(wrapper.collect_energy.bind(wrapper)),
-        Comlink.proxy(wrapper.clone_robot.bind(wrapper)),
-      );
-
-      return {
-        comlink,
-        worker,
-      };
-    }));
+    playerWorkers = await Promise.all(algos.map(initPlayerWorker));
 
     try {
-      currentGameConfig = gameConfig;
       wrapper.init_game(gameConfigToStruct(gameConfig));
     } catch (e) {
       // eslint-disable-next-line no-console
@@ -133,7 +159,7 @@ const CoreWorker = {
       init_game: [null, [GameConfigStruct]],
       do_round: [null],
       get_map: [MapStruct],
-      done_step: [null],
+      done_step: [null, ['bool']],
       move_robot: ['u32', ['i32', 'i32']],
       clone_robot: ['u32', ['u32']],
       collect_energy: ['u32', []],
@@ -142,9 +168,16 @@ const CoreWorker = {
 
     instance = await wasi.instantiate(module, wrapper.imports((wrap) => ({
       robotchallenge: {
-        round_finished: wrap([null, [MapStruct, PlayerActionsStruct]], (
+        round_finished: wrap([null, [MapStruct, PlayerActionsStruct]], async (
           map: MapStructType, playerActions: PlayerActionsType,
         ) => {
+          for (let i = 0; i < playerWorkers.length; i++) {
+            if (playerWorkers[i].timeouts >= currentGameConfig.maxTimeoutsCount) {
+              playerWorkers[i].worker.terminate();
+              playerWorkers[i] = await initPlayerWorker(playerWorkers[i].algo, i);
+            }
+            playerWorkers[i].timeouts = 0;
+          }
           onRoundFinished(mapStructToObject(map), playerActionsStructToObject(playerActions));
         }),
         do_step: wrap(['u32', ['u32', 'usize', MapStruct]], doStep),

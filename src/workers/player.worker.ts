@@ -20,9 +20,18 @@ type Exports = {
 let wasi: WASI;
 let instance: WebAssembly.Instance;
 let wrapper: IWrapper<Exports>;
+let actionDoneResolver: VoidFunction | undefined;
+
+function withPromiseResolver<T extends Array<any>, U>(afterFn: (...args: T) => U) {
+  return (...args: T): U => {
+    actionDoneResolver?.();
+    actionDoneResolver = undefined;
+    return afterFn(...args);
+  };
+}
 
 const PlayerWorker = {
-  doStep: async (map: GameMap, robotToMoveIndex: number) => {
+  doStep: async (map: GameMap, robotToMoveIndex: number): Promise<void> => {
     const robots = map.robots.map((robot) => new RobotStruct({
       position: new PositionStruct({
         x: robot.position.x,
@@ -42,6 +51,9 @@ const PlayerWorker = {
     }));
 
     try {
+      const actionDonePromise = new Promise<void>((resolve) => {
+        actionDoneResolver = resolve;
+      });
       wrapper.do_step_ffi(new MapStruct({
         robots_len: robots.length,
         robots: new Pointer([RobotStruct, robots.length], robots),
@@ -50,11 +62,15 @@ const PlayerWorker = {
       }), robotToMoveIndex);
 
       // eslint-disable-next-line no-console
-      console.log('[instance]', wasi.getStdoutString());
+      console.log('[instance]', wasi.getStdoutString(), actionDonePromise);
+
+      return await actionDonePromise;
     } catch (e) {
       // eslint-disable-next-line no-console
       console.error('[instance]', wasi.getStderrString());
     }
+
+    return Promise.reject();
   },
   initWasi: async (
     file: File | Blob,
@@ -83,9 +99,9 @@ const PlayerWorker = {
 
     instance = await wasi.instantiate(module, wrapper.imports((wrap) => ({
       robotchallenge: {
-        clone_robot: wrap(['u32', ['u32']], onCloneRobot),
-        collect_energy: wrap(['u32', []], onCollectEnergy),
-        move_robot: wrap(['u32', ['i32', 'i32']], onMove),
+        clone_robot: wrap(['u32', ['u32']], withPromiseResolver(onCloneRobot)),
+        collect_energy: wrap(['u32', []], withPromiseResolver(onCollectEnergy)),
+        move_robot: wrap(['u32', ['i32', 'i32']], withPromiseResolver(onMove)),
       },
     })));
 

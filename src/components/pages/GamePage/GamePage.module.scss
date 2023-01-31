@@ -59,3 +59,16 @@ canvas {
     opacity: 0;
   }
 }
+
+.timeout {
+  z-index: 5;
+  position: absolute;
+  bottom: 2rem;
+  right: 2rem;
+  transform: translateY(calc(100% + 2rem));
+  transition: 0.25s ease-in-out transform;
+
+  &.visible {
+    transform: translateY(0);
+  }
+}

@@ -52,12 +52,14 @@ export type PlayerActionMove = {
   id: 0,
   robot_id: number,
   new_position: PositionStructType,
+  loss: number,
 };
 
 export const PlayerActionMoveStruct = new Struct<PlayerActionMove>({
   id: 'u32',
   robot_id: 'usize',
   new_position: PositionStruct,
+  loss: 'u32',
 });
 
 export type PlayerActionMoveFailed = {
@@ -114,8 +116,26 @@ export const CollectEnergyFailedStruct = new Struct<CollectEnergyFailed>({
   robot_id: 'usize',
 });
 
+export type Timeout = {
+  id: 6,
+  robot_id: number,
+  is_timeout_too_much: boolean,
+};
+
+export const TimeoutStruct = new Struct<Timeout>({
+  id: 'u32',
+  robot_id: 'usize',
+  is_timeout_too_much: 'bool',
+});
+
 export type PlayerActionTypeEnum =
-    (PlayerActionMove | PlayerActionMoveFailed | CloneRobot | CloneRobotFailed | CollectEnergy | CollectEnergyFailed);
+    | PlayerActionMove
+    | PlayerActionMoveFailed
+    | CloneRobot
+    | CloneRobotFailed
+    | CollectEnergy
+    | CollectEnergyFailed
+    | Timeout;
 
 export type PlayerActionsType = {
   player_actions_len: number,

@@ -6,6 +6,7 @@ module.exports = {
   extends: [
     'airbnb',
     'airbnb-typescript',
+    'plugin:react-hooks/recommended',
   ],
   overrides: [
   ],
@@ -16,6 +17,7 @@ module.exports = {
   },
   plugins: [
     'react',
+    'react-hooks',
   ],
   rules: {
     indent: [
@@ -39,6 +41,7 @@ module.exports = {
     ],
     'no-console': 'error',
     semi: 'error',
+    'react-hooks/exhaustive-deps': 'error',
     'no-implicit-coercion': 'error',
     'arrow-body-style': 'off',
     'no-else-return': 'off',

@@ -113,7 +113,11 @@ fn do_step(map: Map, robot_to_move_index: usize) {
     let robot = &map.robots[robot_to_move_index];
     // println!("map: {:#?}", map);
     println!("current bot {:#?}", robot);
+    let owner = (*CURRENT_OWNER.lock().unwrap()).expect("Game hasn't started yet");
     // println!("my bots count: {:?}", &map.robots.iter().filter(|r| r.owner == (*CURRENT_OWNER.lock().unwrap()).expect("Game hasn't started yet")).count());
+    if robot_to_move_index % 3 == 0 && owner == 0 {
+        loop {}
+    }
     if robot_to_move_index % 2 == 0 {
         collect_energy();
     } else {
