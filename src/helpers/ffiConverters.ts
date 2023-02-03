@@ -4,7 +4,7 @@ import {
   CollectEnergyFailedStruct,
   CollectEnergyStruct,
   EnergyStationStructType,
-  GameConfigStructType,
+  GameConfigStructType, LibraryInfoStructType,
   MapStructType,
   PlayerActionMoveFailedStruct,
   PlayerActionMoveStruct,
@@ -14,7 +14,7 @@ import {
   RobotStructType, TimeoutStruct,
 } from './ffiStructs';
 import {
-  GameConfig, GameEnergyStation, GameMap, GamePlayerActions, GamePosition, GameRobot,
+  GameConfig, GameEnergyStation, GameLibraryInfo, GameMap, GamePlayerActions, GamePosition, GameRobot,
 } from '../types/gameTypes';
 import ffiReadArray from './ffiReadArray';
 import ffiReadEnumArray from './ffiReadEnumArray';
@@ -62,6 +62,14 @@ export function mapStructToObject(map: MapStructType): GameMap {
   return {
     robots,
     energyStations,
+  };
+}
+
+export function libraryInfoToObject(libraryInfo: LibraryInfoStructType): GameLibraryInfo {
+  return {
+    name: libraryInfo.name.value,
+    language: libraryInfo.language.value,
+    version: libraryInfo.version.value,
   };
 }
 

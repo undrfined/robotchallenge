@@ -2,13 +2,14 @@ import React from 'react';
 import Lottie from 'lottie-react';
 import styles from './SelectGameCard.module.scss';
 import Button from '../common/Button/Button';
-import Diamond from '../../assets/lottie/Diamond.json';
+import LOTTIE_ICONS, { LottieIcon } from '../../helpers/lottieIcons';
 
 type OwnProps = {
-  icon: any;
+  icon: LottieIcon;
   title: string;
   description: string;
   maxPoints: number;
+  onSelect: VoidFunction;
 };
 
 export default function SelectGameCard({
@@ -16,17 +17,18 @@ export default function SelectGameCard({
   title,
   description,
   maxPoints,
+  onSelect,
 }: OwnProps) {
   return (
     <div className={styles.root}>
-      <Lottie animationData={icon} loop className={styles.animation} />
+      <Lottie animationData={LOTTIE_ICONS[icon]} loop className={styles.animation} />
       <h2 className={styles.title}>{title}</h2>
       <div className={styles.description}>{description}</div>
       <div className={styles.prize}>
-        <Lottie animationData={Diamond} loop className={styles.diamondAnimation} />
+        <Lottie animationData={LOTTIE_ICONS.Diamond} loop className={styles.diamondAnimation} />
         <div className={styles.prizeText}>Max Points: {maxPoints}</div>
       </div>
-      <Button className={styles.button}>Upload solution</Button>
+      <Button className={styles.button} onClick={onSelect}>Upload solution</Button>
     </div>
   );
 }

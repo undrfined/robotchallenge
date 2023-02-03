@@ -1,0 +1,31 @@
+.root {
+  position: relative;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.25rem;
+
+  border: 2px solid rgba(255, 255, 255, 0.2);
+
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.06);
+
+  transition: 0.15s ease-in-out;
+  transition-property: border-color, background, box-shadow;
+}
+
+.checked {
+  border-color: transparent;
+  background: #FF0AE6;
+  box-shadow: 0 0 0 4px rgb(255, 10, 230, 0.2);
+}
+
+.input {
+  visibility: hidden;
+}
+
+.check {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  transform: translate(-50%, -50%) scale(0.6);
+}

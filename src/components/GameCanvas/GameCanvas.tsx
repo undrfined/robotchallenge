@@ -117,6 +117,14 @@ export default function GameCanvas({
     return delay(500);
   }
 
+  const hasTransformWrapper = !!transformWrapperRef.current;
+
+  useEffect(() => {
+    if (!transformWrapperRef.current) return;
+
+    transformWrapperRef.current.centerView(0.1, 0);
+  }, [hasTransformWrapper]);
+
   const reset = useCallback(() => {
     setCollectingEnergyFrom([]);
     setCollectingEnergyTo(undefined);

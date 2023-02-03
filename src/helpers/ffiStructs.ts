@@ -1,4 +1,6 @@
-import { Pointer, Struct, types } from 'wasm-ffi';
+import {
+  Pointer, StringPointer, Struct, types,
+} from 'wasm-ffi';
 
 export type PositionStructType = {
   q: number;
@@ -145,6 +147,18 @@ export type PlayerActionsType = {
 export const PlayerActionsStruct = new Struct<PlayerActionsType>({
   player_actions_len: 'usize',
   player_actions: types.pointer('usize'),
+});
+
+export type LibraryInfoStructType = {
+  name: StringPointer,
+  language: StringPointer,
+  version: StringPointer,
+};
+
+export const LibraryInfoStruct = new Struct<LibraryInfoStructType>({
+  name: 'string',
+  language: 'string',
+  version: 'string',
 });
 
 export type GameConfigStructType = {

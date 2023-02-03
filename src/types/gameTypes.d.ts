@@ -35,6 +35,12 @@ export type GameConfig = {
   energyCollectDistance: number,
 };
 
+export type GameLibraryInfo = {
+  version: string,
+  name: string,
+  language: string,
+};
+
 export type GamePlayerActionMove = {
   type: 'move',
   robotId: number,

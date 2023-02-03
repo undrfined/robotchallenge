@@ -9,7 +9,7 @@ use std::sync::RwLock;
 #[derive(Debug, Copy, Clone)]
 #[repr(C)]
 pub struct Robot {
-    position: Hex,
+    position: Position,
     energy: u32,
     owner: u32,
 }
@@ -17,7 +17,7 @@ pub struct Robot {
 #[derive(Debug)]
 #[repr(C)]
 pub struct EnergyStation {
-    position: Hex,
+    position: Position,
     recovery_rate: u32,
     energy: u32,
 }
@@ -49,7 +49,7 @@ pub struct GameConfig {
 #[derive(Debug, Copy, Clone)]
 pub struct PlayerActionMove {
     robot_id: usize,
-    new_position: Hex,
+    new_position: Position,
     loss: u32,
 }
 
@@ -57,7 +57,7 @@ pub struct PlayerActionMove {
 #[derive(Debug, Copy, Clone)]
 pub struct PlayerActionMoveFailed {
     robot_id: usize,
-    new_position: Hex,
+    new_position: Position,
 }
 
 #[repr(C)]
@@ -124,7 +124,7 @@ pub struct PlayerActionsFFI {
 
 #[derive(Debug, Copy, Clone)]
 #[repr(C)]
-pub struct Hex {
+pub struct Position {
     q: i32,
     r: i32,
 }
@@ -133,31 +133,31 @@ fn console_error_panic_hook(info: &panic::PanicInfo) {
     eprintln!("{}", info);
 }
 
-const AXIAL_DIRECTION_VECTORS: [Hex; 6] = [
-    Hex { q: 1, r: 0 },
-    Hex { q: 1, r: -1 },
-    Hex { q: 0, r: -1 },
-    Hex { q: -1, r: 0 },
-    Hex { q: -1, r: 1 },
-    Hex { q: 0, r: 1 },
+const AXIAL_DIRECTION_VECTORS: [Position; 6] = [
+    Position { q: 1, r: 0 },
+    Position { q: 1, r: -1 },
+    Position { q: 0, r: -1 },
+    Position { q: -1, r: 0 },
+    Position { q: -1, r: 1 },
+    Position { q: 0, r: 1 },
 ];
 
-fn axial_direction(direction: usize) -> Hex {
+fn axial_direction(direction: usize) -> Position {
     AXIAL_DIRECTION_VECTORS[direction]
 }
 
-fn axial_add(hex: Hex, vec: Hex) -> Hex {
-    Hex {
+fn axial_add(hex: Position, vec: Position) -> Position {
+    Position {
         q: hex.q + vec.q,
         r: hex.r + vec.r,
     }
 }
 
-fn axial_neighbor(hex: Hex, direction: usize) -> Hex {
+fn axial_neighbor(hex: Position, direction: usize) -> Position {
     axial_add(hex, axial_direction(direction))
 }
 
-fn axial_distance(a: Hex, b: Hex) -> i32 {
+fn axial_distance(a: Position, b: Position) -> i32 {
     (((a.q - b.q).abs() + (a.q + a.r - b.q - b.r).abs() + (a.r - b.r).abs()) / 2)
         .try_into()
         .unwrap()
@@ -190,19 +190,20 @@ impl GameState {
     }
 
     fn is_valid_position(&self, q: i32, r: i32) -> bool {
-        axial_distance(Hex { q, r }, Hex { q: 0, r: 0 }) < self.config.width
+        axial_distance(Position { q, r }, Position { q: 0, r: 0 }) < self.config.width
     }
 
     fn calculate_loss(&self, q: i32, r: i32, new_q: i32, new_r: i32) -> u32 {
-        return axial_distance(Hex { q, r }, Hex { q: new_q, r: new_r }) as u32;
+        return axial_distance(Position { q, r }, Position { q: new_q, r: new_r }) as u32;
     }
 
     fn get_robots_by_owner(&self, owner: u32) -> Vec<&Robot> {
         self.robots.iter().filter(|r| r.owner == owner).collect()
     }
 
-    fn find_free_cell(&self, near_q: i32, near_r: i32) -> Option<Hex> {
+    fn find_free_cell(&self, near_q: i32, near_r: i32) -> Option<Position> {
         let mut distance = 1;
+        // TODO optimize
         while distance <= self.config.width {
             for dx in -distance..=distance {
                 for dy in -distance..=distance {
@@ -211,17 +212,17 @@ impl GameState {
 
                     if !self.is_empty(new_q, new_r)
                         || axial_distance(
-                            Hex {
+                            Position {
                                 q: near_q,
                                 r: near_r,
                             },
-                            Hex { q: new_q, r: new_r },
+                            Position { q: new_q, r: new_r },
                         ) > distance
                     {
                         continue;
                     }
 
-                    return Some(Hex { q: new_q, r: new_r });
+                    return Some(Position { q: new_q, r: new_r });
                 }
             }
 
@@ -235,14 +236,14 @@ impl GameState {
         self.energy_stations
             .iter_mut()
             .filter(|e| {
-                axial_distance(e.position, Hex { q, r }) <= self.config.energy_collect_distance
+                axial_distance(e.position, Position { q, r }) <= self.config.energy_collect_distance
             })
             .collect()
     }
 
     fn add_robot(&mut self, owner: u32, q: i32, r: i32, energy: u32) -> usize {
         let new_robot = Robot {
-            position: Hex { q, r },
+            position: Position { q, r },
             energy,
             owner,
         };
@@ -260,7 +261,7 @@ impl GameState {
             let r = self.rng.gen_range(-self.config.width..self.config.width);
             if self.is_empty(q, r) {
                 self.energy_stations.push(EnergyStation {
-                    position: Hex { q, r },
+                    position: Position { q, r },
                     recovery_rate: self.rng.gen_range(1..10), // TODO calculate
                     energy: 200,                              // TODO calculate
                 });
@@ -587,7 +588,7 @@ pub fn move_robot(q: i32, r: i32) -> u32 {
                 game_state,
                 PlayerActions::PlayerActionMoveFailed(PlayerActionMoveFailed {
                     robot_id: game_state.current_robot_index,
-                    new_position: Hex { q, r },
+                    new_position: Position { q, r },
                 })
             );
             return 1;
@@ -598,7 +599,7 @@ pub fn move_robot(q: i32, r: i32) -> u32 {
                 game_state,
                 PlayerActions::PlayerActionMoveFailed(PlayerActionMoveFailed {
                     robot_id: game_state.current_robot_index,
-                    new_position: Hex { q, r },
+                    new_position: Position { q, r },
                 })
             );
             println!("[core] move_robot cell is occupied {:?}", current_robot);
@@ -612,7 +613,7 @@ pub fn move_robot(q: i32, r: i32) -> u32 {
                 game_state,
                 PlayerActions::PlayerActionMoveFailed(PlayerActionMoveFailed {
                     robot_id: game_state.current_robot_index,
-                    new_position: Hex { q, r },
+                    new_position: Position { q, r },
                 })
             );
             println!("[core] not enough energy {:?}", current_robot);
@@ -628,7 +629,7 @@ pub fn move_robot(q: i32, r: i32) -> u32 {
             game_state,
             PlayerActions::PlayerActionMove(PlayerActionMove {
                 robot_id: game_state.current_robot_index,
-                new_position: Hex { q, r },
+                new_position: Position { q, r },
                 loss,
             })
         );

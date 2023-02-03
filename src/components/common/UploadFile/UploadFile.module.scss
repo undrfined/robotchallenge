@@ -1,0 +1,34 @@
+.root {
+  background: #19162B;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  padding: 2rem;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  transition: 0.25s ease-in-out border-color;
+}
+
+.dragging {
+  border-color: #FFF;
+}
+
+.icon {
+  display: grid;
+  place-content: center;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.input {
+  display: none;
+}
+
+.button {
+  width: auto;
+}

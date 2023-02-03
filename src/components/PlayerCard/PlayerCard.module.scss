@@ -27,15 +27,10 @@
 }
 
 .avatar {
-  border-radius: 50%;
-  width: 5rem;
-  height: 5rem;
-  min-width: 5rem;
-  border: 3px solid var(--player-color);
-  left: -10px;
-  position: relative;
-  -webkit-user-drag: none;
   margin: 1.5rem 0;
+  position: relative;
+  left: -10px;
+  border: 3px solid var(--player-color);
 }
 
 .info {

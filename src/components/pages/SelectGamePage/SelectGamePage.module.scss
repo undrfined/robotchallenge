@@ -1,8 +1,20 @@
 .root {
+  display: flex;
+  flex-direction: column;
+  padding: 0 clamp(2rem, 5vw, 10rem);
+}
 
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: clamp(1rem, 2vh, 4rem);
+  margin-top: clamp(1rem, 5vh, 5.875rem);
 }
 
 .game-cards {
   display: flex;
-  gap: 2rem;
+  gap: 3rem;
+  margin-bottom: 5.875rem;
+  overflow: auto;
 }

@@ -1,28 +1,40 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './SelectGamePage.module.scss';
 import SelectGameCard from '../../SelectGameCard/SelectGameCard';
-import RobotIcon from '../../../assets/lottie/Robot.json';
-import LightningIcon from '../../../assets/lottie/Lightning.json';
+import { selectCategories } from '../../../store/selectors/categoriesSelectors';
+import useAppSelector from '../../../hooks/useAppSelector';
+import { CategoryId } from '../../../store/slices/categoriesSlice';
+import AnimatedText from '../../common/AnimatedText/AnimatedText';
 
 export default function SelectGamePage() {
+  const navigate = useNavigate();
+  const categories = useAppSelector(selectCategories);
+
+  const handleSelectCategory = (id: CategoryId) => {
+    return () => {
+      navigate(`/gameinfo/${id}`);
+    };
+  };
+
   return (
     <div className={styles.root}>
-      <header>
-        <h1>Select an educational program ...\\\</h1>
+      <header className={styles.header}>
+        <AnimatedText text="Select an educational program" containerType="h1" shouldHidePostfix={false} />
       </header>
       <main className={styles.gameCards}>
-        <SelectGameCard
-          icon={RobotIcon}
-          title="Robot Challenge"
-          description="Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quidem."
-          maxPoints={10}
-        />
-        <SelectGameCard
-          icon={LightningIcon}
-          title="Blitz"
-          description="Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quidem."
-          maxPoints={10}
-        />
+        {categories.map(({
+          id, title, description, maxPoints, icon,
+        }) => (
+          <SelectGameCard
+            key={id}
+            icon={icon}
+            title={title}
+            description={description}
+            maxPoints={maxPoints}
+            onSelect={handleSelectCategory(id)}
+          />
+        ))}
       </main>
     </div>
   );

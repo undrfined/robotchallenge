@@ -1,34 +1,83 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, {
+  useCallback, useEffect, useMemo, useState,
+} from 'react';
 import cn from 'classnames';
+import { useParams } from 'react-router-dom';
 import styles from './GamePage.module.scss';
 import PlayerCard from '../../PlayerCard/PlayerCard';
 import GameCanvas from '../../GameCanvas/GameCanvas';
-import { GameConfig } from '../../../types/gameTypes';
 import { PLAYER_COLORS } from '../../../helpers/playerColors';
 import GameTimeline from '../../GameTimeline/GameTimeline';
-import type { MapState } from '../../../App';
 import Timeout from '../../../assets/icons/Timeout.webm';
 import TimeoutTooMuch from '../../../assets/icons/TimeoutTooMuch.webm';
 import Log from '../../Log/Log';
+import { doRound, GameId } from '../../../store/slices/gamesSlice';
+import useAppSelector from '../../../hooks/useAppSelector';
+import useAppDispatch from '../../../hooks/useAppDispatch';
+import { selectGame } from '../../../store/selectors/gamesSelectors';
+import Back from '../../../assets/icons/Back.svg';
+import More from '../../../assets/icons/More.svg';
+import useContextMenu from '../../../hooks/useContextMenu';
 
-type OwnProps = {
-  mapStates: MapState[];
-  gameConfig: GameConfig;
-  roundNumber: number;
-  onChangeRoundNumber: (roundNumber: number) => void;
-  logs: Record<number, {
+export default function GamePage() {
+  const { gameId } = useParams() as { gameId: GameId };
+  const dispatch = useAppDispatch();
+
+  const game = useAppSelector(selectGame(gameId));
+
+  if (!game) throw new Error('Game not found');
+
+  const {
+    gameConfig,
+    mapStates,
+  } = game;
+
+  const [roundNumber, setRoundNumber] = useState(0);
+  const [logs] = useState<Record<number, {
     log: string,
     errorLog: string,
-  }>;
-};
+  }>>({});
 
-export default function GamePage({
-  mapStates,
-  gameConfig,
-  roundNumber,
-  onChangeRoundNumber,
-  logs,
-}: OwnProps) {
+  // useEffect(() => {
+  //   Core.setCallbacks(Comlink.proxy(async (gameMap: GameMap, playerActions: GamePlayerActions[]) => {
+  //     // setRoundNumber((no) => no + 1);
+  //     setMapStates((states) => {
+  //       const other = states.slice(0, -1);
+  //       const last = states[states.length - 1];
+  //
+  //       return [...other, {
+  //         ...last,
+  //         playerActions,
+  //       }, {
+  //         map: gameMap,
+  //         playerActions: [],
+  //       }];
+  //     });
+  //   }),
+  //   Comlink.proxy((owner: number, log: string, errorLog: string) => {
+  //     setLogs((oldLogs) => ({
+  //       ...oldLogs,
+  //       [owner]: {
+  //         log: (oldLogs[owner]?.log || '') + log,
+  //         errorLog: (oldLogs[owner]?.errorLog || '') + errorLog,
+  //       },
+  //     }));
+  //   }));
+  // }, [roundNumber]);
+  //
+  // useEffect(() => {
+  //   setInterval(() => {
+  //     document.title = (`${formatBytes(window.performance.memory.usedJSHeapSize)
+  //     }/${formatBytes(window.performance.memory.jsHeapSizeLimit)}`);
+  //   }, 1000);
+  // }, []);
+
+  useEffect(() => {
+    if (mapStates.length <= gameConfig.roundsCount) {
+      dispatch(doRound({ gameId }));
+    }
+  }, [dispatch, gameConfig.roundsCount, gameId, mapStates]);
+
   const hasPlayerActions = Boolean(mapStates[roundNumber]?.playerActions?.length);
   const mapState = useMemo(() => {
     return mapStates[roundNumber];
@@ -60,8 +109,8 @@ export default function GamePage({
     } else {
       setStep(0);
     }
-    onChangeRoundNumber(newRoundNumber);
-  }, [onChangeRoundNumber]);
+    setRoundNumber(newRoundNumber);
+  }, []);
 
   const onTogglePause = useCallback(() => {
     if (step === undefined) {
@@ -100,6 +149,22 @@ export default function GamePage({
     })).sort((a, b) => b.energy - a.energy);
   }, [gameConfig.maxRobotsCount, gameConfig.playersCount, map.robots]);
 
+  const {
+    openContextMenu,
+    contextMenu,
+  } = useContextMenu([
+    {
+      label: 'Stop game',
+      icon: More,
+      onClick: () => {},
+    },
+    {
+      label: 'Unstop game',
+      icon: More,
+      onClick: () => {},
+    },
+  ]);
+
   return (
     <div className={styles.root}>
       <div className={styles.field}>
@@ -136,6 +201,12 @@ export default function GamePage({
       </div>
 
       <div className={styles.playerList}>
+        <div className={styles.header}>
+          <Back className={styles.back} />
+          <h2>Game</h2>
+          <More className={styles.more} onClick={openContextMenu} />
+          {contextMenu}
+        </div>
         {playerStats.map(({
           id, energy, robotsCount, maxRobots,
         }, i) => (

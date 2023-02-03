@@ -7,6 +7,7 @@ import RobotIcon from '../../assets/icons/RobotIcon.svg';
 import More from '../../assets/icons/More.svg';
 import Log from '../../assets/icons/Log.svg';
 import useContextMenu from '../../hooks/useContextMenu';
+import Avatar from '../common/Avatar/Avatar';
 
 type OwnProps = {
   avatar: string;
@@ -42,7 +43,7 @@ export default function PlayerCard({
 
   return (
     <div className={styles.root} style={{ '--player-color': playerColor }}>
-      <img src={avatar} alt="Avatar" className={styles.avatar} />
+      <Avatar avatar={avatar} size="big" className={styles.avatar} />
       <div className={styles.info}>
         <div className={styles.playerName}>{playerName}</div>
         <div className={styles.stats}>

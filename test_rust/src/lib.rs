@@ -6,14 +6,14 @@ use std::os::raw::{c_char, c_void};
 use std::panic;
 use std::sync::Mutex;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct Position {
-    x: i32,
-    y: i32,
+    q: i32,
+    r: i32,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub struct Robot {
     position: Position,
@@ -47,13 +47,22 @@ pub struct MapFFI {
 #[derive(Debug, Clone)]
 pub struct GameConfig {
     width: i32,
-    height: i32,
     rounds_count: u32,
     players_count: u32,
     initial_robots_count: u32,
     start_energy: u32,
     rng_seed: u32,
     energy_stations_per_robot: u32,
+    energy_loss_to_clone_robot: u32,
+    max_robots_count: u32,
+    energy_collect_distance: i32,
+}
+
+#[repr(C)]
+pub struct LibInfo {
+    name: *mut c_char,
+    language: *mut c_char,
+    version: *mut c_char,
 }
 
 mod imports {
@@ -106,7 +115,14 @@ pub fn move_robot(q: i32, r: i32) -> Result<bool, String> {
 
 lazy_static! {
     static ref CURRENT_OWNER: Mutex<Option<u32>> = Mutex::new(None);
+    static ref CURRENT_CONFIG: Mutex<Option<GameConfig>> = Mutex::new(None);
     static ref RANDOM: Mutex<ChaCha8Rng> = Mutex::new(ChaCha8Rng::from_entropy());
+}
+
+fn axial_distance(a: &Position, b: &Position) -> i32 {
+    (((a.q - b.q).abs() + (a.q + a.r - b.q - b.r).abs() + (a.r - b.r).abs()) / 2)
+        .try_into()
+        .unwrap()
 }
 
 fn do_step(map: Map, robot_to_move_index: usize, round_no: u32) {
@@ -117,6 +133,41 @@ fn do_step(map: Map, robot_to_move_index: usize, round_no: u32) {
         round_no, robot_to_move_index
     );
     println!("current bot {:#?}", robot);
+
+    let k = CURRENT_CONFIG.lock().unwrap();
+    let game_config = k.as_ref().unwrap();
+
+    if (robot.owner == 0) {
+        // loop {}
+    }
+
+    if (robot.energy >= 100) {
+        clone_robot(robot.energy / 2);
+        return;
+    }
+
+    let c = map.energy_stations.iter().reduce(|a, b| {
+        if axial_distance(&a.position, &robot.position)
+            < axial_distance(&b.position, &robot.position)
+        {
+            a
+        } else {
+            b
+        }
+    });
+
+    if let Some(closest_station) = c {
+        if axial_distance(&closest_station.position, &robot.position)
+            <= game_config.energy_collect_distance
+        {
+            collect_energy();
+            return;
+        }
+
+        move_robot(closest_station.position.q + 1, closest_station.position.r);
+        return;
+    }
+
     // let owner = (*CURRENT_OWNER.lock().unwrap()).expect("Game hasn't started yet");
     // // println!("my bots count: {:?}", &map.robots.iter().filter(|r| r.owner == (*CURRENT_OWNER.lock().unwrap()).expect("Game hasn't started yet")).count());
     // if robot_to_move_index % 3 == 0 && owner == 0 {
@@ -134,7 +185,7 @@ fn do_step(map: Map, robot_to_move_index: usize, round_no: u32) {
     //     // move_robot(robot.position.x + rnd_x, robot.position.y + rnd_y)
     //     //     .expect("Couldn't move robot");
     // }
-    clone_robot(1);
+    // clone_robot(1);
 
     // collect_energy();
     // clone_robot(robot.energy - 10);
@@ -148,6 +199,7 @@ fn console_error_panic_hook(info: &panic::PanicInfo) {
 pub extern "C" fn init_game(game_config: GameConfig, owner: u32) {
     panic::set_hook(Box::new(console_error_panic_hook));
     *CURRENT_OWNER.lock().unwrap() = Some(owner);
+    *CURRENT_CONFIG.lock().unwrap() = Some(game_config);
 }
 
 #[no_mangle]
@@ -157,16 +209,15 @@ pub extern "C" fn do_step_ffi(map_ffi: *mut MapFFI, robot_to_move_index: usize, 
         do_step(map, robot_to_move_index, round_no);
     }
 }
-// #[repr(C)]
-// pub struct Hello {
-//     name: *mut c_char,
-//     lol: u8,
-//     version: [u32; 3],
-//     kek: f32,
-//     robot: Robot,
-//     test_length: usize,
-//     test: *mut u32,
-// }
+
+#[no_mangle]
+pub extern "C" fn get_lib_info() -> *const LibInfo {
+    return Box::into_raw(Box::new(LibInfo {
+        name: CString::new("Roflan Content").unwrap().into_raw(),
+        language: CString::new("rust").unwrap().into_raw(),
+        version: CString::new("0.0.1").unwrap().into_raw(),
+    }));
+}
 
 #[no_mangle]
 pub fn allocate(length: usize) -> *mut c_void {

@@ -45,13 +45,13 @@ const initPlayerWorker = async (algo: Blob, i: number) => {
 
   await comlink.initWasi(
     algo,
-    currentGameConfig,
-    i,
     Comlink.proxy(wrapper.move_robot.bind(wrapper)),
     Comlink.proxy(wrapper.collect_energy.bind(wrapper)),
     Comlink.proxy(wrapper.clone_robot.bind(wrapper)),
     Comlink.proxy((log: string, errorLog: string) => onLogUpdated(i, log, errorLog)),
   );
+
+  await comlink.initGame(currentGameConfig, i);
 
   return {
     comlink,
@@ -140,6 +140,12 @@ const CoreWorker = {
   },
   get_player_actions: (round: number) => {
     return playerActionsStructToObject(wrapper.get_player_actions(round));
+  },
+  setRoundFinishedCallback: (callback: RoundFinishedCallback) => {
+    onRoundFinished = callback;
+  },
+  setLogUpdatedCallback: (callback: (owner: number, log: string, errorLog: string) => void) => {
+    onLogUpdated = callback;
   },
   setCallbacks: (
     onRoundFinishedCallback: RoundFinishedCallback,

@@ -33,6 +33,12 @@ declare module 'wasm-ffi' {
         read(view: DataView, wrapper: Wrapper): T;
       };
     }
+
+    export class StringPointer extends Pointer<string> {
+      constructor(a: [AbstractStructCtor<string>, number], b: AbstractStructType<string>[] | undefined);
+
+      value: string;
+    }
 }
 
 declare module '*.wasm' {

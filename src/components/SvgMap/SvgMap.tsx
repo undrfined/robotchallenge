@@ -107,7 +107,7 @@ export default function SvgMap({
                 // eslint-disable-next-line max-len
                 d="M93.8453 22.6987L117.691 64L93.8453 105.301L46.1547 105.301L22.3094 64L46.1547 22.6987L93.8453 22.6987Z"
               />
-              <text className={styles.robotText} x="52" y="42">{position.q} {position.r}</text> {/* {robot.energy} */}
+              <text className={styles.robotText} x="52" y="42">{robot.energy}</text>
             </g>
           );
         })}

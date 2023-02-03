@@ -29,7 +29,11 @@ svg, img {
 
 html, body {
   height: 100%;
-  overflow: hidden
+  overflow: hidden;
+  position: fixed;
+  max-width: 100%;
+  min-width: 100%;
+  color: #fff;
 }
 
 #root {

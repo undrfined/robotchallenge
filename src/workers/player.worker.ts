@@ -4,17 +4,18 @@ import {
 } from 'wasm-ffi';
 import { init, WASI } from '@wasmer/wasi';
 import {
-  EnergyStationStruct, GameConfigStruct, GameConfigStructType, MapStruct,
+  EnergyStationStruct, GameConfigStruct, GameConfigStructType, LibraryInfoStruct, LibraryInfoStructType, MapStruct,
   MapStructType,
   PositionStruct,
   RobotStruct,
 } from '../helpers/ffiStructs';
-import { GameConfig, GameMap } from '../types/gameTypes';
-import { gameConfigToStruct } from '../helpers/ffiConverters';
+import { GameConfig, GameLibraryInfo, GameMap } from '../types/gameTypes';
+import { gameConfigToStruct, libraryInfoToObject } from '../helpers/ffiConverters';
 
 type Exports = {
   init_game: (gameConfig: AbstractStructType<GameConfigStructType>, owner: number) => void,
   do_step_ffi: (map: AbstractStructType<MapStructType>, owner: number, roundNo: number) => void,
+  get_lib_info: () => AbstractStructType<LibraryInfoStructType>
 };
 
 let wasi: WASI;
@@ -71,21 +72,36 @@ const PlayerWorker = {
 
       return await actionDonePromise;
     } catch (e) {
+      addLogs();
       // Do nothing
     }
 
     return Promise.reject();
   },
+  initGame: async (gameConfig: GameConfig, owner: number): Promise<void> => {
+    try {
+      // TODO timeout
+      wrapper.init_game(gameConfigToStruct(gameConfig), owner);
+      addLogs();
+    } catch (e) {
+      addLogs();
+      // eslint-disable-next-line no-console
+      console.warn('[instance]', e);
+    }
+  },
+  getLibraryInfo: async (): Promise<GameLibraryInfo> => {
+    return libraryInfoToObject(wrapper.get_lib_info());
+  },
   initWasi: async (
     file: File | Blob,
-    gameConfig: GameConfig,
-    owner: number,
     onMove: (x: number, y: number) => number,
     onCollectEnergy: () => number,
     onCloneRobot: (energy: number) => number,
     _onLogUpdated: (log: string, errorLog: string) => void,
   ) => {
     await init();
+
+    onLogUpdated = _onLogUpdated;
 
     wasi = new WASI({
       env: {
@@ -100,8 +116,10 @@ const PlayerWorker = {
     wrapper = new Wrapper<Exports>({
       init_game: [null, [GameConfigStruct, 'u32']],
       do_step_ffi: [null, [MapStruct, 'usize', 'u32']],
+      get_lib_info: [LibraryInfoStruct, []],
     });
 
+    // TODO error handling
     instance = await wasi.instantiate(module, wrapper.imports((wrap) => ({
       robotchallenge: {
         clone_robot: wrap(['u32', ['u32']], withPromiseResolver(onCloneRobot)),
@@ -111,16 +129,6 @@ const PlayerWorker = {
     })));
 
     wrapper.use(instance);
-
-    try {
-      onLogUpdated = _onLogUpdated;
-      // TODO timeout
-      wrapper.init_game(gameConfigToStruct(gameConfig), owner);
-      addLogs();
-    } catch (e) {
-      // eslint-disable-next-line no-console
-      console.warn('[instance]', e);
-    }
 
     return true;
   },

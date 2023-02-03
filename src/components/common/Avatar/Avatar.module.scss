@@ -1,0 +1,16 @@
+.root {
+  border-radius: 50%;
+  -webkit-user-drag: none;
+}
+
+.big {
+  width: 5rem;
+  height: 5rem;
+  min-width: 5rem;
+}
+
+.small {
+  width: 2.5rem;
+  height: 2.5rem;
+  min-width: 2.5rem;
+}
