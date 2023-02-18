@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
     - name: Build the Docker image
+      uses: actions/checkout@v3
+      with:
+        submodules: 'true'
       run: docker build . --file Dockerfile --tag robotchallenge:$(date +%s)
