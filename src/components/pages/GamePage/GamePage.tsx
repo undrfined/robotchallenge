@@ -14,7 +14,7 @@ import Log from '../../Log/Log';
 import { doRound, GameId } from '../../../store/slices/gamesSlice';
 import useAppSelector from '../../../hooks/useAppSelector';
 import useAppDispatch from '../../../hooks/useAppDispatch';
-import { selectGame } from '../../../store/selectors/gamesSelectors';
+import { selectGameConfig, selectGameMapStates } from '../../../store/selectors/gamesSelectors';
 import Back from '../../../assets/icons/Back.svg';
 import More from '../../../assets/icons/More.svg';
 import useContextMenu from '../../../hooks/useContextMenu';
@@ -23,20 +23,12 @@ export default function GamePage() {
   const { gameId } = useParams() as { gameId: GameId };
   const dispatch = useAppDispatch();
 
-  const game = useAppSelector(selectGame(gameId));
+  const gameConfig = useAppSelector(selectGameConfig(gameId));
+  const mapStates = useAppSelector(selectGameMapStates(gameId));
 
-  if (!game) throw new Error('Game not found');
-
-  const {
-    gameConfig,
-    mapStates,
-  } = game;
+  if (!gameConfig || !mapStates) throw new Error('Game not found');
 
   const [roundNumber, setRoundNumber] = useState(0);
-  const [logs] = useState<Record<number, {
-    log: string,
-    errorLog: string,
-  }>>({});
 
   // useEffect(() => {
   //   Core.setCallbacks(Comlink.proxy(async (gameMap: GameMap, playerActions: GamePlayerActions[]) => {
@@ -223,9 +215,9 @@ export default function GamePage() {
           />
         ))}
         <Log
+          gameId={gameId}
           isOpen={hasOpenLog}
           viewingLogId={viewingLogId}
-          logs={logs}
           onClose={() => {
             setHasOpenLog(false);
           }}

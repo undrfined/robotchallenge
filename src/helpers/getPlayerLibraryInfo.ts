@@ -8,10 +8,13 @@ export default async function getPlayerLibraryInfo(blob: Blob): Promise<GameLibr
 
   await comlink.initWasi(blob,
     Comlink.proxy(() => {
+      return 1;
     }),
     Comlink.proxy(() => {
+      return 1;
     }),
     Comlink.proxy(() => {
+      return 1;
     }),
     Comlink.proxy(() => {
     }));

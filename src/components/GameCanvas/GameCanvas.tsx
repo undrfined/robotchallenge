@@ -41,19 +41,35 @@ export default function GameCanvas({
       ? [...previousActions, currentPlayerAction!].filter(Boolean)
       : previousActions).reduce((acc, action) => {
       if (action.type === 'move') {
-        acc.robots[action.robotId].position = action.newPosition;
-        acc.robots[action.robotId].energy -= action.loss;
+        acc.robots[action.robotId] = {
+          ...acc.robots[action.robotId],
+          position: action.newPosition,
+        };
+
+        acc.robots[action.robotId] = {
+          ...acc.robots[action.robotId],
+          energy: acc.robots[action.robotId].energy - action.loss,
+        };
       } else if (action.type === 'collectEnergy') {
         const position = acc.robots[action.robotId].position;
         acc.energyStations.forEach((station, index) => {
           if (axialDistance(station.position, position) <= gameConfig.energyCollectDistance) {
-            acc.robots[action.robotId].energy += station.energy;
-            acc.energyStations[index].energy = 0;
+            acc.robots[action.robotId] = {
+              ...acc.robots[action.robotId],
+              energy: acc.robots[action.robotId].energy + station.energy,
+            };
+            acc.energyStations[index] = {
+              ...station,
+              energy: 0,
+            };
           }
         });
       } else if (action.type === 'cloneRobot') {
-        acc.robots[action.robotId].energy -= gameConfig.energyLossToCloneRobot + action.newRobot.energy;
-        acc.robots.push(action.newRobot);
+        acc.robots[action.robotId] = {
+          ...acc.robots[action.robotId],
+          energy: acc.robots[action.robotId].energy - (gameConfig.energyLossToCloneRobot + action.newRobot.energy),
+        };
+        acc.robots = [...acc.robots, action.newRobot];
       }
       return acc;
     }, deepClone(startingMap));

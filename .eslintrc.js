@@ -41,7 +41,7 @@ module.exports = {
       2,
       'consistent',
     ],
-    'no-console': 'error',
+    'no-console': 'warn',
     semi: 'error',
     'react-hooks/exhaustive-deps': 'error',
     'no-implicit-coercion': 'error',

@@ -90,7 +90,21 @@ const PlayerWorker = {
     }
   },
   getLibraryInfo: async (): Promise<GameLibraryInfo> => {
-    return libraryInfoToObject(wrapper.get_lib_info());
+    try {
+      const result = libraryInfoToObject(wrapper.get_lib_info());
+      console.log(wasi.getStdoutString());
+      console.log(wasi.getStderrString());
+      return result;
+    } catch (e) {
+      console.log(wasi.getStdoutString());
+      console.log(wasi.getStderrString());
+      console.error(e);
+      return {
+        name: 'Error',
+        version: '0.0.0',
+        language: 'none',
+      };
+    }
   },
   initWasi: async (
     file: File | Blob,
@@ -119,16 +133,20 @@ const PlayerWorker = {
       get_lib_info: [LibraryInfoStruct, []],
     });
 
-    // TODO error handling
-    instance = await wasi.instantiate(module, wrapper.imports((wrap) => ({
-      robotchallenge: {
-        clone_robot: wrap(['u32', ['u32']], withPromiseResolver(onCloneRobot)),
-        collect_energy: wrap(['u32', []], withPromiseResolver(onCollectEnergy)),
-        move_robot: wrap(['u32', ['i32', 'i32']], withPromiseResolver(onMove)),
-      },
-    })));
+    try {
+      // TODO error handling
+      instance = await wasi.instantiate(module, wrapper.imports((wrap) => ({
+        robotchallenge: {
+          clone_robot: wrap(['u32', ['u32']], withPromiseResolver(onCloneRobot)),
+          collect_energy: wrap(['u32', []], withPromiseResolver(onCollectEnergy)),
+          move_robot: wrap(['u32', ['i32', 'i32']], withPromiseResolver(onMove)),
+        },
+      })));
 
-    wrapper.use(instance);
+      wrapper.use(instance);
+    } catch (e) {
+      // console.error(e);
+    }
 
     return true;
   },

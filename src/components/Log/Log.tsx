@@ -2,22 +2,24 @@ import React from 'react';
 import cn from 'classnames';
 import styles from './Log.module.scss';
 import Close from '../../assets/icons/Close.svg';
+import useAppSelector from '../../hooks/useAppSelector';
+import { selectGame } from '../../store/selectors/gamesSelectors';
+import { GameId } from '../../store/slices/gamesSlice';
 
 type OwnProps = {
   isOpen?: boolean;
   viewingLogId?: number;
+  gameId: GameId;
   onClose: VoidFunction;
-  logs: Record<number, {
-    log: string,
-    errorLog: string,
-  }>;
 };
 export default function Log({
   isOpen,
   viewingLogId,
   onClose,
-  logs,
+  gameId,
 }: OwnProps) {
+  const { logs } = useAppSelector(selectGame(gameId));
+
   return (
     <div
       className={cn(

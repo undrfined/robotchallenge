@@ -6,6 +6,7 @@ import useAppDispatch from '../../../hooks/useAppDispatch';
 import { GameId, startGame } from '../../../store/slices/gamesSlice';
 import wasm from '../../../test_rust.wasm';
 import wasmCsharp from '../../../lol.wasm';
+import wasmJs from '../../../test_js.wasm';
 import { selectGames } from '../../../store/selectors/gamesSelectors';
 import { CategoryId } from '../../../store/slices/categoriesSlice';
 import { selectCategory } from '../../../store/selectors/categoriesSelectors';
@@ -42,7 +43,9 @@ export default function GameInfoPage() {
       k = true;
       setFiles([
         await verifyFile(await fetch(wasm).then((l) => l.blob())),
+        await verifyFile(await fetch(wasm).then((l) => l.blob())),
         await verifyFile(await fetch(wasmCsharp).then((l) => l.blob())),
+        await verifyFile(await fetch(wasmJs).then((l) => l.blob())),
       ].filter(isTruthy));
     })();
   }, []);
@@ -56,10 +59,10 @@ export default function GameInfoPage() {
         width: 16,
         roundsCount: 50,
         playersCount: algos.length,
-        initialRobotsCount: 1,
+        initialRobotsCount: 10,
         startEnergy: 50,
         rngSeed: 123,
-        energyStationsPerRobot: 1,
+        energyStationsPerRobot: 2,
         energyLossToCloneRobot: 10,
         maxRobotsCount: 50,
         timeout: 1000,

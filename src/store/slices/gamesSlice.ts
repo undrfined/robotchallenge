@@ -10,11 +10,20 @@ export type MapState = {
   playerActions: GamePlayerActions[];
 };
 
+export type PlayerId = number;
+
+export type Log = {
+  owner: PlayerId;
+  log: string;
+  errorLog: string;
+};
+
 export type GameState = {
   id: GameId;
   core: CoreWorkerType;
   coreWorker: Worker;
   gameConfig: GameConfig;
+  logs: Record<PlayerId, Log>;
   mapStates: MapState[];
 };
 
@@ -29,6 +38,27 @@ const initialState: GamesState = {
   isLoading: false,
 };
 
+export const addLogs = createAsyncThunk<
+Log,
+{ gameId: GameId; log: Log },
+AppThunkApi
+>(
+  'games/addLogs',
+  async ({ gameId, log }, { getState }) => {
+    const game = getState().games.games[gameId];
+    if (!game) throw Error('Game not found');
+
+    const oldLog = game.logs[log.owner];
+    if (!oldLog) throw Error(`Player ${log.owner} not found`);
+
+    return {
+      ...log,
+      log: oldLog.log + log.log,
+      errorLog: oldLog.errorLog + log.errorLog,
+    };
+  },
+);
+
 export const startGame = createAsyncThunk<
 GameState,
 {
@@ -40,14 +70,23 @@ AppThunkApi
   'games/startGame',
   async ({
     gameConfig, algos,
-  }) => {
+  }, { dispatch }) => {
     const coreWorker = new Worker(new URL('../../workers/core.worker.ts', import.meta.url));
     const core = Comlink.wrap<CoreWorkerType>(coreWorker);
 
     await core.initCore();
 
-    await core.setLogUpdatedCallback(Comlink.proxy(() => {
-      // console.log(owner, log, errorLog);
+    const gameId = createUUID();
+
+    await core.setLogUpdatedCallback(Comlink.proxy((owner: number, log: string, errorLog: string) => {
+      dispatch(addLogs({
+        gameId,
+        log: {
+          log,
+          errorLog,
+          owner,
+        },
+      }));
     }));
 
     await core.initGame(gameConfig, algos);
@@ -58,11 +97,19 @@ AppThunkApi
     }];
 
     return {
-      id: createUUID(),
+      id: gameId,
       gameConfig,
       core,
       coreWorker,
       mapStates,
+      logs: new Array(algos.length).fill(null).reduce((acc, _, i) => {
+        acc[i] = {
+          owner: i,
+          log: '',
+          errorLog: '',
+        };
+        return acc;
+      }, {}),
     };
   },
 );
@@ -138,10 +185,15 @@ export const gamesSlice = createSlice({
       .addCase(doRound.rejected, () => {
         // TODO display error
       });
+
+    builder
+      .addCase(addLogs.fulfilled, (state, action) => {
+        state.games[action.meta.arg.gameId].logs[action.payload.owner] = action.payload;
+      });
   },
 });
 
 // Action creators are generated for each case reducer function
-// export const {} = gamesSlice.actions;
+// export const {  } = gamesSlice.actions;
 
 export default gamesSlice.reducer;
