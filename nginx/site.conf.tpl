@@ -1,7 +1,3 @@
-upstream backend {
-    server backend;
-}
-
 server {
     listen 80;
     server_name ${domain} www.${domain};
@@ -34,6 +30,7 @@ server {
     }
 
     location /api {
+      resolver 127.0.0.11;
       proxy_pass https://backend:8080/$request_uri;
     }
 }
