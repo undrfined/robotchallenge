@@ -31,6 +31,6 @@ server {
 
     location /api {
       resolver 127.0.0.11;
-      proxy_pass https://backend:8080/$request_uri;
+      proxy_pass http://backend:8080/$request_uri;
     }
 }
