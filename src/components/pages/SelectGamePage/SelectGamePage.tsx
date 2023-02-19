@@ -6,6 +6,7 @@ import { selectCategories } from '../../../store/selectors/categoriesSelectors';
 import useAppSelector from '../../../hooks/useAppSelector';
 import { CategoryId } from '../../../store/slices/categoriesSlice';
 import AnimatedText from '../../common/AnimatedText/AnimatedText';
+import makeRequest from '../../../api/makeRequest';
 
 export default function SelectGamePage() {
   const navigate = useNavigate();
@@ -16,6 +17,8 @@ export default function SelectGamePage() {
       navigate(`/gameinfo/${id}`);
     };
   };
+
+  makeRequest();
 
   return (
     <div className={styles.root}>

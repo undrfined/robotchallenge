@@ -28,4 +28,8 @@ server {
         root /usr/share/nginx/html;
         index index.html index.htm;
     }
+
+    location /api {
+      proxy_pass http://backend:8080$request_uri;
+    }
 }

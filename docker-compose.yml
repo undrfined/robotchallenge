@@ -1,5 +1,12 @@
 version: '3'
 services:
+  backend:
+    build: ./backend
+    image: undrfined/backend
+    env_file:
+      - ./.env
+    ports:
+      - "8080:8080"
   nginx:
     build: .
     platform: linux/amd64
@@ -40,3 +47,8 @@ volumes:
   letsencrypt_certs:
     external: true
   certbot_acme_challenge:
+
+networks:
+  default:
+      external:
+        name: www-network

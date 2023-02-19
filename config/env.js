@@ -73,6 +73,7 @@ function getClientEnvironment(publicUrl) {
         // Most importantly, it switches React into the correct mode.
         NODE_ENV: process.env.NODE_ENV || 'development',
         APP_NAME: process.env.APP_NAME,
+        APP_API_ENDPOINT: process.env.APP_API_ENDPOINT,
         // Useful for resolving the correct path to static assets in `public`.
         // For example, <img src={process.env.PUBLIC_URL + '/img/logo.png'} />.
         // This should only be used as an escape hatch. Normally you would put
