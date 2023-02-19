@@ -76,7 +76,7 @@
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "prepare": "husky install",
-    "postinstall": "(cd vendor/wasmer-js && npm install && npm run build);"
+    "preinstall": "(cd vendor/wasmer-js && npm install && npm run build);"
   },
   "eslintConfig": {
     "extends": [
