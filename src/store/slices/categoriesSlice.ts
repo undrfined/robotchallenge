@@ -21,7 +21,7 @@ const initialState: CategoriesState = {
       id: '0',
       icon: 'Robot',
       title: 'Robot Challenge',
-      description: 'Game with very standard rules. 50 rounds, 100 max robots, 100ms per move.',
+      description: 'Game with standard rules. 50 rounds, 100 max robots, 100ms per move.',
       maxPoints: 10,
     },
     {
