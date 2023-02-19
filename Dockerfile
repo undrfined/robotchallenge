@@ -8,6 +8,7 @@ RUN rustup install 1.64.0
 
 COPY package.json ./
 COPY vendor ./vendor
+RUN npm run build:vendor
 RUN npm install
 
 COPY . .
