@@ -16,7 +16,9 @@ You'll need:
 - Rust
 
 ```sh
+rustup target add wasm32-wasi
 npm run build:vendor
+npm run build:core
 npm install
 ```
 

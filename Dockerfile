@@ -5,6 +5,7 @@ WORKDIR /usr/src/app
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 RUN rustup install 1.64.0
+RUN rustup target add wasm32-wasi
 
 COPY package.json ./
 COPY vendor ./vendor
