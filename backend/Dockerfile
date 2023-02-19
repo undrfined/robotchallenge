@@ -9,5 +9,5 @@ FROM alpine
 COPY --from=build /usr/src/backend/target/release ./backend
 
 EXPOSE 8080
-RUN chmod +x ./backend
-ENTRYPOINT [ "./backend","$@"]
+RUN chmod +x ./backend/backend
+ENTRYPOINT [ "./backend/backend","$@"]
