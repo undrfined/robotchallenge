@@ -4,7 +4,7 @@ services:
     build: .
     platform: linux/amd64
     env_file:
-      - ./config.env
+      - ./.env
     volumes:
       - nginx_conf:/etc/nginx/sites
       - letsencrypt_certs:/etc/letsencrypt
@@ -18,7 +18,7 @@ services:
     build: ./certbot
     image: undrfined/certbot
     env_file:
-      - ./config.env
+      - ./.env
     volumes:
       - letsencrypt_certs:/etc/letsencrypt
       - certbot_acme_challenge:/var/www/certbot
