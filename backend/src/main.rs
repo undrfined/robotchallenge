@@ -1,8 +1,17 @@
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
+use serde::{Deserialize, Serialize};
+
+#[derive(Deserialize, Serialize)]
+struct Info {
+    username: String,
+}
 
 #[get("/api")]
 async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello world!")
+    let obj = Info {
+        username: "John Doe".to_string(),
+    };
+    return web::Json(obj);
 }
 
 #[post("/echo")]
@@ -22,7 +31,7 @@ async fn main() -> std::io::Result<()> {
             .service(echo)
             .route("/hey", web::get().to(manual_hello))
     })
-        .bind(("0.0.0.0", 8080))?
-        .run()
-        .await
+    .bind(("0.0.0.0", 8080))?
+    .run()
+    .await
 }

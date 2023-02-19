@@ -18,7 +18,7 @@ export default function SelectGamePage() {
     };
   };
 
-  makeRequest();
+  makeRequest('api').then(console.log);
 
   return (
     <div className={styles.root}>
