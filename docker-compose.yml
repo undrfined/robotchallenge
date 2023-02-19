@@ -2,14 +2,13 @@ version: '3'
 services:
   nginx:
     build: .
+    platform: linux/amd64
     env_file:
       - ./config.env
     volumes:
       - nginx_conf:/etc/nginx/sites
       - letsencrypt_certs:/etc/letsencrypt
       - certbot_acme_challenge:/var/www/certbot
-      - ./vhosts:/etc/nginx/vhosts
-#      - ./html:/var/www/html
     ports:
       - "80:80"
       - "443:443"
@@ -17,7 +16,7 @@ services:
 
   certbot:
     build: ./certbot
-    image: evgeniy-khyst/certbot
+    image: undrfined/certbot
     env_file:
       - ./config.env
     volumes:
@@ -26,7 +25,7 @@ services:
 
   cron:
     build: ./cron
-    image: evgeniy-khyst/cron
+    image: undrfined/cron
     environment:
       COMPOSE_PROJECT_NAME: "${COMPOSE_PROJECT_NAME}"
     volumes:
@@ -40,19 +39,3 @@ volumes:
   letsencrypt_certs:
     external: true
   certbot_acme_challenge:
-#  robotchallenge:
-#    build: .
-#    platform: linux/amd64
-#    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
-#    ports:
-#      - "80:80"
-#      - "443:443"
-#    volumes:
-#      - ./config/nginx:/etc/nginx/conf.d
-#      - ./data/certbot/conf:/etc/letsencrypt
-#      - ./data/certbot/www:/var/www/certbot
-#  certbot:
-#    image: certbot/certbot
-#    volumes:
-#      - ./data/certbot/conf:/etc/letsencrypt
-#      - ./data/certbot/www:/var/www/certbot

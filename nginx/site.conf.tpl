@@ -24,5 +24,8 @@ server {
 
     include /etc/nginx/includes/hsts.conf;
 
-    include /etc/nginx/vhosts/${domain}.conf;
+    location / {
+        root /usr/share/nginx/html;
+        index index.html index.htm;
+    }
 }
