@@ -13,6 +13,7 @@ env:
 jobs:
 
   build:
+    environment: Deploy to undrfin.de
     permissions:
       contents: read
       packages: write
@@ -28,8 +29,8 @@ jobs:
         cp .env.example .env
         sed -i 's/DOMAINS=""/DOMAINS="${{ secrets.DOMAINS }}"/g' .env
         sed -i 's/CERTBOT_EMAILS=""/CERTBOT_EMAILS="${{ secrets.CERTBOT_EMAILS }}"/g' .env
-        echo $DOMAINS
-        echo $CERTBOT_EMAILS
+        echo ${{ secrets.CERTBOT_EMAILS }}
+        echo ${{ secrets.DOMAINS }}
         cat .env
     - name: Login to GitHub Container Registry
       uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
