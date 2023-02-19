@@ -2,7 +2,6 @@ version: '3'
 services:
   nginx:
     build: .
-    image: evgeniy-khyst/nginx
     env_file:
       - ./config.env
     volumes:
