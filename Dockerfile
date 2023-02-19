@@ -15,6 +15,17 @@ COPY . .
 RUN npm run build
 
 FROM nginx:alpine
+RUN apk add --no-cache openssl
+
 COPY --from=build /usr/src/app/build /usr/share/nginx/html
+
+COPY nginx/default.conf /etc/nginx/conf.d/
+COPY nginx/gzip.conf nginx/options-ssl-nginx.conf nginx/hsts.conf /etc/nginx/includes/
+COPY nginx/site.conf.tpl /customization/
+COPY nginx/nginx.sh /customization/
+
+RUN chmod +x /customization/nginx.sh
+
 EXPOSE 80
-EXPOSE 443
+
+CMD ["/customization/nginx.sh"]
