@@ -47,8 +47,3 @@ volumes:
   letsencrypt_certs:
     external: true
   certbot_acme_challenge:
-
-networks:
-  default:
-      external:
-        name: www-network
