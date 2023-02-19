@@ -30,6 +30,6 @@ server {
     }
 
     location /api {
-      proxy_pass http://backend:8080$request_uri;
+      proxy_pass https://backend:8080$request_uri;
     }
 }
