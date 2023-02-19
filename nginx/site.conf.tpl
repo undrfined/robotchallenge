@@ -1,3 +1,7 @@
+upstream backend {
+    server backend;
+}
+
 server {
     listen 80;
     server_name ${domain} www.${domain};
@@ -23,10 +27,6 @@ server {
     ssl_dhparam /etc/nginx/sites/ssl/ssl-dhparams.pem;
 
     include /etc/nginx/includes/hsts.conf;
-
-    upstream backend {
-        server backend;
-    }
 
     location / {
         root /usr/share/nginx/html;
