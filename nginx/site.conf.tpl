@@ -24,12 +24,16 @@ server {
 
     include /etc/nginx/includes/hsts.conf;
 
+    upstream backend {
+        server backend;
+    }
+
     location / {
         root /usr/share/nginx/html;
         index index.html index.htm;
     }
 
     location /api {
-      proxy_pass https://backend:8080$request_uri;
+      proxy_pass https://backend:8080/$request_uri;
     }
 }
