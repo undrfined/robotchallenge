@@ -9,6 +9,8 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  DOMAINS: ${{ vars.DOMAINS }}
+  CERTBOT_EMAILS: ${{ vars.CERTBOT_EMAILS }}
 
 jobs:
 
@@ -26,8 +28,10 @@ jobs:
     - name: Populate env file
       run: |
         cp .env.example .env
-        sed -i 's/DOMAINS=""/DOMAINS="${{ vars.DOMAINS }}"/g' .env
-        sed -i 's/CERTBOT_EMAILS=""/CERTBOT_EMAILS="${{ vars.CERTBOT_EMAILS }}"/g' .env
+        sed -i 's/DOMAINS=""/DOMAINS="$DOMAINS"/g' .env
+        sed -i 's/CERTBOT_EMAILS=""/CERTBOT_EMAILS="$CERTBOT_EMAILS"/g' .env
+        echo $DOMAINS
+        echo $CERTBOT_EMAILS
         cat .env
     - name: Login to GitHub Container Registry
       uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
