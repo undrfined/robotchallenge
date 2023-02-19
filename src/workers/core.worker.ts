@@ -1,7 +1,7 @@
 import * as Comlink from 'comlink';
 import { Wrapper, IWrapper } from 'wasm-ffi';
 import { init, WASI } from '@wasmer/wasi';
-import core from '../core.wasm';
+import core from '../wasm/core.wasm';
 import { GameConfig, GameMap, GamePlayerActions } from '../types/gameTypes';
 import {
   GameConfigStruct,
