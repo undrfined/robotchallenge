@@ -29,6 +29,10 @@ jobs:
         cp .env.example .env
         sed -i 's/DOMAINS=""/DOMAINS="${{ secrets.DOMAINS }}"/g' .env
         sed -i 's/CERTBOT_EMAILS=""/CERTBOT_EMAILS="${{ secrets.CERTBOT_EMAILS }}"/g' .env
+        sed -i 's/POSTGRES_USER=""/POSTGRES_USER="${{ secrets.POSTGRES_USER }}"/g' .env
+        sed -i 's/POSTGRES_PASSWORD=""/POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}"/g' .env
+        sed -i 's/PGADMIN_DEFAULT_EMAIL=""/PGADMIN_DEFAULT_EMAIL="${{ secrets.PGADMIN_DEFAULT_EMAIL }}"/g' .env
+        sed -i 's/PGADMIN_DEFAULT_PASSWORD=""/PGADMIN_DEFAULT_PASSWORD="${{ secrets.PGADMIN_DEFAULT_PASSWORD }}"/g' .env
         sed -i 's/GH_CLIENT_ID=""/GH_CLIENT_ID="${{ secrets.GH_CLIENT_ID }}"/g' .env
         sed -i 's/GH_CLIENT_SECRET=""/GH_CLIENT_SECRET="${{ secrets.GH_CLIENT_SECRET }}"/g' .env
         APP_API_ENDPOINT=$(sed 's:/:\\/:g' <<< ${{vars.APP_API_ENDPOINT}})

@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate diesel;
+
 use actix_cors::Cors;
 use actix_identity::{Identity, IdentityMiddleware};
 use actix_session::storage::SessionStore;
@@ -29,6 +32,15 @@ use std::sync::RwLock;
 use std::time::Duration;
 use url::Url;
 
+use diesel::{
+    prelude::*,
+    r2d2::{self, ConnectionManager},
+};
+
+mod actions;
+mod models;
+mod schema;
+
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct Info {
@@ -36,57 +48,59 @@ struct Info {
 }
 
 #[derive(Deserialize, Serialize)]
-struct UserInfo {
-    avatar_url: String,
-}
-#[derive(Deserialize, Serialize)]
 struct CallbackInfo {
     code: String,
     state: String,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
-#[serde(rename_all = "camelCase")]
-struct User {
-    id: String,
-    avatar_url: Option<String>,
-    // last_name: Option<String>,
-    // authorities: Scope,
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-struct Sessions {
-    map: HashMap<String, User>,
-}
-
-impl FromRequest for User {
+impl FromRequest for models::User {
     // type Config = ();
     type Error = Error;
-    type Future = Pin<Box<dyn Future<Output = Result<User, Error>>>>;
+    type Future = Pin<Box<dyn Future<Output = Result<models::User, Error>>>>;
 
     fn from_request(req: &HttpRequest, pl: &mut Payload) -> Self::Future {
         let fut = Identity::from_request(req, pl);
-        let sessions: Option<&web::Data<RwLock<Sessions>>> = req.app_data();
-        if sessions.is_none() {
+        let poolO: Option<&web::Data<DbPool>> = req.app_data();
+        if poolO.is_none() {
             warn!("sessions is empty(none)!");
             return Box::pin(async { Err(ErrorUnauthorized("unauthorized")) });
         }
-        let sessions = sessions.unwrap().clone();
-        println!("sessions: {:?}", sessions);
+        let pool = poolO.unwrap().clone();
+        println!("sessions: {:?}", pool);
         Box::pin(async move {
             let k = fut.await;
 
             if let Ok(identity) = k {
                 println!("identity: {:?}", identity.id());
-                if let Some(user) = sessions
-                    .read()
-                    .unwrap()
-                    .map
-                    .get(&identity.id().unwrap().to_string())
-                    .map(|x| x.clone())
-                {
-                    return Ok(user);
+                let id = identity.id().unwrap().to_string();
+                // use web::block to offload blocking Diesel code without blocking server thread
+                let user = web::block(move || {
+                    let mut conn = pool.get()?;
+                    actions::find_user_by_uid(&mut conn, id)
+                })
+                .await
+                .map_err(|e| {
+                    println!("Error: {}", e);
+                    ErrorUnauthorized("fuck")
+                })?;
+
+                if let Ok(user) = user {
+                    return match user {
+                        Some(user) => Ok(user),
+                        None => Err(ErrorUnauthorized("unauthorized")),
+                    };
                 }
+                // .map_err(actix_web::error::ErrorInternalServerError)?;
+                // return Ok(user);
+                // if let Some(user) = sessions
+                //     .read()
+                //     .unwrap()
+                //     .map
+                //     .get(&identity.id().unwrap().to_string())
+                //     .map(|x| x.clone())
+                // {
+                //     return Ok(user);
+                // }
             } else {
                 println!("identity fail");
             }
@@ -98,8 +112,8 @@ impl FromRequest for User {
 
 #[get("/callback")]
 async fn callback(
+    pool: web::Data<DbPool>,
     callback_info: web::Query<CallbackInfo>,
-    sessions: web::Data<RwLock<Sessions>>,
     http_request: HttpRequest,
 ) -> impl Responder {
     println!("code: {}", callback_info.code);
@@ -151,11 +165,22 @@ async fn callback(
         let extensions = &http_request.extensions();
         Identity::login(extensions, id.clone()).expect("failed to log in");
 
-        let user2 = User {
+        let user2 = models::User {
             id: id.clone(),
-            avatar_url: Some(String::from(user.avatar_url.to_string())),
+            avatar_url: String::from(user.avatar_url.to_string()),
         };
-        sessions.write().unwrap().map.insert(id, user2.clone());
+        // use web::block to offload blocking Diesel code without blocking server thread
+        let user = web::block(move || {
+            let mut conn = pool.get()?;
+            actions::insert_new_user(
+                &mut conn,
+                id.clone(),
+                String::from(user.avatar_url.to_string()),
+            )
+        })
+        .await
+        .unwrap();
+        // sessions.write().unwrap().map.insert(id, user2.clone());
         println!("login user: {:?}", user2);
     }
 
@@ -166,7 +191,7 @@ async fn callback(
 }
 
 #[get("/user")]
-async fn get_user(user: User) -> Result<web::Json<User>, Error> {
+async fn get_user(user: models::User) -> Result<web::Json<models::User>, Error> {
     println!("Github returned the following user:\n{:?}\n", user);
     return Ok(web::Json(user));
 }
@@ -207,23 +232,45 @@ async fn hello() -> Result<web::Json<Info>, Error> {
     return Ok(web::Json(obj));
 }
 
+type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
 
-    let sessions = web::Data::new(RwLock::new(Sessions {
-        map: HashMap::new(),
-    }));
+    let redis_connection_string = "redis:6379";
 
-    let key = Key::generate();
+    let conn_spec = env::var("DATABASE_URL").expect("DATABASE_URL");
+    let manager = ConnectionManager::<PgConnection>::new(conn_spec);
+    let pool = r2d2::Pool::builder()
+        .build(manager)
+        .expect("Failed to create pool.");
+
+    // let key = Key::generate();
+    let k: [u8; 64] = [
+        34, 22, 36, 247, 253, 133, 134, 177, 54, 1, 39, 6, 242, 231, 90, 159, 18, 3, 187, 31, 140,
+        162, 139, 15, 189, 230, 146, 230, 132, 151, 106, 231, 110, 235, 36, 45, 55, 213, 217, 30,
+        122, 254, 109, 145, 189, 3, 146, 70, 187, 101, 117, 72, 127, 175, 3, 73, 108, 25, 61, 130,
+        17, 133, 254, 252,
+    ];
+    let key = Key::from(&k);
+    println!("key: {:?}", key.clone().master());
+    // let store = if !env::var("DOMAINS").unwrap().is_empty() {
+    //     Box::new(storage::RedisActorSessionStore::new(
+    //         redis_connection_string,
+    //     )) as Box<dyn SessionStore>
+    // } else {
+    //     Box::new(storage::CookieSessionStore::default()) as Box<dyn SessionStore>
+    // };
     HttpServer::new(move || {
         App::new()
-            .app_data(sessions.clone())
+            .app_data(web::Data::new(pool.clone()))
+            // .app_data(sessions.clone())
             // TODO real bad
             .wrap(Cors::permissive())
             .wrap(IdentityMiddleware::default())
             .wrap(SessionMiddleware::new(
-                storage::CookieSessionStore::default(),
+                storage::RedisActorSessionStore::new(redis_connection_string),
                 key.clone(),
             ))
             .service(get_user)

@@ -1,8 +1,41 @@
 version: '3'
 services:
+  postgres:
+    image: postgres
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      PGDATA: /data/postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres:/data/postgres
+  pgadmin:
+    image: dpage/pgadmin4
+    env_file:
+      - ./.env
+    environment:
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+      - ./postgres/servers.json:/pgadmin4/servers.json
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    restart: unless-stopped
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis:/data
   backend:
     build: ./backend
     image: undrfined/backend
+    depends_on:
+      - redis
+      - postgres
     env_file:
       - ./.env
     ports:
@@ -47,3 +80,7 @@ volumes:
   letsencrypt_certs:
     external: true
   certbot_acme_challenge:
+  redis:
+    driver: local
+  postgres:
+  pgadmin:
