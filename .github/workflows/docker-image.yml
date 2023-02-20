@@ -33,10 +33,14 @@ jobs:
         sed -i 's/GH_CLIENT_SECRET=""/GH_CLIENT_SECRET="${{ secrets.GH_CLIENT_SECRET }}"/g' .env
         APP_API_ENDPOINT=$(sed 's:/:\\/:g' <<< ${{vars.APP_API_ENDPOINT}})
         sed -i "s/APP_API_ENDPOINT=\"\"/APP_API_ENDPOINT=\"$APP_API_ENDPOINT\"/g" .env
+        GH_REDIRECT_URI=$(sed 's:/:\\/:g' <<< ${{vars.GH_REDIRECT_URI}})
+        sed -i "s/GH_REDIRECT_URI=\"\"/GH_REDIRECT_URI=\"$GH_REDIRECT_URI\"/g" .env
+        APP_UI_ENDPOINT=$(sed 's:/:\\/:g' <<< ${{vars.APP_UI_ENDPOINT}})
+        sed -i "s/APP_UI_ENDPOINT=\"\"/APP_UI_ENDPOINT=\"$APP_UI_ENDPOINT\"/g" .env
     - uses: alex-ac/github-action-ssh-docker-compose@master
       name: Docker-Compose Remote Deployment
       with:
-        ssh_host: ${{ secrets.DOMAINS }}
+        ssh_host: ${{ secrets.SSH_HOST }}
         ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
         ssh_user: ${{ secrets.SSH_USER }}
         docker_compose_prefix: undrfinde
