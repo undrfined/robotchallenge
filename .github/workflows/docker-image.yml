@@ -29,6 +29,8 @@ jobs:
         cp .env.example .env
         sed -i 's/DOMAINS=""/DOMAINS="${{ secrets.DOMAINS }}"/g' .env
         sed -i 's/CERTBOT_EMAILS=""/CERTBOT_EMAILS="${{ secrets.CERTBOT_EMAILS }}"/g' .env
+        sed -i 's/GH_CLIENT_ID=""/GH_CLIENT_ID="${{ secrets.GH_CLIENT_ID }}"/g' .env
+        sed -i 's/GH_CLIENT_SECRET=""/GH_CLIENT_SECRET="${{ secrets.GH_CLIENT_SECRET }}"/g' .env
         APP_API_ENDPOINT=$(sed 's:/:\\/:g' <<< ${{vars.APP_API_ENDPOINT}})
         sed -i "s/APP_API_ENDPOINT=\"\"/APP_API_ENDPOINT=\"$APP_API_ENDPOINT\"/g" .env
     - uses: alex-ac/github-action-ssh-docker-compose@master

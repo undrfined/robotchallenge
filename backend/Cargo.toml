@@ -10,3 +10,8 @@ actix-web = "4"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1"
 futures = "0.3"
+oauth2 = "4.3.0"
+anyhow = "1.0.69"
+url = "2.1.0"
+dotenv = "0.15.0"
+octocrab = "0.18.1"
