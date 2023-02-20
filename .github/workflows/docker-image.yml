@@ -41,7 +41,7 @@ jobs:
         sed -i "s/GH_REDIRECT_URI=\"\"/GH_REDIRECT_URI=\"$GH_REDIRECT_URI\"/g" .env
         APP_UI_ENDPOINT=$(sed 's:/:\\/:g' <<< ${{vars.APP_UI_ENDPOINT}})
         sed -i "s/APP_UI_ENDPOINT=\"\"/APP_UI_ENDPOINT=\"$APP_UI_ENDPOINT\"/g" .env
-    - uses: alex-ac/github-action-ssh-docker-compose@master
+    - uses: undrfined/github-action-ssh-docker-compose@master
       name: Docker-Compose Remote Deployment
       with:
         ssh_host: ${{ secrets.SSH_HOST }}
