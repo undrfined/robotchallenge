@@ -32,10 +32,13 @@ use std::sync::RwLock;
 use std::time::Duration;
 use url::Url;
 
+use diesel::backend::Backend;
+use diesel::pg::Pg;
 use diesel::{
     prelude::*,
     r2d2::{self, ConnectionManager},
 };
+use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 
 mod actions;
 mod models;
@@ -234,6 +237,19 @@ async fn hello() -> Result<web::Json<Info>, Error> {
 
 type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
+pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations/");
+
+fn run_migrations(
+    connection: &mut impl MigrationHarness<Pg>,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    // This will run the necessary migrations.
+    //
+    // See the documentation for `MigrationHarness` for
+    // all available methods.
+    connection.run_pending_migrations(MIGRATIONS)?;
+
+    Ok(())
+}
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
@@ -245,6 +261,9 @@ async fn main() -> std::io::Result<()> {
     let pool = r2d2::Pool::builder()
         .build(manager)
         .expect("Failed to create pool.");
+
+    let mut conn = pool.get().unwrap();
+    run_migrations(&mut conn).unwrap();
 
     // let key = Key::generate();
     let k: [u8; 64] = [

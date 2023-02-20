@@ -20,3 +20,4 @@ octocrab = "0.18.1"
 log = "0.4.17"
 actix-cors = "0.6.4"
 diesel = { version = "2.0.3", features = ["postgres", "r2d2"] }
+diesel_migrations = "2.0.0"
