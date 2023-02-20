@@ -41,6 +41,9 @@ services:
       - ./.env
     ports:
       - "8080:8080"
+    links:
+      - redis
+      - postgres
   nginx:
     build: .
     platform: linux/amd64
