@@ -34,7 +34,7 @@ export default function SelectGamePage() {
   return (
     <div className={styles.root}>
       <header className={styles.header}>
-        <AnimatedText text="Select an educational program" containerType="h1" shouldHidePostfix={false} />
+        <AnimatedText text="Select an educational program!" containerType="h1" shouldHidePostfix={false} />
         <button onClick={handleLogin}>Login</button>
         <img src={user?.avatarUrl} alt="" />
         <div>{user?.id}</div>
