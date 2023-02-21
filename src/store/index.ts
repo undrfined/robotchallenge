@@ -3,12 +3,16 @@ import { persistStore } from 'redux-persist';
 import games from './slices/gamesSlice';
 import categories from './slices/categoriesSlice';
 import auth from './slices/authSlice';
+import algos from './slices/algosSlice';
+import users from './slices/usersSlice';
 
 const store = configureStore({
   reducer: {
     games,
     categories,
     auth,
+    algos,
+    users,
   },
   devTools: true,
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({

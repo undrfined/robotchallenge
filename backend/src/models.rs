@@ -1,6 +1,7 @@
 use diesel_derive_enum;
 use serde::{Deserialize, Serialize};
 
+use crate::schema::algos;
 use crate::schema::users;
 
 #[derive(diesel_derive_enum::DbEnum, Debug, Clone, Serialize, Deserialize)]
@@ -11,7 +12,7 @@ pub enum UserRole {
     Admin,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable)]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable, Identifiable)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
     pub id: String,
@@ -20,7 +21,11 @@ pub struct User {
     pub role: UserRole,
 }
 
-// #[derive(Debug, Clone, Serialize, Deserialize)]
-// pub struct NewUser {
-//     pub name: String,
-// }
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable, Identifiable)]
+#[diesel(belongs_to(User))]
+#[serde(rename_all = "camelCase")]
+pub struct Algo {
+    pub id: i32,
+    pub user_id: String,
+    pub file: Vec<u8>,
+}

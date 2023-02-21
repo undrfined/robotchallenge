@@ -47,3 +47,28 @@ pub fn insert_new_user(
 
     Ok(new_user)
 }
+
+pub fn insert_new_algo(
+    conn: &mut PgConnection,
+    uid: String,
+    new_file: Vec<u8>,
+) -> Result<i32, DbError> {
+    use crate::schema::algos::dsl::*;
+
+    let k = diesel::insert_into(algos)
+        .values((user_id.eq(uid), file.eq(new_file)))
+        .on_conflict(id)
+        .do_update()
+        .set(file.eq(excluded(file)))
+        .get_result::<models::Algo>(conn)?;
+
+    Ok(k.id)
+}
+
+pub fn find_all_algos(conn: &mut PgConnection) -> Result<Vec<models::Algo>, DbError> {
+    use crate::schema::algos::dsl::*;
+
+    let algos2 = algos.limit(100).load::<models::Algo>(conn)?;
+
+    Ok(algos2)
+}

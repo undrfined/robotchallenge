@@ -3,11 +3,14 @@ extern crate diesel;
 
 use actix_cors::Cors;
 use actix_identity::{Identity, IdentityMiddleware};
+use actix_multipart::Multipart;
 use actix_session::storage::SessionStore;
 use actix_session::{storage, SessionMiddleware};
 use actix_web::cookie::Key;
 use actix_web::dev::Payload;
-use actix_web::error::{ErrorForbidden, ErrorUnauthorized};
+use actix_web::error::{
+    ErrorBadRequest, ErrorForbidden, ErrorInternalServerError, ErrorUnauthorized,
+};
 use actix_web::middleware::Logger;
 use actix_web::{
     get, post, web, App, Error, FromRequest, HttpMessage, HttpRequest, HttpResponse, HttpServer,
@@ -55,6 +58,12 @@ struct Info {
 #[serde(rename_all = "camelCase")]
 struct OkJsonResult {
     ok: bool,
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AlgoJsonResult {
+    id: i32,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -235,6 +244,88 @@ async fn get_user(user: models::User) -> Result<web::Json<models::User>, Error> 
     return Ok(web::Json(user));
 }
 
+#[get("/user/{id}")]
+async fn get_user_by_id(
+    path: web::Path<(String)>,
+    pool: web::Data<DbPool>,
+) -> Result<web::Json<models::User>, Error> {
+    let (uid) = path.into_inner();
+    let u = web::block(move || {
+        let mut conn = pool.get()?;
+        actions::find_user_by_uid(&mut conn, uid)
+    })
+    .await
+    .map_err(actix_web::error::ErrorInternalServerError)?
+    .map_err(actix_web::error::ErrorInternalServerError)?;
+
+    match u {
+        Some(u) => Ok(web::Json(u)),
+        None => Err(ErrorInternalServerError("user not found")),
+    }
+}
+
+#[get("/algos")]
+async fn get_algos(pool: web::Data<DbPool>) -> Result<web::Json<Vec<models::Algo>>, Error> {
+    let algos = web::block(move || {
+        let mut conn = pool.get()?;
+        actions::find_all_algos(&mut conn)
+    })
+    .await
+    .map_err(actix_web::error::ErrorInternalServerError)?
+    .map_err(actix_web::error::ErrorInternalServerError);
+
+    match algos {
+        Ok(algos) => Ok(web::Json(algos)),
+        Err(err) => Err(ErrorInternalServerError(err)),
+    }
+}
+
+#[post("/algos")]
+async fn create_algo(
+    user: models::User,
+    pool: web::Data<DbPool>,
+    mut payload: Multipart,
+) -> Result<web::Json<AlgoJsonResult>, Error> {
+    use actix_web::{middleware, web, App, Error, HttpResponse, HttpServer};
+    use futures::{StreamExt, TryStreamExt};
+
+    if let Ok(Some(mut field)) = payload.try_next().await {
+        let content_type = field.content_disposition();
+        let filename = content_type.get_filename().unwrap();
+        println!("File name: {:?}, type {:?}", filename, content_type);
+
+        // Get data to Vec<u8>
+        let mut data = web::BytesMut::new();
+        while let Some(chunk) = field.next().await {
+            data.extend_from_slice(&chunk?);
+        }
+
+        let uid = user.id.clone();
+        let data = data.to_vec();
+        let fid = web::block(move || {
+            let mut conn = pool.get()?;
+            actions::insert_new_algo(&mut conn, uid, data)
+        })
+        .await
+        .map_err(ErrorInternalServerError)?
+        .map_err(ErrorInternalServerError)
+        .unwrap();
+
+        return Ok(web::Json(AlgoJsonResult { id: fid }));
+        // field.
+        // // Field in turn is stream of *Bytes* object
+        // while let Some(chunk) = field.next().await {
+        //     let data = chunk.unwrap();
+        //     // filesystem operations are blocking, we have to use threadpool
+        //     f = web::block(move || f.write_all(&data).map(|_| f))
+        //         .await
+        //         .unwrap();
+        // }
+    }
+
+    Err(ErrorInternalServerError("algo not found"))
+}
+
 #[get("/auth")]
 async fn hello() -> Result<web::Json<Info>, Error> {
     // Create an OAuth2 client by specifying the client ID, client secret, authorization URL and
@@ -332,6 +423,9 @@ async fn main() -> std::io::Result<()> {
             .service(get_user)
             .service(hello)
             .service(logout)
+            .service(get_user_by_id)
+            .service(create_algo)
+            .service(get_algos)
             .service(callback)
     })
     .bind(("0.0.0.0", 8080))?

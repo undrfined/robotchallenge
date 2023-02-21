@@ -4,13 +4,13 @@ import styles from './UploadFile.module.scss';
 import Button from '../Button/Button';
 
 import Upload from '../../../assets/icons/Upload.svg';
-import { GameLibraryInfo } from '../../../types/gameTypes';
 import verifyFile from '../../../helpers/verifyFile';
+import { ApiAlgo } from '../../../api/types';
 
 type OwnProps = {
   accept: string;
-  file: { file: Blob, info: GameLibraryInfo } | undefined;
-  setFile: (data: { file: Blob, info: GameLibraryInfo } | undefined) => void,
+  file: ApiAlgo | undefined;
+  setFile: (data: Omit<ApiAlgo, 'id' | 'userId'> | undefined) => void,
 };
 
 export default function UploadFile({

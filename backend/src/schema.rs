@@ -7,6 +7,14 @@ pub mod sql_types {
 }
 
 diesel::table! {
+    algos (id) {
+        id -> Int4,
+        user_id -> Varchar,
+        file -> Bytea,
+    }
+}
+
+diesel::table! {
     use diesel::sql_types::*;
     use super::sql_types::UserRole;
 
@@ -17,3 +25,10 @@ diesel::table! {
         role -> UserRole,
     }
 }
+
+diesel::joinable!(algos -> users (user_id));
+
+diesel::allow_tables_to_appear_in_same_query!(
+    algos,
+    users,
+);

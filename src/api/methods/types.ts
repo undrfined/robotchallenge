@@ -9,8 +9,13 @@ interface MethodType {
 
 export class GetRequest implements MethodType {
   public method = 'GET';
+
+  public path: (string | undefined)[] = [];
 }
 
 export class PostRequest implements MethodType {
   public method = 'POST';
+
+  constructor(public body: Blob) {
+  }
 }

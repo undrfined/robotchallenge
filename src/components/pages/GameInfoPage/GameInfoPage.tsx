@@ -4,17 +4,15 @@ import styles from './GameInfoPage.module.scss';
 import useAppSelector from '../../../hooks/useAppSelector';
 import useAppDispatch from '../../../hooks/useAppDispatch';
 import { GameId, startGame } from '../../../store/slices/gamesSlice';
-import wasm from '../../../test_rust.wasm';
-import wasmCsharp from '../../../lol.wasm';
-import wasmJs from '../../../test_js.wasm';
+// import wasm from '../../../test_rust.wasm';
+// import wasmCsharp from '../../../lol.wasm';
+// import wasmJs from '../../../test_js.wasm';
 import { selectGames } from '../../../store/selectors/gamesSelectors';
 import { CategoryId } from '../../../store/slices/categoriesSlice';
 import { selectCategory } from '../../../store/selectors/categoriesSelectors';
 import Back from '../../../assets/icons/Back.svg';
 import UploadFile from '../../common/UploadFile/UploadFile';
 import Button from '../../common/Button/Button';
-import verifyFile from '../../../helpers/verifyFile';
-import { GameLibraryInfo } from '../../../types/gameTypes';
 import { isTruthy } from '../../../helpers/isTruthy';
 import AnimatedText from '../../common/AnimatedText/AnimatedText';
 import Checkbox from '../../common/Checkbox/Checkbox';
@@ -22,8 +20,9 @@ import Avatar from '../../common/Avatar/Avatar';
 import Version from '../../../assets/icons/Version.svg';
 import Code from '../../../assets/icons/Code.svg';
 import Dropdown from '../../../assets/icons/Dropdown.svg';
+import { fetchAlgos, uploadAlgo } from '../../../store/slices/algosSlice';
+import { ApiAlgo } from '../../../api/types';
 
-let k = false;
 export default function GameInfoPage() {
   const { categoryId } = useParams() as { categoryId: CategoryId };
   const category = useAppSelector(selectCategory(categoryId));
@@ -33,22 +32,34 @@ export default function GameInfoPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const [files, setFiles] = useState<{ file: Blob, info: GameLibraryInfo }[]>([]);
-  const [file, setFile] = useState<{ file: Blob, info: GameLibraryInfo } | undefined>();
+  const files = useAppSelector((state) => state.algos.algos);
+  const [file, setFile] = useState<ApiAlgo | undefined>();
   const [selected, setSelected] = useState<number[]>([]);
 
+  const handleUploadFile = useCallback((newFile: ApiAlgo) => {
+    setFile(file);
+    dispatch(uploadAlgo(newFile.file));
+  }, [dispatch, file]);
+
+  // useEffect(() => {
+  //   (async () => {
+  //     if (k) return;
+  //     k = true;
+  //     const randomFile = await verifyFile(await fetch(wasm).then((l) => l.blob()));
+  //     setFiles([
+  //       randomFile,
+  //       await verifyFile(await fetch(wasm).then((l) => l.blob())),
+  //       await verifyFile(await fetch(wasmCsharp).then((l) => l.blob())),
+  //       await verifyFile(await fetch(wasmJs).then((l) => l.blob())),
+  //     ].filter(isTruthy));
+  //
+  //     // if (randomFile?.file) makeRequest(new PostAlgo(randomFile.file));
+  //   })();
+  // }, []);
+
   useEffect(() => {
-    (async () => {
-      if (k) return;
-      k = true;
-      setFiles([
-        await verifyFile(await fetch(wasm).then((l) => l.blob())),
-        await verifyFile(await fetch(wasm).then((l) => l.blob())),
-        await verifyFile(await fetch(wasmCsharp).then((l) => l.blob())),
-        await verifyFile(await fetch(wasmJs).then((l) => l.blob())),
-      ].filter(isTruthy));
-    })();
-  }, []);
+    dispatch(fetchAlgos());
+  }, [dispatch]);
 
   const handleStartGame = useCallback(() => {
     const selectedFiles = selected.map((l) => files[l]);
@@ -100,8 +111,8 @@ export default function GameInfoPage() {
             {files.map((l, i) => (
               // eslint-disable-next-line react/no-array-index-key
               <div className={styles.opponent} key={i}>
-                <Avatar avatar="https://i.pravatar.cc/300" size="small" />
-                <div className={styles.opponentName}>{l.info.language}</div>
+                <Avatar size="small" userId={l.userId} />
+                <div className={styles.opponentName}>{l.info?.language}</div>
 
                 <div className={styles.dropdown}>
                   <Version />
@@ -109,7 +120,7 @@ export default function GameInfoPage() {
                     Version
                   </div>
                   <div className={styles.dropdownContent}>
-                    {l.info.version}
+                    {l.info?.version}
                   </div>
                   <Dropdown />
                 </div>
@@ -120,12 +131,12 @@ export default function GameInfoPage() {
                     Algorithm
                   </div>
                   <div className={styles.dropdownContent}>
-                    {l.info.name}
+                    {l.info?.name}
                   </div>
                   <Dropdown />
                 </div>
 
-                <div className={styles.opponentVersion}>{l.info.version}</div>
+                <div className={styles.opponentVersion}>{l.info?.version}</div>
                 <Checkbox
                   checked={selected.includes(i)}
                   className={styles.checkbox}
@@ -152,7 +163,7 @@ export default function GameInfoPage() {
         <UploadFile
           accept="application/wasm"
           file={file}
-          setFile={setFile}
+          setFile={handleUploadFile}
         />
 
         <Button onClick={handleStartGame}>

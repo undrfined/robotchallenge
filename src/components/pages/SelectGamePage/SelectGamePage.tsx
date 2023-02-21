@@ -29,7 +29,11 @@ export default function SelectGamePage() {
   };
 
   const handleLogin = () => {
-    dispatch(login());
+    if (!user && !isLoggingIn) {
+      dispatch(login());
+    } else {
+      // TODO open user profile
+    }
   };
 
   useEffect(() => {
