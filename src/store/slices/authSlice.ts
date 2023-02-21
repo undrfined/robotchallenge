@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { AppThunkApi } from '../index';
 import makeRequest, { ResultType } from '../../api/makeRequest';
-import { AuthRequest } from '../../api/methods/auth';
+import { AuthRequest, LogOutRequest } from '../../api/methods/auth';
 import { GetUserRequest } from '../../api/methods/users';
 import { ApiUser } from '../../api/types';
 
@@ -17,11 +17,22 @@ void,
 void,
 AppThunkApi
 >(
-  'auth/addLogs',
+  'auth/login',
   async () => {
     const result = await makeRequest(new AuthRequest());
 
     window.location.href = result.redirectUrl;
+  },
+);
+
+export const logout = createAsyncThunk<
+void,
+void,
+AppThunkApi
+>(
+  'auth/logout',
+  () => {
+    return makeRequest(new LogOutRequest());
   },
 );
 
@@ -49,6 +60,10 @@ export const authSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(getUserInfo.fulfilled, (state, action) => {
       state.user = action.payload;
+    });
+
+    builder.addCase(logout.fulfilled, (state) => {
+      state.user = undefined;
     });
   },
 });

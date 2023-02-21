@@ -52,6 +52,12 @@ struct Info {
 }
 
 #[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct OkJsonResult {
+    ok: bool,
+}
+
+#[derive(Deserialize, Serialize)]
 struct CallbackInfo {
     code: String,
     state: String,
@@ -138,6 +144,12 @@ impl FromRequest for models::User {
             Err(ErrorUnauthorized("unauthorized"))
         })
     }
+}
+
+#[get("/logout")]
+async fn logout(id: Identity) -> Result<web::Json<OkJsonResult>, Error> {
+    Identity::logout(id);
+    Ok(web::Json(OkJsonResult { ok: true }))
 }
 
 #[get("/callback")]
@@ -325,6 +337,7 @@ async fn main() -> std::io::Result<()> {
             ))
             .service(get_user)
             .service(hello)
+            .service(logout)
             .service(callback)
     })
     .bind(("0.0.0.0", 8080))?

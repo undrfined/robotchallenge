@@ -1,6 +1,7 @@
 .root {
   display: flex;
   place-content: center;
+  align-items: center;
   padding: 20px;
   line-height: 20px;
   font-size: 16px;
@@ -9,6 +10,7 @@
   font-family: var(--font-family-header);
   cursor: pointer;
   transition: 0.1s ease-in-out background-color, 0.1s ease-out transform;
+  gap: 0.5rem;
 
   color: #fff;
 
@@ -31,5 +33,15 @@
 
   &:hover {
     background-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.white {
+  background: #fff;
+  color: #000;
+  padding: 0.625rem 1rem;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.9);
   }
 }

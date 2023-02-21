@@ -4,7 +4,7 @@ import styles from './Button.module.scss';
 
 type OwnProps = {
   type?: 'submit' | 'reset' | 'button';
-  buttonStyle?: 'primary' | 'secondary';
+  buttonStyle?: 'primary' | 'secondary' | 'white';
 } & React.HTMLProps<HTMLButtonElement>;
 
 export default function Button({
