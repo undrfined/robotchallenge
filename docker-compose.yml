@@ -60,6 +60,7 @@ services:
     restart: unless-stopped
     links:
       - backend
+      - pgadmin
 
   certbot:
     build: ./certbot
