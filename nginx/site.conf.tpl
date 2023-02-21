@@ -38,8 +38,8 @@ server {
       proxy_set_header X-Forwarded-Proto https;
     }
 
-    location /pgadmin {
-      rewrite /pgadmin/(.*) /$1 break;
+    location /pgadmin4 {
+      rewrite /pgadmin4/(.*) /$1 break;
       proxy_pass http://pgadmin/;
       proxy_set_header Host $host;
       proxy_set_header X-Script-Name /pgadmin4;

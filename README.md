@@ -22,12 +22,32 @@ npm run build:core
 npm install
 ```
 
-## 3. Run the dev server
+## 3. Run the dev frontent server
 
 ```sh
 npm run start
 ```
 
+## 4. Install backend dependencies
+
+Either start a local Postgres & Redis server or use Docker Compose:
+
+```sh
+docker compose up postgres redis
+```
+
+Don't forget to update `/etc/hosts` file:
+
+```
+127.0.0.1       redis
+127.0.0.1       postgres
+```
+
+## 5. Run the backend server
+
+```sh
+cd backend && cargo run
+```
 
 ## Deploying with Docker Compose
 
@@ -46,14 +66,7 @@ cp .env.example .env
 # edit .env file
 ```
 
-### 3. Create volumes
-
-```sh
-docker volume create --name=nginx_conf
-docker volume create --name=letsencrypt_certs
-```
-
-### 4. Run docker-compose
+### 3. Run docker-compose
 
 ```sh
 docker compose up -d
