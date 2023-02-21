@@ -33,12 +33,14 @@ export default function GameInfoPage() {
   const navigate = useNavigate();
 
   const files = useAppSelector((state) => state.algos.algos);
-  const [file, setFile] = useState<ApiAlgo | undefined>();
+  const [file, setFile] = useState<Omit<ApiAlgo, 'id' | 'userId'> | undefined>();
   const [selected, setSelected] = useState<number[]>([]);
 
-  const handleUploadFile = useCallback((newFile: ApiAlgo) => {
+  const handleUploadFile = useCallback((newFile: Omit<ApiAlgo, 'id' | 'userId'> | undefined) => {
     setFile(file);
-    dispatch(uploadAlgo(newFile.file));
+    if (newFile) {
+      dispatch(uploadAlgo(newFile.file));
+    }
   }, [dispatch, file]);
 
   // useEffect(() => {

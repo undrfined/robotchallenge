@@ -9,7 +9,7 @@ import { ApiAlgo } from '../../../api/types';
 
 type OwnProps = {
   accept: string;
-  file: ApiAlgo | undefined;
+  file: Omit<ApiAlgo, 'id' | 'userId'> | undefined;
   setFile: (data: Omit<ApiAlgo, 'id' | 'userId'> | undefined) => void,
 };
 
