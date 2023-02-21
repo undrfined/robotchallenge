@@ -14,7 +14,7 @@ import Log from '../../Log/Log';
 import { doRound, GameId } from '../../../store/slices/gamesSlice';
 import useAppSelector from '../../../hooks/useAppSelector';
 import useAppDispatch from '../../../hooks/useAppDispatch';
-import { selectGameConfig, selectGameMapStates } from '../../../store/selectors/gamesSelectors';
+import { selectGameConfig, selectGameMapStates, selectPlayers } from '../../../store/selectors/gamesSelectors';
 import Back from '../../../assets/icons/Back.svg';
 import More from '../../../assets/icons/More.svg';
 import useContextMenu from '../../../hooks/useContextMenu';
@@ -25,6 +25,7 @@ export default function GamePage() {
 
   const gameConfig = useAppSelector(selectGameConfig(gameId));
   const mapStates = useAppSelector(selectGameMapStates(gameId));
+  const players = useAppSelector(selectPlayers(gameId));
 
   if (!gameConfig || !mapStates) throw new Error('Game not found');
 
@@ -204,14 +205,14 @@ export default function GamePage() {
         }, i) => (
           <PlayerCard
             key={id}
-            avatar="https://i.pravatar.cc/300"
-            playerName={`Player #${id}`}
+            playerName={players[id].name}
             playerColor={PLAYER_COLORS[id]}
             rank={i + 1}
             energy={energy}
             robotsLeft={robotsCount}
             maxRobots={maxRobots}
             onViewLog={handleViewLog(id)}
+            userId={players[id].id}
           />
         ))}
         <Log

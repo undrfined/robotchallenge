@@ -4,6 +4,7 @@ import type { AppThunkApi } from '../index';
 import { CoreWorkerType } from '../../workers/core.worker';
 import { GameConfig, GameMap, GamePlayerActions } from '../../types/gameTypes';
 import createUUID, { UUID } from '../../helpers/createUUID';
+import { ApiAlgo } from '../../api/types';
 
 export type MapState = {
   map: GameMap;
@@ -25,6 +26,7 @@ export type GameState = {
   gameConfig: GameConfig;
   logs: Record<PlayerId, Log>;
   mapStates: MapState[];
+  players: Record<PlayerId, string>;
 };
 
 export type GameId = UUID;
@@ -63,7 +65,7 @@ export const startGame = createAsyncThunk<
 GameState,
 {
   gameConfig: GameConfig;
-  algos: Blob[];
+  algos: ApiAlgo[];
 },
 AppThunkApi
 >(
@@ -89,7 +91,7 @@ AppThunkApi
       }));
     }));
 
-    await core.initGame(gameConfig, algos);
+    await core.initGame(gameConfig, algos.map((algo) => algo.file));
 
     const mapStates = [{
       map: await core.getMap(),
@@ -102,6 +104,10 @@ AppThunkApi
       core,
       coreWorker,
       mapStates,
+      players: algos.reduce((acc, algo, i) => {
+        acc[i as PlayerId] = algo.userId;
+        return acc;
+      }, {} as Record<PlayerId, string>),
       logs: new Array(algos.length).fill(null).reduce((acc, _, i) => {
         acc[i] = {
           owner: i,

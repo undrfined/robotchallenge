@@ -65,9 +65,9 @@ export default function GameInfoPage() {
 
   const handleStartGame = useCallback(() => {
     const selectedFiles = selected.map((l) => files[l]);
-    const algos = [...selectedFiles, file].filter(isTruthy);
+    const algos = [...selectedFiles, file].filter(isTruthy) as ApiAlgo[];
     dispatch(startGame({
-      algos: algos.map((l) => l.file),
+      algos,
       gameConfig: {
         width: 16,
         roundsCount: 50,

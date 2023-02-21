@@ -69,7 +69,7 @@ export default function SelectGamePage() {
           <Button onClick={handleLogin} buttonStyle="white" onContextMenu={openContextMenu}>
             {user ? (
               <>
-                <Avatar avatar={user.avatarUrl} size="tiny" />
+                <Avatar userId={user.id} size="tiny" />
                 {user.name}
               </>
             ) : (

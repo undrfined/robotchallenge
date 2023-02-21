@@ -45,6 +45,9 @@
   color: white;
   font-weight: 500;
   font-size: 18px;
+  max-width: 80px;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .stats {

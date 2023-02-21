@@ -10,9 +10,9 @@ import useContextMenu from '../../hooks/useContextMenu';
 import Avatar from '../common/Avatar/Avatar';
 
 type OwnProps = {
-  avatar: string;
   playerName: string;
   playerColor: string;
+  userId: string;
   rank: number;
   energy: number;
   robotsLeft: number;
@@ -23,7 +23,7 @@ type OwnProps = {
 export default function PlayerCard({
   playerName,
   playerColor,
-  avatar,
+  userId,
   rank,
   energy,
   robotsLeft,
@@ -43,7 +43,7 @@ export default function PlayerCard({
 
   return (
     <div className={styles.root} style={{ '--player-color': playerColor }}>
-      <Avatar avatar={avatar} size="big" className={styles.avatar} />
+      <Avatar userId={userId} size="big" className={styles.avatar} />
       <div className={styles.info}>
         <div className={styles.playerName}>{playerName}</div>
         <div className={styles.stats}>
