@@ -93,8 +93,8 @@ pub struct GhUser {
     pub received_events_url: Url,
     pub r#type: String,
     pub site_admin: bool,
-    pub bio: String,
-    pub name: String,
+    pub bio: Option<String>,
+    pub name: Option<String>,
 }
 
 impl FromRequest for models::User {
@@ -224,7 +224,10 @@ async fn callback(
                 &mut conn,
                 id.clone(),
                 String::from(user.avatar_url.to_string()),
-                String::from(user.name.to_string()),
+                String::from(match user.name {
+                    Some(name) => name,
+                    None => user.login.to_string(),
+                }),
             )
         })
         .await
