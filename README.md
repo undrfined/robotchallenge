@@ -22,7 +22,7 @@ npm run build:core
 npm install
 ```
 
-## 3. Run the dev frontent server
+## 3. Run the dev frontend server
 
 ```sh
 npm run start
@@ -42,6 +42,8 @@ Don't forget to update `/etc/hosts` file:
 127.0.0.1       redis
 127.0.0.1       postgres
 ```
+
+Also if you're running a local (not docker) Postgres server, you'll need to run the `postgres/init.sql` script.
 
 ## 5. Run the backend server
 
