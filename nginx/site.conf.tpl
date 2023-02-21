@@ -24,7 +24,10 @@ server {
 
     include /etc/nginx/includes/hsts.conf;
 
+    client_max_body_size 20M;
+
     location / {
+        rewrite ^/(/.*)$ $1 break;
         root /usr/share/nginx/html;
         index index.html index.htm;
     }
