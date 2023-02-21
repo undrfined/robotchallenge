@@ -40,7 +40,7 @@ server {
 
     location /pgadmin {
       rewrite /pgadmin/(.*) /$1 break;
-      proxy_pass http://pgadmin:5050/;
+      proxy_pass http://pgadmin/;
       proxy_set_header Host $host;
       proxy_set_header X-Script-Name /pgadmin4;
       proxy_set_header X-Real-IP $remote_addr;
