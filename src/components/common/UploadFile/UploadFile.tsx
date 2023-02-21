@@ -87,7 +87,7 @@ export default function UploadFile({
       <h5>Drag & Drop your solution</h5>
       {file && (
         <p>
-          {file.info.name} ({file.info.version}) by {file.info.language}
+          {file.info?.name} ({file.info?.version}) by {file.info?.language}
         </p>
       )}
       <input type="file" ref={inputRef} accept={accept} onChange={handleChange} className={styles.input} />
