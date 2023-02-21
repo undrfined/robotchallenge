@@ -90,5 +90,5 @@ module.exports = {
     'react/require-default-props': 'off',
     'react/function-component-definition': 'off',
   },
-  ignorePatterns: ['vendor/**', 'scripts/**', 'config/**'],
+  ignorePatterns: ['vendor/**', 'scripts/**', 'config/**', 'build/**'],
 };

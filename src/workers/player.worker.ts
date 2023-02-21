@@ -137,9 +137,9 @@ const PlayerWorker = {
       // TODO error handling
       instance = await wasi.instantiate(module, wrapper.imports((wrap) => ({
         robotchallenge: {
-          clone_robot: wrap(['u32', ['u32']], withPromiseResolver(onCloneRobot)),
-          collect_energy: wrap(['u32', []], withPromiseResolver(onCollectEnergy)),
-          move_robot: wrap(['u32', ['i32', 'i32']], withPromiseResolver(onMove)),
+          clone_robot: wrap(['u32', ['u32']], withPromiseResolver((energy) => onCloneRobot(energy))),
+          collect_energy: wrap(['u32', []], withPromiseResolver(() => onCollectEnergy())),
+          move_robot: wrap(['u32', ['i32', 'i32']], withPromiseResolver((q, r) => onMove(q, r))),
         },
       })));
 

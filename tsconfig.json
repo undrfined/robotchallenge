@@ -18,10 +18,14 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx",
+    "jsx": "react-jsx"
   },
   "include": [
     "src",
-    "./.eslintrc.js",
+    "./.eslintrc.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "build"
   ]
 }
