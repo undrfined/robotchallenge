@@ -7,6 +7,7 @@ use crate::schema::users;
 pub struct User {
     pub id: String,
     pub avatar_url: String,
+    pub name: String,
 }
 
 // #[derive(Debug, Clone, Serialize, Deserialize)]

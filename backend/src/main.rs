@@ -8,6 +8,7 @@ use actix_session::{storage, SessionMiddleware};
 use actix_web::cookie::Key;
 use actix_web::dev::Payload;
 use actix_web::error::{ErrorForbidden, ErrorUnauthorized};
+use actix_web::middleware::Logger;
 use actix_web::{
     get, post, web, App, Error, FromRequest, HttpMessage, HttpRequest, HttpResponse, HttpServer,
     Responder,
@@ -56,12 +57,38 @@ struct CallbackInfo {
     state: String,
 }
 
+#[derive(Debug, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
+#[non_exhaustive]
+pub struct GhUser {
+    pub login: String,
+    pub id: UserId,
+    pub node_id: String,
+    pub avatar_url: Url,
+    pub gravatar_id: String,
+    pub url: Url,
+    pub html_url: Url,
+    pub followers_url: Url,
+    pub following_url: Url,
+    pub gists_url: Url,
+    pub starred_url: Url,
+    pub subscriptions_url: Url,
+    pub organizations_url: Url,
+    pub repos_url: Url,
+    pub events_url: Url,
+    pub received_events_url: Url,
+    pub r#type: String,
+    pub site_admin: bool,
+    pub bio: String,
+    pub name: String,
+}
+
 impl FromRequest for models::User {
     // type Config = ();
     type Error = Error;
     type Future = Pin<Box<dyn Future<Output = Result<models::User, Error>>>>;
 
     fn from_request(req: &HttpRequest, pl: &mut Payload) -> Self::Future {
+        println!("from_request");
         let fut = Identity::from_request(req, pl);
         let poolO: Option<&web::Data<DbPool>> = req.app_data();
         if poolO.is_none() {
@@ -162,7 +189,8 @@ async fn callback(
             .personal_token(token.access_token().secret().to_owned())
             .build()
             .unwrap();
-        let user = octocrab.current().user().await.unwrap();
+        let user: GhUser = octocrab.get("/user", None::<&()>).await.unwrap();
+        println!("user: {:?}", user);
 
         let id = user.id.to_string();
         let extensions = &http_request.extensions();
@@ -171,6 +199,7 @@ async fn callback(
         let user2 = models::User {
             id: id.clone(),
             avatar_url: String::from(user.avatar_url.to_string()),
+            name: String::from(user.name.to_string()),
         };
         // use web::block to offload blocking Diesel code without blocking server thread
         let user = web::block(move || {
@@ -179,6 +208,7 @@ async fn callback(
                 &mut conn,
                 id.clone(),
                 String::from(user.avatar_url.to_string()),
+                String::from(user.name.to_string()),
             )
         })
         .await
@@ -286,6 +316,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(web::Data::new(pool.clone()))
             // .app_data(sessions.clone())
             // TODO real bad
+            .wrap(Logger::default())
             .wrap(Cors::permissive())
             .wrap(IdentityMiddleware::default())
             .wrap(SessionMiddleware::new(

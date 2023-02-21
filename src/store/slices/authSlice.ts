@@ -3,15 +3,13 @@ import type { AppThunkApi } from '../index';
 import makeRequest, { ResultType } from '../../api/makeRequest';
 import { AuthRequest } from '../../api/methods/auth';
 import { GetUserRequest } from '../../api/methods/users';
+import { ApiUser } from '../../api/types';
 
 type AuthState = {
-  token?: string;
-  user?: ResultType<GetUserRequest>;
+  user?: ApiUser;
 };
 
 const initialState: AuthState = {
-  // TODO bs
-  token: document.cookie.split('; ').find((row) => row.startsWith('token='))?.split('=')[1],
 };
 
 export const login = createAsyncThunk<

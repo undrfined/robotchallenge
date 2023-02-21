@@ -1,4 +1,5 @@
 use diesel::prelude::*;
+use diesel::upsert::excluded;
 
 use crate::models;
 
@@ -23,6 +24,7 @@ pub fn insert_new_user(
     conn: &mut PgConnection,
     uid: String,
     new_avatar_url: String,
+    new_name: String,
 ) -> Result<models::User, DbError> {
     // It is common when using Diesel with Actix Web to import schema-related
     // modules inside a function's scope (rather than the normal module's scope)
@@ -32,9 +34,15 @@ pub fn insert_new_user(
     let new_user = models::User {
         id: uid,
         avatar_url: new_avatar_url,
+        name: new_name,
     };
 
-    diesel::insert_into(users).values(&new_user).execute(conn)?;
+    diesel::insert_into(users)
+        .values(&new_user)
+        .on_conflict(id)
+        .do_update()
+        .set((avatar_url.eq(excluded(avatar_url)), name.eq(excluded(name))))
+        .execute(conn)?;
 
     Ok(new_user)
 }

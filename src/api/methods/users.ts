@@ -1,9 +1,10 @@
 import { GetRequest, RequestType } from './types';
+import { ApiUser } from '../types';
 
 export class GetUserRequest extends GetRequest implements RequestType {
   type = 'user';
 
-  resultType?: { avatarUrl: string; id: string; };
+  resultType?: ApiUser;
 }
 
 type UsersRequests = GetUserRequest;

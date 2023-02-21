@@ -37,7 +37,7 @@ export default function SelectGamePage() {
         <AnimatedText text="Select an educational program" containerType="h1" shouldHidePostfix={false} />
         <button onClick={handleLogin}>Login</button>
         <img src={user?.avatarUrl} alt="" />
-        <div>{user?.id}</div>
+        <div>{user?.name}</div>
       </header>
       <main className={styles.gameCards}>
         {categories.map(({
