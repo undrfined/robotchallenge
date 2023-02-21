@@ -35,6 +35,7 @@ pub fn insert_new_user(
         id: uid,
         avatar_url: new_avatar_url,
         name: new_name,
+        role: models::UserRole::User,
     };
 
     diesel::insert_into(users)

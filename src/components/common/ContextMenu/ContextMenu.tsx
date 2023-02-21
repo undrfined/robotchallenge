@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import cn from 'classnames';
 import styles from './ContextMenu.module.scss';
@@ -45,13 +45,23 @@ export default function ContextMenu({
     };
   }, [position, windowSize]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    rootRef.current?.focus();
+  }, [isOpen]);
+
+  function handleClose(e: React.MouseEvent) {
+    e.stopPropagation();
+    onClose();
+  }
+
   return ReactDOM.createPortal(
     <div
       className={cn(
         styles.wrapper,
         isOpen && styles.wrapperOpen,
       )}
-      onClick={onClose}
+      onClick={handleClose}
     >
       <div
         className={cn(
@@ -59,6 +69,7 @@ export default function ContextMenu({
           isOpen && styles.open,
         )}
         ref={rootRef}
+        tabIndex={-1}
         style={{
           '--x': `${x}px`,
           '--y': `${y}px`,
@@ -68,12 +79,12 @@ export default function ContextMenu({
         {contextMenuItems.map(({ label, icon, onClick }) => {
           const Icon = icon;
           return (
-            <div className={styles.item} key={label} onClick={onClick}>
+            <button className={styles.item} key={label} onClick={onClick} tabIndex={0}>
               <div className={styles.itemIcon}>
                 <Icon />
               </div>
               {label}
-            </div>
+            </button>
           );
         })}
       </div>

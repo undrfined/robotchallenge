@@ -208,11 +208,6 @@ async fn callback(
         let extensions = &http_request.extensions();
         Identity::login(extensions, id.clone()).expect("failed to log in");
 
-        let user2 = models::User {
-            id: id.clone(),
-            avatar_url: String::from(user.avatar_url.to_string()),
-            name: String::from(user.name.to_string()),
-        };
         // use web::block to offload blocking Diesel code without blocking server thread
         let user = web::block(move || {
             let mut conn = pool.get()?;
@@ -226,7 +221,6 @@ async fn callback(
         .await
         .unwrap();
         // sessions.write().unwrap().map.insert(id, user2.clone());
-        println!("login user: {:?}", user2);
     }
 
     let redirect_url = env::var("APP_UI_ENDPOINT").unwrap();

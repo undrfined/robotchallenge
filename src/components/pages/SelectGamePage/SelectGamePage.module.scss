@@ -7,9 +7,13 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   margin-bottom: clamp(1rem, 2vh, 4rem);
   margin-top: clamp(1rem, 5vh, 5.875rem);
+}
+
+.header-buttons {
+  margin-left: auto;
+  display: flex;
 }
 
 .game-cards {

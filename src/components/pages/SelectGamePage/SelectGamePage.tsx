@@ -11,6 +11,9 @@ import { getUserInfo, login, logout } from '../../../store/slices/authSlice';
 import Button from '../../common/Button/Button';
 import Github from '../../../assets/icons/Github.svg';
 import Avatar from '../../common/Avatar/Avatar';
+import useContextMenu from '../../../hooks/useContextMenu';
+import Code from '../../../assets/icons/Code.svg';
+import Close from '../../../assets/icons/Close.svg';
 
 export default function SelectGamePage() {
   const navigate = useNavigate();
@@ -26,7 +29,7 @@ export default function SelectGamePage() {
   };
 
   const handleLogin = () => {
-    dispatch(user ? logout() : login());
+    dispatch(login());
   };
 
   useEffect(() => {
@@ -35,26 +38,45 @@ export default function SelectGamePage() {
     }
   }, [dispatch, isLoggingIn, user]);
 
+  const {
+    openContextMenu, contextMenu,
+  } = useContextMenu([
+    user?.role === 'admin' && {
+      label: 'Admin Panel',
+      onClick: () => {
+        navigate('/admin/');
+      },
+      icon: Code,
+    },
+    {
+      label: 'Log Out',
+      icon: Close,
+      onClick: () => {
+        dispatch(logout());
+      },
+    },
+  ]);
+
   return (
     <div className={styles.root}>
       <header className={styles.header}>
         <AnimatedText text="Select an educational program" containerType="h1" shouldHidePostfix={false} />
-        <Button onClick={handleLogin} buttonStyle="white">
-          {user ? (
-            <>
-              <Avatar avatar={user.avatarUrl} size="tiny" />
-              {user.name}
-            </>
-          ) : (
-            <>
-              <Github />
-              {isLoggingIn ? 'Loading...' : 'Sign in'}
-            </>
-          )}
-        </Button>
-        {/* <button onClick={handleLogin}>Login</button> */}
-        {/* <img src={user?.avatarUrl} alt="" /> */}
-        {/* <div>{user?.name}</div> */}
+        <div className={styles.headerButtons}>
+          <Button onClick={handleLogin} buttonStyle="white" onContextMenu={openContextMenu}>
+            {user ? (
+              <>
+                <Avatar avatar={user.avatarUrl} size="tiny" />
+                {user.name}
+              </>
+            ) : (
+              <>
+                <Github />
+                {isLoggingIn ? 'Loading...' : 'Sign in'}
+              </>
+            )}
+            {contextMenu}
+          </Button>
+        </div>
       </header>
       <main className={styles.gameCards}>
         {categories.map(({
