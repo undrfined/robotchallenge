@@ -22,7 +22,8 @@
   },
   "include": [
     "src",
-    "./.eslintrc.js"
+    "./.eslintrc.js",
+    "./node_modules/redux-persist/types"
   ],
   "exclude": [
     "node_modules",

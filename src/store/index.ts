@@ -1,4 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
+import { persistStore } from 'redux-persist';
 import games from './slices/gamesSlice';
 import categories from './slices/categoriesSlice';
 import auth from './slices/authSlice';
@@ -14,6 +15,7 @@ const store = configureStore({
     serializableCheck: false,
   }),
 });
+const persistor = persistStore(store);
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
@@ -23,4 +25,4 @@ export type AppThunkApi = {
   state: RootState;
 };
 
-export default store;
+export default { store, persistor };

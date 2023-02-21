@@ -16,6 +16,7 @@ export default function SelectGamePage() {
   const navigate = useNavigate();
   const categories = useAppSelector(selectCategories);
   const user = useAppSelector((state) => state.auth.user);
+  const isLoggingIn = useAppSelector((state) => state.auth.isLoggingIn);
   const dispatch = useAppDispatch();
 
   const handleSelectCategory = (id: CategoryId) => {
@@ -29,10 +30,10 @@ export default function SelectGamePage() {
   };
 
   useEffect(() => {
-    // setTimeout(() => {
-    dispatch(getUserInfo());
-    // }, 5000);
-  }, [dispatch]);
+    if (!user && isLoggingIn) {
+      dispatch(getUserInfo());
+    }
+  }, [dispatch, isLoggingIn, user]);
 
   return (
     <div className={styles.root}>
@@ -47,7 +48,7 @@ export default function SelectGamePage() {
           ) : (
             <>
               <Github />
-              Sign in
+              {isLoggingIn ? 'Loading...' : 'Sign in'}
             </>
           )}
         </Button>

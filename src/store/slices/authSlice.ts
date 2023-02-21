@@ -1,4 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import storage from 'redux-persist/lib/storage';
+import { persistReducer } from 'redux-persist';
 import type { AppThunkApi } from '../index';
 import makeRequest, { ResultType } from '../../api/makeRequest';
 import { AuthRequest, LogOutRequest } from '../../api/methods/auth';
@@ -7,9 +9,11 @@ import { ApiUser } from '../../api/types';
 
 type AuthState = {
   user?: ApiUser;
+  isLoggingIn: boolean;
 };
 
 const initialState: AuthState = {
+  isLoggingIn: false,
 };
 
 export const login = createAsyncThunk<
@@ -58,8 +62,17 @@ export const authSlice = createSlice({
 
   },
   extraReducers: (builder) => {
+    builder
+      .addCase(login.pending, (state) => {
+        state.isLoggingIn = true;
+      })
+      .addCase(login.rejected, (state) => {
+        state.isLoggingIn = false;
+      });
+
     builder.addCase(getUserInfo.fulfilled, (state, action) => {
       state.user = action.payload;
+      state.isLoggingIn = false;
     });
 
     builder.addCase(logout.fulfilled, (state) => {
@@ -68,4 +81,9 @@ export const authSlice = createSlice({
   },
 });
 
-export default authSlice.reducer;
+const persistConfig = {
+  key: 'auth',
+  storage,
+};
+
+export default persistReducer(persistConfig, authSlice.reducer);
