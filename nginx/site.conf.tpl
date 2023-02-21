@@ -37,4 +37,13 @@ server {
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto https;
     }
+
+    location /pgadmin {
+      rewrite /pgadmin/(.*) /$1 break;
+      proxy_pass http://pgadmin:5050/;
+      proxy_set_header Host $host;
+      proxy_set_header X-Real-IP $remote_addr;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header X-Forwarded-Proto https;
+    }
 }

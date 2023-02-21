@@ -51,7 +51,7 @@ services:
       - ./.env
     volumes:
       - .:/usr/src/app
-      - nginx_conf:/etc/nginx/sites
+      - nginx_ssl_conf:/etc/nginx/sites/ssl
       - letsencrypt_certs:/etc/letsencrypt
       - certbot_acme_challenge:/var/www/certbot
     ports:
@@ -81,12 +81,9 @@ services:
     restart: unless-stopped
 
 volumes:
-  nginx_conf:
-    external: true
+  nginx_ssl_conf:
   letsencrypt_certs:
-    external: true
   certbot_acme_challenge:
   redis:
-    driver: local
   postgres:
   pgadmin:
