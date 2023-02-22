@@ -41,30 +41,6 @@ export default function SelectGamePage() {
   useEffect(() => {
     if (!user && isLoggingIn) {
       dispatch(getUserInfo());
-    } else {
-      // dispatch(addCategory({
-      //   newCategory: {
-      //     icon: 'Lightning',
-      //     name: 'Blitz',
-      //     description: 'All the same as the standard game, but you only have 15ms to make your move.',
-      //     descriptionShort: 'All the same as the standard game, but you only have 15ms to make your move.',
-      //     maxPoints: 100,
-      //     gameConfig: {
-      //       width: 16,
-      //       roundsCount: 50,
-      //       playersCount: 0, // algos.length,
-      //       initialRobotsCount: 10,
-      //       startEnergy: 50,
-      //       rngSeed: 123,
-      //       energyStationsPerRobot: 2,
-      //       energyLossToCloneRobot: 10,
-      //       maxRobotsCount: 50,
-      //       timeout: 1000,
-      //       maxTimeoutsCount: 5,
-      //       energyCollectDistance: 2,
-      //     },
-      //   },
-      // }));
     }
     dispatch(fetchCategories());
   }, [dispatch, isLoggingIn, user]);
