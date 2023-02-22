@@ -1,4 +1,6 @@
-import React, { useEffect } from 'react';
+import React, {
+  useCallback, useEffect, useState,
+} from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './SelectGamePage.module.scss';
 import SelectGameCard from '../../SelectGameCard/SelectGameCard';
@@ -61,6 +63,18 @@ export default function SelectGamePage() {
     },
   ]);
 
+  const [scrollLeft, setScrollLeft] = useState<number | undefined>(undefined);
+  function handleScroll(e: React.UIEvent<HTMLDivElement>) {
+    setScrollLeft(e.currentTarget.scrollLeft);
+  }
+
+  const [lastMousePosition, setLastMousePosition] = useState({ x: 0, y: 0 });
+
+  const handleLastMousePos = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    setLastMousePosition({ x: e.clientX, y: e.clientY });
+    setScrollLeft(undefined);
+  }, [setLastMousePosition]);
+
   return (
     <div className={styles.root}>
       <header className={styles.header}>
@@ -82,7 +96,7 @@ export default function SelectGamePage() {
           </Button>
         </div>
       </header>
-      <main className={styles.gameCards}>
+      <main className={styles.gameCards} onScroll={handleScroll}>
         {categories.map(({
           id, title, description, maxPoints, icon,
         }) => (
@@ -93,6 +107,9 @@ export default function SelectGamePage() {
             description={description}
             maxPoints={maxPoints}
             onSelect={handleSelectCategory(id)}
+            scrollLeft={scrollLeft}
+            lastMousePosition={lastMousePosition}
+            onChangeLastMousePosition={handleLastMousePos}
           />
         ))}
       </main>
