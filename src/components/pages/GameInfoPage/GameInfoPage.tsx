@@ -68,26 +68,13 @@ export default function GameInfoPage() {
     const algos = [...selectedFiles, file].filter(isTruthy) as ApiAlgo[];
     dispatch(startGame({
       algos,
-      gameConfig: {
-        width: 16,
-        roundsCount: 50,
-        playersCount: algos.length,
-        initialRobotsCount: 10,
-        startEnergy: 50,
-        rngSeed: 123,
-        energyStationsPerRobot: 2,
-        energyLossToCloneRobot: 10,
-        maxRobotsCount: 50,
-        timeout: 1000,
-        maxTimeoutsCount: 5,
-        energyCollectDistance: 2,
-      },
+      categoryId: categoryIdInt,
     })).then((a) => {
       // TODO types?
       const { id } = a.payload as { id: GameId };
       navigate(`/game/${id}`);
     });
-  }, [dispatch, file, files, navigate, selected]);
+  }, [categoryIdInt, dispatch, file, files, navigate, selected]);
 
   return (
     <div className={styles.root}>

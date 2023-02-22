@@ -2,7 +2,7 @@ import React, {
   useCallback, useEffect, useMemo, useState,
 } from 'react';
 import cn from 'classnames';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import styles from './GamePage.module.scss';
 import PlayerCard from '../../PlayerCard/PlayerCard';
 import GameCanvas from '../../GameCanvas/GameCanvas';
@@ -14,7 +14,11 @@ import Log from '../../Log/Log';
 import { doRound, GameId } from '../../../store/slices/gamesSlice';
 import useAppSelector from '../../../hooks/useAppSelector';
 import useAppDispatch from '../../../hooks/useAppDispatch';
-import { selectGameConfig, selectGameMapStates, selectPlayers } from '../../../store/selectors/gamesSelectors';
+import {
+  selectGameConfig,
+  selectGameMapStates,
+  selectPlayers,
+} from '../../../store/selectors/gamesSelectors';
 import Back from '../../../assets/icons/Back.svg';
 import More from '../../../assets/icons/More.svg';
 import useContextMenu from '../../../hooks/useContextMenu';
@@ -22,6 +26,7 @@ import useContextMenu from '../../../hooks/useContextMenu';
 export default function GamePage() {
   const { gameId } = useParams() as { gameId: GameId };
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   const gameConfig = useAppSelector(selectGameConfig(gameId));
   const mapStates = useAppSelector(selectGameMapStates(gameId));
@@ -195,7 +200,7 @@ export default function GamePage() {
 
       <div className={styles.playerList}>
         <div className={styles.header}>
-          <Back className={styles.back} />
+          <Back className={styles.back} onClick={() => navigate(-1)} />
           <h2>Game</h2>
           <More className={styles.more} onClick={openContextMenu} />
           {contextMenu}

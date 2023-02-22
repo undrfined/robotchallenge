@@ -5,6 +5,8 @@ import { CoreWorkerType } from '../../workers/core.worker';
 import { GameConfig, GameMap, GamePlayerActions } from '../../types/gameTypes';
 import createUUID, { UUID } from '../../helpers/createUUID';
 import { ApiAlgo } from '../../api/types';
+import { CategoryId } from './categoriesSlice';
+import { selectCategory } from '../selectors/categoriesSelectors';
 
 export type MapState = {
   map: GameMap;
@@ -27,6 +29,7 @@ export type GameState = {
   logs: Record<PlayerId, Log>;
   mapStates: MapState[];
   players: Record<PlayerId, string>;
+  categoryId: CategoryId;
 };
 
 export type GameId = UUID;
@@ -64,15 +67,23 @@ AppThunkApi
 export const startGame = createAsyncThunk<
 GameState,
 {
-  gameConfig: GameConfig;
+  categoryId: CategoryId;
   algos: ApiAlgo[];
 },
 AppThunkApi
 >(
   'games/startGame',
   async ({
-    gameConfig, algos,
-  }, { dispatch }) => {
+    categoryId, algos,
+  }, { dispatch, getState }) => {
+    const gameConfig = selectCategory(categoryId)(getState())?.gameConfig;
+    if (!gameConfig) throw Error('Game config not found');
+
+    const gameConfig2 = {
+      ...gameConfig,
+      // TODO hack
+      playersCount: algos.length,
+    };
     const coreWorker = new Worker(new URL('../../workers/core.worker.ts', import.meta.url));
     const core = Comlink.wrap<CoreWorkerType>(coreWorker);
 
@@ -91,7 +102,7 @@ AppThunkApi
       }));
     }));
 
-    await core.initGame(gameConfig, algos.map((algo) => algo.file));
+    await core.initGame(gameConfig2, algos.map((algo) => algo.file));
 
     const mapStates = [{
       map: await core.getMap(),
@@ -100,7 +111,8 @@ AppThunkApi
 
     return {
       id: gameId,
-      gameConfig,
+      gameConfig: gameConfig2,
+      categoryId,
       core,
       coreWorker,
       mapStates,

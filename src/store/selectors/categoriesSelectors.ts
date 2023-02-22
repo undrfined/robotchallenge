@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit';
-import { RootState } from '../index';
+import type { RootState } from '../index';
 import { CategoryId } from '../slices/categoriesSlice';
 
 const selectSelf = (state: RootState) => state.categories;
