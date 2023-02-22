@@ -72,3 +72,34 @@ pub fn find_all_algos(conn: &mut PgConnection) -> Result<Vec<models::Algo>, DbEr
 
     Ok(algos2)
 }
+
+pub fn find_all_categories(conn: &mut PgConnection) -> Result<Vec<models::Category>, DbError> {
+    use crate::schema::categories::dsl::*;
+
+    let categories2 = categories.limit(100).load::<models::Category>(conn)?;
+
+    Ok(categories2)
+}
+
+pub fn insert_new_category(
+    conn: &mut PgConnection,
+    new_category: models::NewCategory,
+) -> Result<models::Category, DbError> {
+    use crate::schema::categories::dsl::*;
+
+    let created_category = diesel::insert_into(categories)
+        .values(&new_category)
+        .on_conflict(id)
+        .do_update()
+        .set((
+            name.eq(excluded(name)),
+            description.eq(excluded(description)),
+            description_short.eq(excluded(description_short)),
+            game_config.eq(excluded(game_config)),
+            max_points.eq(excluded(max_points)),
+            icon.eq(excluded(icon)),
+        ))
+        .get_result::<models::Category>(conn)?;
+
+    Ok(created_category)
+}

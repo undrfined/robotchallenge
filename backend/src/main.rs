@@ -267,6 +267,49 @@ async fn get_user_by_id(
     }
 }
 
+#[get("/categories")]
+async fn get_categories(
+    pool: web::Data<DbPool>,
+) -> Result<web::Json<Vec<models::Category>>, Error> {
+    let categories = web::block(move || {
+        let mut conn = pool.get()?;
+        actions::find_all_categories(&mut conn)
+    })
+    .await
+    .map_err(actix_web::error::ErrorInternalServerError)?
+    .map_err(actix_web::error::ErrorInternalServerError);
+
+    match categories {
+        Ok(categories) => Ok(web::Json(categories)),
+        Err(err) => Err(ErrorInternalServerError(err)),
+    }
+}
+
+#[post("/categories")]
+async fn create_category(
+    user: models::User,
+    pool: web::Data<DbPool>,
+    payload: web::Json<models::NewCategory>,
+) -> Result<web::Json<models::Category>, Error> {
+    match user.role {
+        models::UserRole::Admin => (),
+        _ => return Err(ErrorForbidden("not authorized")),
+    }
+
+    let category = web::block(move || {
+        let mut conn = pool.get()?;
+        actions::insert_new_category(&mut conn, payload.into_inner())
+    })
+    .await
+    .map_err(actix_web::error::ErrorInternalServerError)?
+    .map_err(actix_web::error::ErrorInternalServerError);
+
+    match category {
+        Ok(category) => Ok(web::Json(category)),
+        Err(err) => Err(ErrorInternalServerError(err)),
+    }
+}
+
 #[get("/algos")]
 async fn get_algos(pool: web::Data<DbPool>) -> Result<web::Json<Vec<models::Algo>>, Error> {
     let algos = web::block(move || {
@@ -426,6 +469,8 @@ async fn main() -> std::io::Result<()> {
             .service(get_user)
             .service(hello)
             .service(logout)
+            .service(get_categories)
+            .service(create_category)
             .service(get_user_by_id)
             .service(create_algo)
             .service(get_algos)

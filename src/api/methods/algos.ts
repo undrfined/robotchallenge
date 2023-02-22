@@ -1,6 +1,6 @@
-import { PostRequest, GetRequest, RequestType } from './types';
+import { PostFileRequest, GetRequest, RequestType } from './types';
 
-export class PostAlgo extends PostRequest implements RequestType {
+export class PostAlgo extends PostFileRequest implements RequestType {
   type = 'algos';
 
   resultType?: { id: number };

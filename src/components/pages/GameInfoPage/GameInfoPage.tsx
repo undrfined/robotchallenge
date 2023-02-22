@@ -8,7 +8,6 @@ import { GameId, startGame } from '../../../store/slices/gamesSlice';
 // import wasmCsharp from '../../../lol.wasm';
 // import wasmJs from '../../../test_js.wasm';
 import { selectGames } from '../../../store/selectors/gamesSelectors';
-import { CategoryId } from '../../../store/slices/categoriesSlice';
 import { selectCategory } from '../../../store/selectors/categoriesSelectors';
 import Back from '../../../assets/icons/Back.svg';
 import UploadFile from '../../common/UploadFile/UploadFile';
@@ -24,8 +23,9 @@ import { fetchAlgos, uploadAlgo } from '../../../store/slices/algosSlice';
 import { ApiAlgo } from '../../../api/types';
 
 export default function GameInfoPage() {
-  const { categoryId } = useParams() as { categoryId: CategoryId };
-  const category = useAppSelector(selectCategory(categoryId));
+  const { categoryId } = useParams() as { categoryId: string };
+  const categoryIdInt = Number(categoryId);
+  const category = useAppSelector(selectCategory(categoryIdInt));
   if (!category) throw new Error('Category not found');
 
   const { isLoading } = useAppSelector(selectGames);
@@ -94,7 +94,7 @@ export default function GameInfoPage() {
       <div className={styles.info}>
         <h1>
           <Back onClick={() => navigate('/')} className={styles.closeButton} />
-          <AnimatedText text={category.title} containerType="span" delay={0} />
+          <AnimatedText text={category.name} containerType="span" delay={0} />
         </h1>
         <AnimatedText text={category.description} containerType="p" delay={200} />
 

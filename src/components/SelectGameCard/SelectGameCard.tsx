@@ -5,13 +5,11 @@ import Lottie from 'lottie-react';
 import cn from 'classnames';
 import styles from './SelectGameCard.module.scss';
 import Button from '../common/Button/Button';
-import LOTTIE_ICONS, { LottieIcon } from '../../helpers/lottieIcons';
+import LOTTIE_ICONS from '../../helpers/lottieIcons';
+import { ApiCategory } from '../../api/types';
 
 type OwnProps = {
-  icon: LottieIcon;
-  title: string;
-  description: string;
-  maxPoints: number;
+  category: ApiCategory;
   onSelect: VoidFunction;
   scrollLeft: number | undefined;
   lastMousePosition: { x: number; y: number };
@@ -19,10 +17,7 @@ type OwnProps = {
 };
 
 export default function SelectGameCard({
-  icon,
-  title,
-  description,
-  maxPoints,
+  category,
   onSelect,
   scrollLeft,
   onChangeLastMousePosition,
@@ -35,6 +30,10 @@ export default function SelectGameCard({
   const [posX, setPosX] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [shouldTransition, setShouldTransition] = useState(false);
+
+  const {
+    name, descriptionShort, icon, maxPoints,
+  } = category;
 
   const updateRotation = useCallback((clientX: number, clientY: number, isMouse = false) => {
     if (shouldTransition) return;
@@ -96,8 +95,8 @@ export default function SelectGameCard({
       }}
     >
       <Lottie animationData={LOTTIE_ICONS[icon]} loop className={styles.animation} />
-      <h2 className={styles.title}>{title}</h2>
-      <div className={styles.description}>{description}</div>
+      <h2 className={styles.name}>{name}</h2>
+      <div className={styles.description}>{descriptionShort}</div>
       <div className={styles.prize}>
         <Lottie animationData={LOTTIE_ICONS.Diamond} loop className={styles.diamondAnimation} />
         <div className={styles.prizeText}>Max Points: {maxPoints}</div>

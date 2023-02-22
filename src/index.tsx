@@ -7,6 +7,7 @@ import SelectGamePage from './components/pages/SelectGamePage/SelectGamePage';
 import GamePage from './components/pages/GamePage/GamePage';
 import GameInfoPage from './components/pages/GameInfoPage/GameInfoPage';
 import store from './store';
+import AdminPage from './components/pages/AdminPage/AdminPage';
 
 const router = createBrowserRouter([
   {
@@ -20,6 +21,10 @@ const router = createBrowserRouter([
   {
     path: '/game/:gameId',
     element: <GamePage />,
+  },
+  {
+    path: '/admin',
+    element: <AdminPage />,
   },
 ]);
 

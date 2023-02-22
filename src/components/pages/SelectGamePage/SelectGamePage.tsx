@@ -6,7 +6,7 @@ import styles from './SelectGamePage.module.scss';
 import SelectGameCard from '../../SelectGameCard/SelectGameCard';
 import { selectCategories } from '../../../store/selectors/categoriesSelectors';
 import useAppSelector from '../../../hooks/useAppSelector';
-import { CategoryId } from '../../../store/slices/categoriesSlice';
+import { CategoryId, fetchCategories } from '../../../store/slices/categoriesSlice';
 import AnimatedText from '../../common/AnimatedText/AnimatedText';
 import useAppDispatch from '../../../hooks/useAppDispatch';
 import { getUserInfo, login, logout } from '../../../store/slices/authSlice';
@@ -41,7 +41,32 @@ export default function SelectGamePage() {
   useEffect(() => {
     if (!user && isLoggingIn) {
       dispatch(getUserInfo());
+    } else {
+      // dispatch(addCategory({
+      //   newCategory: {
+      //     icon: 'Lightning',
+      //     name: 'Blitz',
+      //     description: 'All the same as the standard game, but you only have 15ms to make your move.',
+      //     descriptionShort: 'All the same as the standard game, but you only have 15ms to make your move.',
+      //     maxPoints: 100,
+      //     gameConfig: {
+      //       width: 16,
+      //       roundsCount: 50,
+      //       playersCount: 0, // algos.length,
+      //       initialRobotsCount: 10,
+      //       startEnergy: 50,
+      //       rngSeed: 123,
+      //       energyStationsPerRobot: 2,
+      //       energyLossToCloneRobot: 10,
+      //       maxRobotsCount: 50,
+      //       timeout: 1000,
+      //       maxTimeoutsCount: 5,
+      //       energyCollectDistance: 2,
+      //     },
+      //   },
+      // }));
     }
+    dispatch(fetchCategories());
   }, [dispatch, isLoggingIn, user]);
 
   const {
@@ -97,16 +122,11 @@ export default function SelectGamePage() {
         </div>
       </header>
       <main className={styles.gameCards} onScroll={handleScroll}>
-        {categories.map(({
-          id, title, description, maxPoints, icon,
-        }) => (
+        {categories.map((category) => (
           <SelectGameCard
-            key={id}
-            icon={icon}
-            title={title}
-            description={description}
-            maxPoints={maxPoints}
-            onSelect={handleSelectCategory(id)}
+            key={category.id}
+            category={category}
+            onSelect={handleSelectCategory(category.id)}
             scrollLeft={scrollLeft}
             lastMousePosition={lastMousePosition}
             onChangeLastMousePosition={handleLastMousePos}

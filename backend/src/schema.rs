@@ -2,6 +2,10 @@
 
 pub mod sql_types {
     #[derive(diesel::sql_types::SqlType)]
+    #[diesel(postgres_type(name = "category_icon"))]
+    pub struct CategoryIcon;
+
+    #[derive(diesel::sql_types::SqlType)]
     #[diesel(postgres_type(name = "user_role"))]
     pub struct UserRole;
 }
@@ -11,6 +15,23 @@ diesel::table! {
         id -> Int4,
         user_id -> Varchar,
         file -> Bytea,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use super::sql_types::CategoryIcon;
+
+    categories (id) {
+        id -> Int4,
+        name -> Varchar,
+        description -> Varchar,
+        description_short -> Varchar,
+        game_config -> Jsonb,
+        max_points -> Int4,
+        icon -> CategoryIcon,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
     }
 }
 
@@ -30,5 +51,6 @@ diesel::joinable!(algos -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     algos,
+    categories,
     users,
 );

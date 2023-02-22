@@ -13,9 +13,13 @@ export class GetRequest implements MethodType {
   public path: (string | undefined)[] = [];
 }
 
-export class PostRequest implements MethodType {
+export class PostFileRequest implements MethodType {
   public method = 'POST';
 
   constructor(public body: Blob) {
   }
+}
+
+export class PostRequest implements MethodType {
+  public method = 'POST';
 }
