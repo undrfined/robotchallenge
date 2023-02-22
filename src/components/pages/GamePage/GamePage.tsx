@@ -36,32 +36,6 @@ export default function GamePage() {
 
   const [roundNumber, setRoundNumber] = useState(0);
 
-  // useEffect(() => {
-  //   Core.setCallbacks(Comlink.proxy(async (gameMap: GameMap, playerActions: GamePlayerActions[]) => {
-  //     // setRoundNumber((no) => no + 1);
-  //     setMapStates((states) => {
-  //       const other = states.slice(0, -1);
-  //       const last = states[states.length - 1];
-  //
-  //       return [...other, {
-  //         ...last,
-  //         playerActions,
-  //       }, {
-  //         map: gameMap2,
-  //         playerActions: [],
-  //       }];
-  //     });
-  //   }),
-  //   Comlink.proxy((owner: number, log: string, errorLog: string) => {
-  //     setLogs((oldLogs) => ({
-  //       ...oldLogs,
-  //       [owner]: {
-  //         log: (oldLogs[owner]?.log || '') + log,
-  //         errorLog: (oldLogs[owner]?.errorLog || '') + errorLog,
-  //       },
-  //     }));
-  //   }));
-  // }, [roundNumber]);
   //
   // useEffect(() => {
   //   setInterval(() => {
