@@ -47,7 +47,7 @@ export default function GamePage() {
   //         ...last,
   //         playerActions,
   //       }, {
-  //         map: gameMap,
+  //         map: gameMap2,
   //         playerActions: [],
   //       }];
   //     });

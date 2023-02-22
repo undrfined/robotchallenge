@@ -23,6 +23,7 @@
   "include": [
     "src",
     "./.eslintrc.js",
+    "./commitlint.config.js",
     "./node_modules/redux-persist/types"
   ],
   "exclude": [
