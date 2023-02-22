@@ -1,7 +1,6 @@
 .root {
   display: flex;
   flex-direction: column;
-  padding: 0 clamp(2rem, 5vw, 10rem);
 }
 
 .header {
@@ -9,6 +8,7 @@
   align-items: center;
   margin-bottom: clamp(1rem, 2vh, 4rem);
   margin-top: clamp(1rem, 5vh, 5.875rem);
+  padding: 0 clamp(2rem, 5vw, 10rem);
 }
 
 .header-buttons {
@@ -19,8 +19,7 @@
 .game-cards {
   display: flex;
   gap: 3rem;
-  margin-bottom: 5.875rem;
   overflow: auto;
-  padding: 2rem;
-  margin: -2rem;
+  padding: 2rem clamp(2rem, 5vw, 10rem);
+  margin: -2rem 0 5.875rem;
 }
