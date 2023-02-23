@@ -2,41 +2,14 @@
 extern crate diesel;
 
 use actix_cors::Cors;
-use actix_identity::{Identity, IdentityMiddleware};
-use actix_multipart::Multipart;
-use actix_session::storage::SessionStore;
+use actix_identity::IdentityMiddleware;
 use actix_session::{storage, SessionMiddleware};
 use actix_web::cookie::Key;
-use actix_web::dev::Payload;
-use actix_web::error::{
-    ErrorBadRequest, ErrorForbidden, ErrorInternalServerError, ErrorUnauthorized,
-};
-use actix_web::middleware::Logger;
-use actix_web::{
-    get, post, web, App, Error, FromRequest, HttpMessage, HttpRequest, HttpResponse, HttpServer,
-    Responder,
-};
-use anyhow;
+use actix_web::middleware::{Logger, NormalizePath, TrailingSlash};
+use actix_web::{web, App, HttpServer};
 use dotenv::dotenv;
-use log::{info, warn};
-use oauth2::basic::BasicClient;
-use oauth2::reqwest::async_http_client;
-use oauth2::{
-    AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, RedirectUrl,
-    Scope, TokenResponse, TokenUrl,
-};
-use octocrab::models::UserId;
-use octocrab::Octocrab;
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::env;
-use std::future::Future;
-use std::pin::Pin;
-use std::sync::RwLock;
-use std::time::Duration;
-use url::Url;
 
-use diesel::backend::Backend;
 use diesel::pg::Pg;
 use diesel::{
     prelude::*,
@@ -51,64 +24,7 @@ mod categories;
 mod models;
 mod schema;
 mod users;
-
-impl FromRequest for models::User {
-    // type Config = ();
-    type Error = Error;
-    type Future = Pin<Box<dyn Future<Output = Result<models::User, Error>>>>;
-
-    fn from_request(req: &HttpRequest, pl: &mut Payload) -> Self::Future {
-        println!("from_request");
-        let fut = Identity::from_request(req, pl);
-        let poolO: Option<&web::Data<DbPool>> = req.app_data();
-        if poolO.is_none() {
-            warn!("sessions is empty(none)!");
-            return Box::pin(async { Err(ErrorUnauthorized("unauthorized")) });
-        }
-        let pool = poolO.unwrap().clone();
-        println!("sessions: {:?}", pool);
-        Box::pin(async move {
-            let k = fut.await;
-
-            if let Ok(identity) = k {
-                println!("identity: {:?}", identity.id());
-                let id = identity.id().unwrap().to_string();
-                // use web::block to offload blocking Diesel code without blocking server thread
-                let user = web::block(move || {
-                    let mut conn = pool.get()?;
-                    actions::find_user_by_uid(&mut conn, id)
-                })
-                .await
-                .map_err(|e| {
-                    println!("Error: {}", e);
-                    ErrorUnauthorized("fuck")
-                })?;
-
-                if let Ok(user) = user {
-                    return match user {
-                        Some(user) => Ok(user),
-                        None => Err(ErrorUnauthorized("unauthorized")),
-                    };
-                }
-                // .map_err(actix_web::error::ErrorInternalServerError)?;
-                // return Ok(user);
-                // if let Some(user) = sessions
-                //     .read()
-                //     .unwrap()
-                //     .map
-                //     .get(&identity.id().unwrap().to_string())
-                //     .map(|x| x.clone())
-                // {
-                //     return Ok(user);
-                // }
-            } else {
-                println!("identity fail");
-            }
-
-            Err(ErrorUnauthorized("unauthorized"))
-        })
-    }
-}
+mod utils;
 
 type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
@@ -157,6 +73,7 @@ async fn main() -> std::io::Result<()> {
                 storage::RedisActorSessionStore::new(redis_connection_string),
                 key.clone(),
             ))
+            .wrap(NormalizePath::new(TrailingSlash::Always))
             .service(
                 web::scope("users")
                     .service(users::get_user)
