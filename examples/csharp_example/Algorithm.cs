@@ -21,8 +21,8 @@ public class Algorithm: IAlgorithm
     {
         return new LibInfo
         {
-            Name = "My great library",
-            Version = "0.2.3"
+            Name = "My great other library",
+            Version = "1.2.3"
         };
     }
 }

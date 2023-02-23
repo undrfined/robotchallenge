@@ -10,6 +10,7 @@
 
 # production
 /build
+core/build
 
 # misc
 .DS_Store
@@ -25,6 +26,5 @@ yarn-error.log*
 .idea
 
 .env
-build
 **/bin
 **/obj
