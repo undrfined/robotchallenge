@@ -1,13 +1,15 @@
 import { PostFileRequest, GetRequest, RequestType } from './types';
 
+const BASE = 'algos';
+
 export class PostAlgo extends PostFileRequest implements RequestType {
-  type = 'algos';
+  type = BASE;
 
   resultType?: { id: number };
 }
 
 export class GetAlgos extends GetRequest implements RequestType {
-  type = 'algos';
+  type = BASE;
 
   resultType?: {
     file: number[];

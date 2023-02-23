@@ -1,8 +1,9 @@
 import { GetRequest, RequestType } from './types';
 import { ApiUser } from '../types';
 
+const BASE = 'users';
 export class GetUserRequest extends GetRequest implements RequestType {
-  type = 'user';
+  type = BASE;
 
   constructor(public id?: string) {
     super();

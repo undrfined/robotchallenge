@@ -20,10 +20,10 @@ export default function makeRequest<T extends Requests>(request: T): Promise<Res
     formDataJson = JSON.stringify(Object.values(propertiesFiltered)[0]);
   }
 
-  let url = ENDPOINT + request.type;
+  let url = `${ENDPOINT + request.type}/`;
   if (request instanceof GetRequest) {
     const joinedPath = compact(request.path).join('/');
-    url += joinedPath ? `/${joinedPath}` : '';
+    url += joinedPath || '';
   }
 
   return fetch(url, {

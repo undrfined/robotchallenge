@@ -45,57 +45,12 @@ use diesel::{
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 
 mod actions;
+mod algos;
+mod auth;
+mod categories;
 mod models;
 mod schema;
-
-#[derive(Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct Info {
-    redirect_url: String,
-}
-
-#[derive(Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct OkJsonResult {
-    ok: bool,
-}
-
-#[derive(Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct AlgoJsonResult {
-    id: i32,
-}
-
-#[derive(Deserialize, Serialize)]
-struct CallbackInfo {
-    code: String,
-    state: String,
-}
-
-#[derive(Debug, Clone, Hash, Eq, PartialEq, Serialize, Deserialize)]
-#[non_exhaustive]
-pub struct GhUser {
-    pub login: String,
-    pub id: UserId,
-    pub node_id: String,
-    pub avatar_url: Url,
-    pub gravatar_id: String,
-    pub url: Url,
-    pub html_url: Url,
-    pub followers_url: Url,
-    pub following_url: Url,
-    pub gists_url: Url,
-    pub starred_url: Url,
-    pub subscriptions_url: Url,
-    pub organizations_url: Url,
-    pub repos_url: Url,
-    pub events_url: Url,
-    pub received_events_url: Url,
-    pub r#type: String,
-    pub site_admin: bool,
-    pub bio: Option<String>,
-    pub name: Option<String>,
-}
+mod users;
 
 impl FromRequest for models::User {
     // type Config = ();
@@ -155,259 +110,6 @@ impl FromRequest for models::User {
     }
 }
 
-#[get("/logout")]
-async fn logout(id: Identity) -> Result<web::Json<OkJsonResult>, Error> {
-    Identity::logout(id);
-    Ok(web::Json(OkJsonResult { ok: true }))
-}
-
-#[get("/callback")]
-async fn callback(
-    pool: web::Data<DbPool>,
-    callback_info: web::Query<CallbackInfo>,
-    http_request: HttpRequest,
-) -> impl Responder {
-    println!("code: {}", callback_info.code);
-    println!("state: {}", callback_info.state);
-    let c = &callback_info.code;
-    let s = &callback_info.state;
-    let code = AuthorizationCode::new(c.to_string());
-    let state = CsrfToken::new(s.to_string());
-
-    let client = BasicClient::new(
-        ClientId::new(env::var("GH_CLIENT_ID").unwrap()),
-        Some(ClientSecret::new(env::var("GH_CLIENT_SECRET").unwrap())),
-        AuthUrl::new("https://github.com/login/oauth/authorize".to_string()).unwrap(),
-        Some(TokenUrl::new("https://github.com/login/oauth/access_token".to_string()).unwrap()),
-    );
-    let token_result = client
-        .exchange_code(code)
-        // .set_pkce_verifier(PkceCodeVerifier::new(s.to_string()))
-        .request_async(async_http_client)
-        .await;
-
-    if let Ok(token) = token_result {
-        // NB: Github returns a single comma-separated "scope" parameter instead of multiple
-        // space-separated scopes. Github-specific clients can parse this scope into
-        // multiple scopes by splitting at the commas. Note that it's not safe for the
-        // library to do this by default because RFC 6749 allows scopes to contain commas.
-        // let scopes = if let Some(scopes_vec) = token.scopes() {
-        //     scopes_vec
-        //         .iter()
-        //         .map(|comma_separated| comma_separated.split(','))
-        //         .flatten()
-        //         .collect::<Vec<_>>()
-        // } else {
-        //     Vec::new()
-        // };
-        println!(
-            "Github returned the following scopes:\n{:?} {:?}\n",
-            token.scopes(),
-            token.access_token().secret(),
-        );
-
-        let octocrab = Octocrab::builder()
-            .personal_token(token.access_token().secret().to_owned())
-            .build()
-            .unwrap();
-        let user: GhUser = octocrab.get("/user", None::<&()>).await.unwrap();
-        println!("user: {:?}", user);
-
-        let id = user.id.to_string();
-        let extensions = &http_request.extensions();
-        Identity::login(extensions, id.clone()).expect("failed to log in");
-
-        // use web::block to offload blocking Diesel code without blocking server thread
-        let user = web::block(move || {
-            let mut conn = pool.get()?;
-            actions::insert_new_user(
-                &mut conn,
-                id.clone(),
-                String::from(user.avatar_url.to_string()),
-                String::from(match user.name {
-                    Some(name) => name,
-                    None => user.login.to_string(),
-                }),
-            )
-        })
-        .await
-        .unwrap();
-        // sessions.write().unwrap().map.insert(id, user2.clone());
-    }
-
-    let redirect_url = env::var("APP_UI_ENDPOINT").unwrap();
-    HttpResponse::TemporaryRedirect()
-        .append_header(("Location", redirect_url))
-        .finish()
-}
-
-#[get("/user")]
-async fn get_user(user: models::User) -> Result<web::Json<models::User>, Error> {
-    println!("Github returned the following user:\n{:?}\n", user);
-    return Ok(web::Json(user));
-}
-
-#[get("/user/{id}")]
-async fn get_user_by_id(
-    path: web::Path<(String)>,
-    pool: web::Data<DbPool>,
-) -> Result<web::Json<models::User>, Error> {
-    let (uid) = path.into_inner();
-    let u = web::block(move || {
-        let mut conn = pool.get()?;
-        actions::find_user_by_uid(&mut conn, uid)
-    })
-    .await
-    .map_err(actix_web::error::ErrorInternalServerError)?
-    .map_err(actix_web::error::ErrorInternalServerError)?;
-
-    match u {
-        Some(u) => Ok(web::Json(u)),
-        None => Err(ErrorInternalServerError("user not found")),
-    }
-}
-
-#[get("/categories")]
-async fn get_categories(
-    pool: web::Data<DbPool>,
-) -> Result<web::Json<Vec<models::Category>>, Error> {
-    let categories = web::block(move || {
-        let mut conn = pool.get()?;
-        actions::find_all_categories(&mut conn)
-    })
-    .await
-    .map_err(actix_web::error::ErrorInternalServerError)?
-    .map_err(actix_web::error::ErrorInternalServerError);
-
-    match categories {
-        Ok(categories) => Ok(web::Json(categories)),
-        Err(err) => Err(ErrorInternalServerError(err)),
-    }
-}
-
-#[post("/categories")]
-async fn create_category(
-    user: models::User,
-    pool: web::Data<DbPool>,
-    payload: web::Json<models::NewCategory>,
-) -> Result<web::Json<models::Category>, Error> {
-    match user.role {
-        models::UserRole::Admin => (),
-        _ => return Err(ErrorForbidden("not authorized")),
-    }
-
-    let category = web::block(move || {
-        let mut conn = pool.get()?;
-        actions::insert_new_category(&mut conn, payload.into_inner())
-    })
-    .await
-    .map_err(actix_web::error::ErrorInternalServerError)?
-    .map_err(actix_web::error::ErrorInternalServerError);
-
-    match category {
-        Ok(category) => Ok(web::Json(category)),
-        Err(err) => Err(ErrorInternalServerError(err)),
-    }
-}
-
-#[get("/algos")]
-async fn get_algos(pool: web::Data<DbPool>) -> Result<web::Json<Vec<models::Algo>>, Error> {
-    let algos = web::block(move || {
-        let mut conn = pool.get()?;
-        actions::find_all_algos(&mut conn)
-    })
-    .await
-    .map_err(actix_web::error::ErrorInternalServerError)?
-    .map_err(actix_web::error::ErrorInternalServerError);
-
-    match algos {
-        Ok(algos) => Ok(web::Json(algos)),
-        Err(err) => Err(ErrorInternalServerError(err)),
-    }
-}
-
-#[post("/algos")]
-async fn create_algo(
-    user: models::User,
-    pool: web::Data<DbPool>,
-    mut payload: Multipart,
-) -> Result<web::Json<AlgoJsonResult>, Error> {
-    use actix_web::{middleware, web, App, Error, HttpResponse, HttpServer};
-    use futures::{StreamExt, TryStreamExt};
-
-    if let Ok(Some(mut field)) = payload.try_next().await {
-        let content_type = field.content_disposition();
-        let filename = content_type.get_filename().unwrap();
-        println!("File name: {:?}, type {:?}", filename, content_type);
-
-        // Get data to Vec<u8>
-        let mut data = web::BytesMut::new();
-        while let Some(chunk) = field.next().await {
-            data.extend_from_slice(&chunk?);
-        }
-
-        let uid = user.id.clone();
-        let data = data.to_vec();
-        let fid = web::block(move || {
-            let mut conn = pool.get()?;
-            actions::insert_new_algo(&mut conn, uid, data)
-        })
-        .await
-        .map_err(ErrorInternalServerError)?
-        .map_err(ErrorInternalServerError)
-        .unwrap();
-
-        return Ok(web::Json(AlgoJsonResult { id: fid }));
-        // field.
-        // // Field in turn is stream of *Bytes* object
-        // while let Some(chunk) = field.next().await {
-        //     let data = chunk.unwrap();
-        //     // filesystem operations are blocking, we have to use threadpool
-        //     f = web::block(move || f.write_all(&data).map(|_| f))
-        //         .await
-        //         .unwrap();
-        // }
-    }
-
-    Err(ErrorInternalServerError("algo not found"))
-}
-
-#[get("/auth")]
-async fn hello() -> Result<web::Json<Info>, Error> {
-    // Create an OAuth2 client by specifying the client ID, client secret, authorization URL and
-    // token URL.
-    let client = BasicClient::new(
-        ClientId::new(env::var("GH_CLIENT_ID").unwrap()),
-        Some(ClientSecret::new(env::var("GH_CLIENT_SECRET").unwrap())),
-        AuthUrl::new("https://github.com/login/oauth/authorize".to_string()).unwrap(),
-        Some(TokenUrl::new("https://github.com/login/oauth/access_token".to_string()).unwrap()),
-    )
-    // Set the URL the user will be redirected to after the authorization process.
-    .set_redirect_uri(RedirectUrl::new(env::var("GH_REDIRECT_URI").unwrap()).unwrap());
-
-    // Generate a PKCE challenge.
-    let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
-
-    // Generate the full authorization URL.
-    let (auth_url, csrf_token) = client
-        .authorize_url(CsrfToken::new_random)
-        // Set the desired scopes.
-        .add_scope(Scope::new("public_repo".to_string()))
-        .add_scope(Scope::new("user:email".to_string()))
-        // Set the PKCE code challenge.
-        .set_pkce_challenge(pkce_challenge)
-        .url();
-
-    // This is the URL you should redirect the user to, in order to trigger the authorization
-    // process.
-    println!("Browse to: {}", auth_url);
-    println!("csrf_token: {}", csrf_token.secret());
-    let obj = Info {
-        redirect_url: auth_url.to_string(),
-    };
-    return Ok(web::Json(obj));
-}
-
 type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations/");
@@ -415,21 +117,18 @@ pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations/");
 fn run_migrations(
     connection: &mut impl MigrationHarness<Pg>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
-    // This will run the necessary migrations.
-    //
-    // See the documentation for `MigrationHarness` for
-    // all available methods.
     connection.run_pending_migrations(MIGRATIONS)?;
 
     Ok(())
 }
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
 
     let redis_connection_string = "redis:6379";
 
-    let conn_spec = env::var("DATABASE_URL").expect("DATABASE_URL");
+    let conn_spec = env::var("DATABASE_URL").expect("Please specify DATABASE_URL");
     let manager = ConnectionManager::<PgConnection>::new(conn_spec);
     let pool = r2d2::Pool::builder()
         .build(manager)
@@ -446,35 +145,39 @@ async fn main() -> std::io::Result<()> {
         17, 133, 254, 252,
     ];
     let key = Key::from(&k);
-    println!("key: {:?}", key.clone().master());
-    // let store = if !env::var("DOMAINS").unwrap().is_empty() {
-    //     Box::new(storage::RedisActorSessionStore::new(
-    //         redis_connection_string,
-    //     )) as Box<dyn SessionStore>
-    // } else {
-    //     Box::new(storage::CookieSessionStore::default()) as Box<dyn SessionStore>
-    // };
+
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(pool.clone()))
-            // .app_data(sessions.clone())
-            // TODO real bad
             .wrap(Logger::default())
+            // TODO real bad
             .wrap(Cors::permissive())
             .wrap(IdentityMiddleware::default())
             .wrap(SessionMiddleware::new(
                 storage::RedisActorSessionStore::new(redis_connection_string),
                 key.clone(),
             ))
-            .service(get_user)
-            .service(hello)
-            .service(logout)
-            .service(get_categories)
-            .service(create_category)
-            .service(get_user_by_id)
-            .service(create_algo)
-            .service(get_algos)
-            .service(callback)
+            .service(
+                web::scope("users")
+                    .service(users::get_user)
+                    .service(users::get_user_by_id),
+            )
+            .service(
+                web::scope("categories")
+                    .service(categories::get_categories)
+                    .service(categories::create_category),
+            )
+            .service(
+                web::scope("algos")
+                    .service(algos::create_algo)
+                    .service(algos::get_algos),
+            )
+            .service(
+                web::scope("auth")
+                    .service(auth::login)
+                    .service(auth::logout),
+            )
+            .service(auth::callback) // TODO move to auth
     })
     .bind(("0.0.0.0", 8080))?
     .run()

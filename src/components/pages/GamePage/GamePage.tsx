@@ -36,14 +36,6 @@ export default function GamePage() {
 
   const [roundNumber, setRoundNumber] = useState(0);
 
-  //
-  // useEffect(() => {
-  //   setInterval(() => {
-  //     document.title = (`${formatBytes(window.performance.memory.usedJSHeapSize)
-  //     }/${formatBytes(window.performance.memory.jsHeapSizeLimit)}`);
-  //   }, 1000);
-  // }, []);
-
   useEffect(() => {
     if (mapStates.length <= gameConfig.roundsCount) {
       dispatch(doRound({ gameId }));

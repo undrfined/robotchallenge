@@ -1,13 +1,15 @@
 import { GetRequest, RequestType } from './types';
 
+const BASE = 'auth';
+
 export class AuthRequest extends GetRequest implements RequestType {
-  type = 'auth';
+  type = `${BASE}/login`;
 
   resultType?: { redirectUrl: string };
 }
 
 export class LogOutRequest extends GetRequest implements RequestType {
-  type = 'logout';
+  type = `${BASE}/logout`;
 
   resultType?: undefined;
 }

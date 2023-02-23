@@ -1,14 +1,15 @@
 import { GetRequest, PostRequest, RequestType } from './types';
 import { ApiCategory } from '../types';
 
+const BASE = 'categories';
 export class GetCategories extends GetRequest implements RequestType {
-  type = 'categories';
+  type = BASE;
 
   resultType?: ApiCategory[];
 }
 
 export class PostCategory extends PostRequest implements RequestType {
-  type = 'categories';
+  type = BASE;
 
   constructor(public newCategory: Omit<ApiCategory, 'id' | 'createdAt' | 'updatedAt'>) {
     super();
