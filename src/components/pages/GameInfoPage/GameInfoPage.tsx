@@ -11,13 +11,9 @@ import UploadFile from '../../common/UploadFile/UploadFile';
 import Button from '../../common/Button/Button';
 import { isTruthy } from '../../../helpers/isTruthy';
 import AnimatedText from '../../common/AnimatedText/AnimatedText';
-import Checkbox from '../../common/Checkbox/Checkbox';
-import Avatar from '../../common/Avatar/Avatar';
-import Version from '../../../assets/icons/Version.svg';
-import Code from '../../../assets/icons/Code.svg';
-import Dropdown from '../../../assets/icons/Dropdown.svg';
 import { fetchAlgoFile, fetchAlgos, uploadAlgo } from '../../../store/slices/algosSlice';
 import { ApiAlgo, ApiAlgoWithFile } from '../../../api/types';
+import OpponentCard from '../../common/OpponentCard/OpponentCard';
 
 export default function GameInfoPage() {
   const { categoryId } = useParams() as { categoryId: string };
@@ -30,6 +26,7 @@ export default function GameInfoPage() {
   const navigate = useNavigate();
 
   const algos = useAppSelector((state) => state.algos.algos);
+
   const [file, setFile] = useState<Omit<ApiAlgoWithFile, 'id' | 'userId'> | undefined>();
   const [selected, setSelected] = useState<number[]>([]);
 
@@ -83,42 +80,13 @@ export default function GameInfoPage() {
           <h2>Select opponents & Version</h2>
 
           <div className={styles.opponents}>
-            {Object.values(algos).map((l) => (
-              // eslint-disable-next-line react/no-array-index-key
-              <div className={styles.opponent} key={l.id}>
-                <Avatar size="small" userId={l.userId} />
-                <div className={styles.opponentName}>{l.language}</div>
-
-                <div className={styles.dropdown}>
-                  <Version />
-                  <div className={styles.dropdownName}>
-                    Version
-                  </div>
-                  <div className={styles.dropdownContent}>
-                    {l.version}
-                  </div>
-                  <Dropdown />
-                </div>
-
-                <div className={styles.dropdown}>
-                  <Code />
-                  <div className={styles.dropdownName}>
-                    Algorithm
-                  </div>
-                  <div className={styles.dropdownContent}>
-                    {l.name}
-                  </div>
-                  <Dropdown />
-                </div>
-
-                <Checkbox
-                  checked={!l.isLoading && selected.includes(l.id)}
-                  className={styles.checkbox}
-                  index={l.id}
-                  onToggle={handleSelectFile}
-                  isLoading={l.isLoading}
-                />
-              </div>
+            {Object.values(algos).map((algo) => (
+              <OpponentCard
+                key={algo.id}
+                algo={algo}
+                isSelected={selected.includes(algo.id)}
+                onToggle={handleSelectFile}
+              />
             ))}
           </div>
         </div>
