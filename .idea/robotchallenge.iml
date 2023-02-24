@@ -8,6 +8,8 @@
       <sourceFolder url="file://$MODULE_DIR$/vendor/wasmer-js/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/test_rust/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/backend/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/examples/rust_example/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/libs/rust_robotchallenge/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
@@ -17,6 +19,8 @@
       <excludeFolder url="file://$MODULE_DIR$/vendor" />
       <excludeFolder url="file://$MODULE_DIR$/test_rust/target" />
       <excludeFolder url="file://$MODULE_DIR$/backend/target" />
+      <excludeFolder url="file://$MODULE_DIR$/libs/rust_robotchallenge/target" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/rust_example/target" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

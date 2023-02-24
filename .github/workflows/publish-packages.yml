@@ -1,0 +1,48 @@
+name: Publish packages
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  publish-crates:
+    name: Publish to crates.io
+    environment: packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Publish to crates.io
+        uses: katyo/publish-crates@v2
+        with:
+         path: './libs/rust_robotchallenge'
+         registry-token: ${{ secrets.CRATES_IO_KEY }}
+  publish-nuget:
+    name: Publish to nuget
+    environment: packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 7.0.102
+
+      - name: Install wasm-opt
+        run: sudo apt-get install -y binaryen
+
+      - name: Publish on version change
+        id: publish_nuget
+        uses: alirezanet/publish-nuget@v3.0.4
+        with:
+          PROJECT_FILE_PATH: libs/csharp_robotchallenge/csharp_robotchallenge.csproj
+          BUILD_CONFIGURATION: Release
+          TAG_COMMIT: false
+          NUGET_KEY: ${{secrets.NUGET_KEY}}

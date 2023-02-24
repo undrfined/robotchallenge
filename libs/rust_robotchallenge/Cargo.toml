@@ -1,0 +1,9 @@
+[package]
+name = "robotchallenge"
+version = "0.0.1"
+edition = "2021"
+
+[build]
+target = "wasm32-wasi"
+
+[dependencies]
