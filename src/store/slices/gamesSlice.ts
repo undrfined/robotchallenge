@@ -4,7 +4,7 @@ import type { AppThunkApi } from '../index';
 import { CoreWorkerType } from '../../workers/core.worker';
 import { GameConfig, GameMap, GamePlayerActions } from '../../types/gameTypes';
 import createUUID, { UUID } from '../../helpers/createUUID';
-import { ApiAlgo } from '../../api/types';
+import { ApiAlgoWithFile } from '../../api/types';
 import { CategoryId } from './categoriesSlice';
 import { selectCategory } from '../selectors/categoriesSelectors';
 
@@ -68,7 +68,7 @@ export const startGame = createAsyncThunk<
 GameState,
 {
   categoryId: CategoryId;
-  algos: ApiAlgo[];
+  algos: ApiAlgoWithFile[];
 },
 AppThunkApi
 >(
@@ -103,8 +103,7 @@ AppThunkApi
     }));
 
     // TODO real bad!!
-    await core.initGame(gameConfig2,
-      algos.map((algo) => new Blob([new Uint8Array(algo.file)], { type: 'application/wasm' })));
+    await core.initGame(gameConfig2, algos.map((algo) => algo.file));
 
     const mapStates = [{
       map: await core.getMap(),
