@@ -8,4 +8,4 @@ crate-type=["cdylib"]
 
 [dependencies]
 #robotchallenge = { path = "../../libs/rust_robotchallenge/" }
-robotchallenge = "0.0.2"
+robotchallenge = "0.0.3"

@@ -81,7 +81,7 @@ mod imports {
     extern "C" {
         pub fn clone_robot(new_bot_energy: u32);
         pub fn collect_energy();
-        pub fn move_robot(x: i32, y: i32) -> u32;
+        pub fn move_robot(x: i32, y: i32);
     }
 }
 
@@ -115,12 +115,9 @@ pub fn collect_energy() {
     }
 }
 
-pub fn move_robot(q: i32, r: i32) -> Result<bool, String> {
+pub fn move_robot(q: i32, r: i32) {
     unsafe {
-        match imports::move_robot(q, r) {
-            0 => Ok(true),
-            _ => Err("Move not possible".to_string()),
-        }
+        imports::move_robot(q, r);
     }
 }
 
