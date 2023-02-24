@@ -3,11 +3,9 @@ name = "rust_example"
 version = "0.1.0"
 edition = "2021"
 
-[build]
-target = "wasm32-wasi"
-
 [lib]
 crate-type=["cdylib"]
 
 [dependencies]
-robotchallenge = { path = "../../libs/rust_robotchallenge/" }
+#robotchallenge = { path = "../../libs/rust_robotchallenge/" }
+robotchallenge = "0.0.2"
