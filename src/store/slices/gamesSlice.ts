@@ -102,8 +102,8 @@ AppThunkApi
       }));
     }));
 
-    // TODO real bad!!
-    await core.initGame(gameConfig2, algos.map((algo) => algo.file));
+    // TODO may be undefined
+    await core.initGame(gameConfig2, algos.map((algo) => algo.file!));
 
     const mapStates = [{
       map: await core.getMap(),
