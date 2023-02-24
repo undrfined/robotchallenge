@@ -132,7 +132,7 @@ __attribute__((__import_module__("robotchallenge"), import_name("clone_robot")))
 void clone_robot(unsigned int new_bot_energy);
 
 __attribute__((__import_module__("robotchallenge"), import_name("collect_energy"))) extern
-void collect_energy(unsigned int new_bot_energy);
+void collect_energy();
 
 __attribute__((__import_module__("robotchallenge"), import_name("move_robot"))) extern
 void move_robot(int q, int r);
