@@ -87,7 +87,8 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::scope("algos")
                     .service(algos::create_algo)
-                    .service(algos::get_algos),
+                    .service(algos::get_algos)
+                    .service(algos::get_algo_file),
             )
             .service(
                 web::scope("auth")

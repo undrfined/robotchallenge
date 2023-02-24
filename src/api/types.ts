@@ -23,8 +23,11 @@ export type ApiCategory = {
 export type ApiAlgo = {
   id: number;
   userId: string;
-  file: number[]; // TODO get rid of this
   version: string,
   name: string,
   language: string,
+};
+
+export type ApiAlgoWithFile = ApiAlgo & {
+  file?: Blob;
 };

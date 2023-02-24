@@ -39,6 +39,7 @@ pub struct User {
 pub struct Algo {
     pub id: i32,
     pub user_id: String,
+    #[serde(skip_serializing)]
     pub file: Vec<u8>,
     pub name: String,
     pub version: String,

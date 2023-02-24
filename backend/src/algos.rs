@@ -1,7 +1,7 @@
 use crate::{actions, models, utils, DbPool};
 use actix_multipart::Multipart;
 use actix_web::error::ErrorInternalServerError;
-use actix_web::{get, post, web, Error};
+use actix_web::{get, post, web, Error, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize)]
@@ -73,4 +73,23 @@ pub(crate) async fn create_algo(
     }
 
     Err(ErrorInternalServerError("algo not found"))
+}
+
+#[get("/{algo_id}/")]
+pub(crate) async fn get_algo_file(
+    pool: web::Data<DbPool>,
+    algo_id: web::Path<i32>,
+) -> Result<HttpResponse, Error> {
+    let algo_file = web::block(move || {
+        let mut conn = pool.get()?;
+        actions::get_algo_file(&mut conn, algo_id.into_inner())
+    })
+    .await
+    .map_err(ErrorInternalServerError)?
+    .map_err(ErrorInternalServerError);
+
+    match algo_file {
+        Ok(algo_file) => Ok(HttpResponse::Ok().body(algo_file)),
+        Err(err) => Err(ErrorInternalServerError(err)),
+    }
 }

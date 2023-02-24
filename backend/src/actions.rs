@@ -68,6 +68,17 @@ pub fn find_all_algos(conn: &mut PgConnection) -> Result<Vec<models::Algo>, DbEr
     Ok(algos2)
 }
 
+pub fn get_algo_file(conn: &mut PgConnection, algo_id: i32) -> Result<Vec<u8>, DbError> {
+    use crate::schema::algos::dsl::*;
+
+    let algo_file = algos
+        .filter(id.eq(algo_id))
+        .select(file)
+        .first::<Vec<u8>>(conn)?;
+
+    Ok(algo_file)
+}
+
 pub fn find_all_categories(conn: &mut PgConnection) -> Result<Vec<models::Category>, DbError> {
     use crate::schema::categories::dsl::*;
 

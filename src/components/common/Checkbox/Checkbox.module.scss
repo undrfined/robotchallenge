@@ -12,6 +12,11 @@
   transition-property: border-color, background, box-shadow;
 }
 
+.loading {
+  // TODO
+  background: red;
+}
+
 .checked {
   border-color: transparent;
   background: #FF0AE6;

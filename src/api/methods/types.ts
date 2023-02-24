@@ -10,7 +10,15 @@ interface MethodType {
 export class GetRequest implements MethodType {
   public method = 'GET';
 
-  public path: (string | undefined)[] = [];
+  public path: (string | number | undefined)[] = [];
+}
+
+export class GetFileRequest implements MethodType {
+  public method = 'GET';
+
+  public path: (string | number | undefined)[] = [];
+
+  resultType?: Blob;
 }
 
 export class PostFileRequest implements MethodType {

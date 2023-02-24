@@ -1,16 +1,19 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { AppThunkApi } from '../index';
 import makeRequest from '../../api/makeRequest';
-import { GetAlgos, PostAlgo } from '../../api/methods/algos';
-import { ApiAlgo } from '../../api/types';
+import { GetAlgoFile, GetAlgos, PostAlgo } from '../../api/methods/algos';
+import { ApiAlgo, ApiAlgoWithFile } from '../../api/types';
 import getPlayerLibraryInfo from '../../helpers/getPlayerLibraryInfo';
 
+type Algo = ApiAlgoWithFile & {
+  isLoading?: boolean
+};
 type AlgosState = {
-  algos: ApiAlgo[];
+  algos: Record<number, Algo>;
 };
 
 const initialState: AlgosState = {
-  algos: [],
+  algos: {},
 };
 
 export const fetchAlgos = createAsyncThunk<
@@ -24,25 +27,35 @@ AppThunkApi
   },
 );
 
+export const fetchAlgoFile = createAsyncThunk<
+Blob,
+number,
+AppThunkApi
+>(
+  'algos/fetchAlgoFile',
+  async (id) => {
+    const result = await makeRequest(new GetAlgoFile(id));
+    return new Blob([result], { type: 'application/wasm' });
+  },
+);
+
 export const uploadAlgo = createAsyncThunk<
-ApiAlgo,
-number[],
+ApiAlgoWithFile,
+Blob,
 AppThunkApi
 >(
   'algos/uploadAlgo',
-  async (data, { getState }) => {
+  async (blob, { getState }) => {
     const currentUser = getState().auth.user;
     if (!currentUser) throw new Error('User is not logged in');
 
-    // TODO Real bad
-    const blob = new Blob([new Uint8Array(data)], { type: 'application/wasm' });
     const libInfo = await getPlayerLibraryInfo(blob);
     const result = await makeRequest(new PostAlgo(blob));
 
     return {
       id: result.id,
       userId: currentUser.id,
-      file: data,
+      file: blob,
       name: libInfo.name,
       version: libInfo.version,
       language: libInfo.language,
@@ -65,12 +78,27 @@ export const algosReducer = createSlice({
         // state.isLoggingIn = false;
       })
       .addCase(fetchAlgos.fulfilled, (state, action) => {
-        state.algos = action.payload;
+        state.algos = action.payload.reduce((acc, algo) => {
+          acc[algo.id] = algo;
+          return acc;
+        }, {} as Record<number, Algo>);
       });
 
     builder
       .addCase(uploadAlgo.fulfilled, (state, action) => {
-        state.algos.push(action.payload);
+        state.algos[action.payload.id] = action.payload;
+      });
+
+    builder
+      .addCase(fetchAlgoFile.pending, (state, action) => {
+        state.algos[action.meta.arg].isLoading = true;
+      })
+      .addCase(fetchAlgoFile.rejected, (state, action) => {
+        state.algos[action.meta.arg].isLoading = false;
+      })
+      .addCase(fetchAlgoFile.fulfilled, (state, action) => {
+        state.algos[action.meta.arg].file = action.payload;
+        state.algos[action.meta.arg].isLoading = false;
       });
   },
 });

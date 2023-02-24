@@ -4,9 +4,6 @@ import styles from './GameInfoPage.module.scss';
 import useAppSelector from '../../../hooks/useAppSelector';
 import useAppDispatch from '../../../hooks/useAppDispatch';
 import { GameId, startGame } from '../../../store/slices/gamesSlice';
-// import wasm from '../../../test_rust.wasm';
-// import wasmCsharp from '../../../lol.wasm';
-// import wasmJs from '../../../test_js.wasm';
 import { selectGames } from '../../../store/selectors/gamesSelectors';
 import { selectCategory } from '../../../store/selectors/categoriesSelectors';
 import Back from '../../../assets/icons/Back.svg';
@@ -19,8 +16,8 @@ import Avatar from '../../common/Avatar/Avatar';
 import Version from '../../../assets/icons/Version.svg';
 import Code from '../../../assets/icons/Code.svg';
 import Dropdown from '../../../assets/icons/Dropdown.svg';
-import { fetchAlgos, uploadAlgo } from '../../../store/slices/algosSlice';
-import { ApiAlgo } from '../../../api/types';
+import { fetchAlgoFile, fetchAlgos, uploadAlgo } from '../../../store/slices/algosSlice';
+import { ApiAlgo, ApiAlgoWithFile } from '../../../api/types';
 
 export default function GameInfoPage() {
   const { categoryId } = useParams() as { categoryId: string };
@@ -32,49 +29,38 @@ export default function GameInfoPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const files = useAppSelector((state) => state.algos.algos);
-  const [file, setFile] = useState<Omit<ApiAlgo, 'id' | 'userId'> | undefined>();
+  const algos = useAppSelector((state) => state.algos.algos);
+  const [file, setFile] = useState<Omit<ApiAlgoWithFile, 'id' | 'userId'> | undefined>();
   const [selected, setSelected] = useState<number[]>([]);
 
-  const handleUploadFile = useCallback((newFile: Omit<ApiAlgo, 'id' | 'userId'> | undefined) => {
+  const handleUploadFile = useCallback((newFile: Omit<ApiAlgoWithFile, 'id' | 'userId'> | undefined) => {
     setFile(file);
     if (newFile) {
-      dispatch(uploadAlgo(newFile.file));
+      dispatch(uploadAlgo(newFile.file!));
     }
   }, [dispatch, file]);
 
-  // useEffect(() => {
-  //   (async () => {
-  //     if (k) return;
-  //     k = true;
-  //     const randomFile = await verifyFile(await fetch(wasm).then((l) => l.blob()));
-  //     setFiles([
-  //       randomFile,
-  //       await verifyFile(await fetch(wasm).then((l) => l.blob())),
-  //       await verifyFile(await fetch(wasmCsharp).then((l) => l.blob())),
-  //       await verifyFile(await fetch(wasmJs).then((l) => l.blob())),
-  //     ].filter(isTruthy));
-  //
-  //     // if (randomFile?.file) makeRequest(new PostAlgo(randomFile.file));
-  //   })();
-  // }, []);
+  const handleSelectFile = useCallback((checked: boolean, id: number) => {
+    setSelected(checked ? [...selected, id] : selected.filter((q) => q !== id));
+    if (checked) dispatch(fetchAlgoFile(id));
+  }, [dispatch, selected]);
 
   useEffect(() => {
     dispatch(fetchAlgos());
   }, [dispatch]);
 
   const handleStartGame = useCallback(() => {
-    const selectedFiles = selected.map((l) => files[l]);
-    const algos = [...selectedFiles, file].filter(isTruthy) as ApiAlgo[];
+    const selectedFiles = selected.map((l) => algos[l]);
+    const allAlgos = [...selectedFiles, file].filter(isTruthy) as ApiAlgo[];
     dispatch(startGame({
-      algos,
+      algos: allAlgos,
       categoryId: categoryIdInt,
     })).then((a) => {
       // TODO types?
       const { id } = a.payload as { id: GameId };
       navigate(`/game/${id}`);
     });
-  }, [categoryIdInt, dispatch, file, files, navigate, selected]);
+  }, [categoryIdInt, dispatch, file, algos, navigate, selected]);
 
   return (
     <div className={styles.root}>
@@ -97,9 +83,9 @@ export default function GameInfoPage() {
           <h2>Select opponents & Version</h2>
 
           <div className={styles.opponents}>
-            {files.map((l, i) => (
+            {Object.values(algos).map((l) => (
               // eslint-disable-next-line react/no-array-index-key
-              <div className={styles.opponent} key={i}>
+              <div className={styles.opponent} key={l.id}>
                 <Avatar size="small" userId={l.userId} />
                 <div className={styles.opponentName}>{l.language}</div>
 
@@ -125,13 +111,12 @@ export default function GameInfoPage() {
                   <Dropdown />
                 </div>
 
-                <div className={styles.opponentVersion}>{l.version}</div>
                 <Checkbox
-                  checked={selected.includes(i)}
+                  checked={!l.isLoading && selected.includes(l.id)}
                   className={styles.checkbox}
-                  onToggle={(checked) => {
-                    setSelected(checked ? [...selected, i] : selected.filter((q) => q !== i));
-                  }}
+                  index={l.id}
+                  onToggle={handleSelectFile}
+                  isLoading={l.isLoading}
                 />
               </div>
             ))}

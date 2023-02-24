@@ -1,5 +1,7 @@
 import Requests from './methods/index';
-import { GetRequest, PostFileRequest, PostRequest } from './methods/types';
+import {
+  GetFileRequest, GetRequest, PostFileRequest, PostRequest,
+} from './methods/types';
 import { compact, omit } from '../helpers/iteratees';
 
 const ENDPOINT = `${window.location.protocol}//${process.env.APP_API_ENDPOINT}`;
@@ -21,7 +23,7 @@ export default function makeRequest<T extends Requests>(request: T): Promise<Res
   }
 
   let url = `${ENDPOINT + request.type}/`;
-  if (request instanceof GetRequest) {
+  if (request instanceof GetRequest || request instanceof GetFileRequest) {
     const joinedPath = compact(request.path).join('/');
     url += joinedPath || '';
   }
@@ -42,6 +44,9 @@ export default function makeRequest<T extends Requests>(request: T): Promise<Res
       throw new Error(response.statusText);
     }
 
+    if (request instanceof GetFileRequest) {
+      return response.blob() as unknown as ResultType<T>;
+    }
     return response.json() as unknown as ResultType<T>;
   });
 }

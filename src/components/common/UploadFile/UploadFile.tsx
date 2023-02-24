@@ -5,12 +5,12 @@ import Button from '../Button/Button';
 
 import Upload from '../../../assets/icons/Upload.svg';
 import verifyFile from '../../../helpers/verifyFile';
-import { ApiAlgo } from '../../../api/types';
+import { ApiAlgoWithFile } from '../../../api/types';
 
 type OwnProps = {
   accept: string;
-  file: Omit<ApiAlgo, 'id' | 'userId'> | undefined;
-  setFile: (data: Omit<ApiAlgo, 'id' | 'userId'> | undefined) => void,
+  file: Omit<ApiAlgoWithFile, 'id' | 'userId'> | undefined;
+  setFile: (data: Omit<ApiAlgoWithFile, 'id' | 'userId'> | undefined) => void,
 };
 
 export default function UploadFile({
