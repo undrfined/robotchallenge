@@ -17,6 +17,7 @@ jobs:
         with:
           toolchain: stable
           override: true
+          target: wasm32-wasi
 
       - name: Publish to crates.io
         uses: katyo/publish-crates@v2
