@@ -90,7 +90,7 @@ void init_game(struct GameConfig config, unsigned int owner) {
 }
 
 __attribute__((export_name("get_lib_info")))
-struct LibInfo get_lib_info() {
+struct LibInfo* get_lib_info() {
     load_runtime();
 
     if (!method_GetLibraryAuthor) {
@@ -105,10 +105,11 @@ struct LibInfo get_lib_info() {
 
     struct MonoLibInfo lib_info = *(struct MonoLibInfo*) mono_object_unbox(result);
 
-    struct LibInfo info;
-    info.name = mono_string_to_utf8(lib_info.name);
-    info.language = "csharp";
-    info.version = mono_string_to_utf8(lib_info.version);
+    struct LibInfo* info;
+    info = (struct LibInfo*) malloc(sizeof(struct LibInfo));
+    info->name = mono_string_to_utf8(lib_info.name);
+    info->language = "csharp";
+    info->version = mono_string_to_utf8(lib_info.version);
     return info;
 }
 

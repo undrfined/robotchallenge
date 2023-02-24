@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="csharp_robotchallenge" Version="0.0.4" />
+    <PackageReference Include="csharp_robotchallenge" Version="0.0.6" />
   </ItemGroup>
 
 </Project>

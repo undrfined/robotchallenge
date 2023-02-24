@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <PackageId>csharp_robotchallenge</PackageId>
-        <Version>0.0.4</Version>
+        <Version>0.0.6</Version>
     </PropertyGroup>
 
     <ItemGroup>
