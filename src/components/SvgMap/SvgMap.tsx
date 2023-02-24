@@ -22,8 +22,9 @@ export default function SvgMap({
   // size = half width
   const size = 50;
   const s = width;
-  const totalWidth = 100 * (5 / 6) * s * 2;
-  const totalHeight = s * 2 * size * Math.sqrt(3) + size * 4;
+  const totalWidth = ((3 / 2) * size) * s * 2;
+  const totalHeight = Math.sqrt(3) * size * s * 2;
+
   return (
     <svg
       width={totalWidth}
@@ -39,7 +40,7 @@ export default function SvgMap({
             const r2 = Math.min(s, -q + s);
 
             for (let r = r1 + 1; r < r2; r++) {
-              const [px, py] = axialToPixel({ q, r });
+              const [px, py] = axialToPixel({ q, r }, width);
 
               const isSelected = selectedPath.find((pos) => pos.q === q && pos.r === r);
 
@@ -67,7 +68,7 @@ export default function SvgMap({
       <g>
         {energyStations.map((energyStation) => {
           const { position } = energyStation;
-          const [px, py] = axialToPixel(position);
+          const [px, py] = axialToPixel(position, width);
           // TODO center energy station text somehow
           return (
             <g
@@ -92,7 +93,7 @@ export default function SvgMap({
       <g>
         {robots.map((robot, i) => {
           const { position, owner } = robot;
-          const [px, py] = axialToPixel(position);
+          const [px, py] = axialToPixel(position, width);
 
           const color = PLAYER_COLORS[owner];
           return (
@@ -114,8 +115,8 @@ export default function SvgMap({
       </g>
       <g>
         {collectingEnergyTo && collectingEnergyFrom.map((position) => {
-          const [px, py] = axialToPixel(position);
-          const [toPx, toPy] = axialToPixel(collectingEnergyTo);
+          const [px, py] = axialToPixel(position, width);
+          const [toPx, toPy] = axialToPixel(collectingEnergyTo, width);
           return (
             <g
               key={`collect_${position.q}_${position.r}`}

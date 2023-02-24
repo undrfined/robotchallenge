@@ -42,6 +42,7 @@
 .field {
   position: relative;
   min-width: 0;
+  flex-grow: 1;
 
   &::after {
     position: absolute;

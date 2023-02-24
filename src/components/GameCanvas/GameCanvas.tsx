@@ -117,21 +117,23 @@ export default function GameCanvas({
     return calculateMap(isUpdated);
   }, [calculateMap, isUpdated]);
 
-  function moveCamera(position: GamePosition, animationType: 'linear' | 'easeOut' = 'linear'): Promise<void> {
-    if (!transformWrapperRef.current) return Promise.resolve();
-    const { clientWidth, clientHeight } = transformWrapperRef.current.instance.wrapperComponent!;
-    const [px, py] = axialToPixel(position);
+  const moveCamera = useCallback(
+    (position: GamePosition, animationType: 'linear' | 'easeOut' = 'linear'): Promise<void> => {
+      if (!transformWrapperRef.current) return Promise.resolve();
+      const { clientWidth, clientHeight } = transformWrapperRef.current.instance.wrapperComponent!;
+      const [px, py] = axialToPixel(position, gameConfig.width);
 
-    transformWrapperRef.current!.setTransform(
-      -px + clientWidth / 2 - 50,
-      -py + clientHeight / 2 - 50,
-      1,
-      500,
-      animationType,
-    );
+      transformWrapperRef.current!.setTransform(
+        -px + clientWidth / 2 - 50,
+        -py + clientHeight / 2 - 50,
+        1,
+        500,
+        animationType,
+      );
 
-    return delay(500);
-  }
+      return delay(500);
+    }, [gameConfig.width],
+  );
 
   const hasTransformWrapper = !!transformWrapperRef.current;
 
@@ -281,7 +283,7 @@ export default function GameCanvas({
         });
       }
     }
-  }, [gameConfig, currentPlayerAction, calculateMap, timeout, onAnimationEnd, reset]);
+  }, [gameConfig, currentPlayerAction, calculateMap, timeout, onAnimationEnd, reset, moveCamera]);
 
   useEffect(() => {
     reset();
