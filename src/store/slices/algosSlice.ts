@@ -91,6 +91,8 @@ export const algosReducer = createSlice({
 
     builder
       .addCase(fetchAlgoFile.pending, (state, action) => {
+        if (state.algos[action.meta.arg].isLoading) throw Error('Algo is already loading');
+        if (state.algos[action.meta.arg].file) throw Error('Algo file is already loaded');
         state.algos[action.meta.arg].isLoading = true;
       })
       .addCase(fetchAlgoFile.rejected, (state, action) => {

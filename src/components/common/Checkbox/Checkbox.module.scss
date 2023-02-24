@@ -12,9 +12,29 @@
   transition-property: border-color, background, box-shadow;
 }
 
-.loading {
-  // TODO
-  background: red;
+.loader {
+  width: 24px;
+  height: 24px;
+  left: -2px;
+  position: relative;
+  top: -2px;
+}
+
+@keyframes loader {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.loader-rect {
+  --path-length: 83px;
+  --offset: calc(var(--progress, 0.4) * var(--path-length));
+
+  stroke-dasharray: var(--offset) calc(var(--path-length) - var(--offset));
+  stroke-dashoffset: var(--path-length);
+  stroke: #FF0AE6;
+
+  animation: 2s linear loader infinite forwards;
 }
 
 .checked {

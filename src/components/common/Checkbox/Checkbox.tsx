@@ -24,7 +24,22 @@ export default function Checkbox({
 
   return (
   // eslint-disable-next-line jsx-a11y/label-has-associated-control
-    <label className={cn(styles.root, checked && styles.checked, isLoading && styles.loading, className)}>
+    <label className={cn(styles.root, checked && styles.checked, className)}>
+      {isLoading && (
+        <svg viewBox="0 0 24 24" className={styles.loader}>
+          <rect
+            x="1"
+            y="1"
+            width="22"
+            height="22"
+            strokeWidth="2"
+            rx="3"
+            ry="3"
+            fill="none"
+            className={styles.loaderRect}
+          />
+        </svg>
+      )}
       <input type="checkbox" className={styles.input} checked={checked} {...rest} onChange={handleChange} />
       {checked && <Check className={styles.check} />}
     </label>
