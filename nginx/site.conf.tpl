@@ -28,7 +28,7 @@ server {
 
     location / {
         root /usr/share/nginx/html;
-        index index.html index.htm;
+        index index.html /index.html;
     }
 
     location /api {
