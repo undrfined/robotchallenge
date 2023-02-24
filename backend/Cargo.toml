@@ -24,3 +24,7 @@ diesel_migrations = "2.0.0"
 diesel-derive-enum = { version = "2.0.1", features = ["postgres"] }
 actix-multipart = "0.5.0"
 chrono = "0.4.23"
+wasmer = "3.2.0-alpha.1"
+wasmer-wasi = "3.2.0-alpha.1"
+wasmer-derive = "3.2.0-alpha.1"
+wasmer-types = "3.2.0-alpha.1"

@@ -78,8 +78,8 @@
     "build-storybook": "build-storybook",
     "prepare": "husky install",
     "build:vendor": "(cd vendor/wasmer-js && npm install && npm run build);",
-    "build:core": "(cd core && cargo build --target wasm32-wasi --target-dir ../build/core && cp ../build/core/wasm32-wasi/debug/robotchallengecore.wasm ../src/wasm/core.wasm);",
-    "build:core:production": "(cd core && cargo build --release --target wasm32-wasi --target-dir ../build/core && cp ../build/core/wasm32-wasi/release/robotchallengecore.wasm ../src/wasm/core.wasm);"
+    "build:core": "(cd core && cargo build --target-dir ../build/core && cp ../build/core/wasm32-wasi/debug/robotchallengecore.wasm ../src/wasm/core.wasm);",
+    "build:core:production": "(cd core && cargo build --release --target-dir ../build/core && cp ../build/core/wasm32-wasi/release/robotchallengecore.wasm ../src/wasm/core.wasm);"
   },
   "eslintConfig": {
     "extends": [

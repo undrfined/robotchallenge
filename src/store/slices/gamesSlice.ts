@@ -102,7 +102,9 @@ AppThunkApi
       }));
     }));
 
-    await core.initGame(gameConfig2, algos.map((algo) => algo.file));
+    // TODO real bad!!
+    await core.initGame(gameConfig2,
+      algos.map((algo) => new Blob([new Uint8Array(algo.file)], { type: 'application/wasm' })));
 
     const mapStates = [{
       map: await core.getMap(),

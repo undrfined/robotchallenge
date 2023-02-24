@@ -18,9 +18,9 @@ type Exports = {
   do_round: VoidFunction,
   get_map: () => MapStructType,
   done_step: (is_timeout: boolean, is_timeout_too_much: boolean) => void,
-  move_robot: (x: number, y: number) => number,
-  clone_robot: (energy: number) => number,
-  collect_energy: () => number;
+  move_robot: (x: number, y: number) => void,
+  clone_robot: (energy: number) => void,
+  collect_energy: () => void;
   get_player_actions: (round: number) => PlayerActionsType,
 };
 
@@ -171,9 +171,9 @@ const CoreWorker = {
       do_round: [null],
       get_map: [MapStruct],
       done_step: [null, ['bool']],
-      move_robot: ['u32', ['i32', 'i32']],
-      clone_robot: ['u32', ['u32']],
-      collect_energy: ['u32', []],
+      move_robot: [null, ['i32', 'i32']],
+      clone_robot: [null, ['u32']],
+      collect_energy: [null, []],
       get_player_actions: [PlayerActionsStruct, ['u32']],
     });
 

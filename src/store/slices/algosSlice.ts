@@ -1,6 +1,4 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import storage from 'redux-persist/lib/storage';
-import { persistReducer } from 'redux-persist';
 import type { AppThunkApi } from '../index';
 import makeRequest from '../../api/makeRequest';
 import { GetAlgos, PostAlgo } from '../../api/methods/algos';
@@ -21,38 +19,33 @@ void,
 AppThunkApi
 >(
   'algos/fetchAlgos',
-  async () => {
-    const result = await makeRequest(new GetAlgos());
-
-    return Promise.all(result.map(async (algo) => {
-      const blob = new Blob([new Uint8Array(algo.file)], { type: 'application/wasm' });
-      return {
-        id: algo.id,
-        userId: algo.userId,
-        file: blob,
-        info: await getPlayerLibraryInfo(blob),
-      };
-    }));
+  () => {
+    return makeRequest(new GetAlgos());
   },
 );
 
 export const uploadAlgo = createAsyncThunk<
 ApiAlgo,
-Blob,
+number[],
 AppThunkApi
 >(
   'algos/uploadAlgo',
-  async (blob, { getState }) => {
+  async (data, { getState }) => {
     const currentUser = getState().auth.user;
     if (!currentUser) throw new Error('User is not logged in');
 
+    // TODO Real bad
+    const blob = new Blob([new Uint8Array(data)], { type: 'application/wasm' });
+    const libInfo = await getPlayerLibraryInfo(blob);
     const result = await makeRequest(new PostAlgo(blob));
 
     return {
       id: result.id,
       userId: currentUser.id,
-      file: blob,
-      info: await getPlayerLibraryInfo(blob),
+      file: data,
+      name: libInfo.name,
+      version: libInfo.version,
+      language: libInfo.language,
     };
   },
 );
@@ -82,9 +75,4 @@ export const algosReducer = createSlice({
   },
 });
 
-const persistConfig = {
-  key: 'algos',
-  storage,
-};
-
-export default persistReducer(persistConfig, algosReducer.reducer);
+export default algosReducer.reducer;

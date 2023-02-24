@@ -40,6 +40,20 @@ pub struct Algo {
     pub id: i32,
     pub user_id: String,
     pub file: Vec<u8>,
+    pub name: String,
+    pub version: String,
+    pub language: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable)]
+#[serde(rename_all = "camelCase")]
+#[table_name = "algos"]
+pub struct NewAlgo {
+    pub user_id: String,
+    pub file: Vec<u8>,
+    pub name: String,
+    pub version: String,
+    pub language: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable, Identifiable)]

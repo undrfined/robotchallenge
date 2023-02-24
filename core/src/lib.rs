@@ -431,7 +431,7 @@ macro_rules! game_action {
         with_game_state!($name, {
             if($name.current_robot_done_action) {
                 println!("[core] Robot tried to do action twice");
-                return 1;
+                return;
             }
 
             let $current_robot_name = &$name.robots[$name.current_robot_index];
@@ -440,13 +440,13 @@ macro_rules! game_action {
 
             $name.current_robot_done_action = true;
 
-            return 0;
+            return;
         });
     }
 }
 
 #[no_mangle]
-pub fn clone_robot(new_bot_energy: u32) -> u32 {
+pub fn clone_robot(new_bot_energy: u32) {
     game_action!(game_state, current_robot, {
         let loss = game_state.config.energy_loss_to_clone_robot + new_bot_energy;
 
@@ -457,7 +457,7 @@ pub fn clone_robot(new_bot_energy: u32) -> u32 {
                     robot_id: game_state.current_robot_index,
                 })
             );
-            return 1;
+            return;
         }
 
         if (current_robot.energy < loss) {
@@ -468,7 +468,7 @@ pub fn clone_robot(new_bot_energy: u32) -> u32 {
                     robot_id: game_state.current_robot_index,
                 })
             );
-            return 1;
+            return;
         }
 
         if (game_state.get_robots_by_owner(current_robot.owner).len()
@@ -481,7 +481,7 @@ pub fn clone_robot(new_bot_energy: u32) -> u32 {
                     robot_id: game_state.current_robot_index,
                 })
             );
-            return 2;
+            return;
         }
 
         let free_cell =
@@ -495,7 +495,7 @@ pub fn clone_robot(new_bot_energy: u32) -> u32 {
                     robot_id: game_state.current_robot_index,
                 })
             );
-            return 3;
+            return;
         }
 
         let free_cell = free_cell.unwrap();
@@ -526,7 +526,7 @@ pub fn clone_robot(new_bot_energy: u32) -> u32 {
 }
 
 #[no_mangle]
-pub fn collect_energy() -> u32 {
+pub fn collect_energy() {
     game_action!(game_state, current_robot, {
         println!("[core] collect_energy {:?}", current_robot);
 
@@ -541,7 +541,7 @@ pub fn collect_energy() -> u32 {
                 })
             );
             println!("Robot tried to collect energy but there is no energy station around");
-            return 1;
+            return;
         }
 
         if !energy_stations_around.iter().any(|e| e.energy > 0) {
@@ -552,7 +552,7 @@ pub fn collect_energy() -> u32 {
                 })
             );
             println!("Robot tried to collect energy but there is no energy in energy stations");
-            return 2;
+            return;
         }
 
         let mut total_energy = 0;
@@ -572,11 +572,10 @@ pub fn collect_energy() -> u32 {
             })
         );
     });
-    return 0;
 }
 
 #[no_mangle]
-pub fn move_robot(q: i32, r: i32) -> u32 {
+pub fn move_robot(q: i32, r: i32) -> () {
     game_action!(game_state, current_robot, {
         let old_q = current_robot.position.q;
         let old_r = current_robot.position.r;
@@ -591,7 +590,7 @@ pub fn move_robot(q: i32, r: i32) -> u32 {
                     new_position: Position { q, r },
                 })
             );
-            return 1;
+            return;
         }
 
         if !game_state.is_empty(q, r) {
@@ -603,7 +602,7 @@ pub fn move_robot(q: i32, r: i32) -> u32 {
                 })
             );
             println!("[core] move_robot cell is occupied {:?}", current_robot);
-            return 1;
+            return;
         }
 
         let loss = game_state.calculate_loss(old_q, old_r, q, r);
@@ -617,7 +616,7 @@ pub fn move_robot(q: i32, r: i32) -> u32 {
                 })
             );
             println!("[core] not enough energy {:?}", current_robot);
-            return 2;
+            return;
         }
 
         let current_robot = &mut game_state.robots[game_state.current_robot_index];
@@ -634,7 +633,6 @@ pub fn move_robot(q: i32, r: i32) -> u32 {
             })
         );
     });
-    return 1;
 }
 
 #[no_mangle]

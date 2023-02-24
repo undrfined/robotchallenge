@@ -48,18 +48,13 @@ pub fn insert_new_user(
     Ok(new_user)
 }
 
-pub fn insert_new_algo(
-    conn: &mut PgConnection,
-    uid: String,
-    new_file: Vec<u8>,
-) -> Result<i32, DbError> {
+pub fn insert_new_algo(conn: &mut PgConnection, new_algo: models::NewAlgo) -> Result<i32, DbError> {
     use crate::schema::algos::dsl::*;
 
     let k = diesel::insert_into(algos)
-        .values((user_id.eq(uid), file.eq(new_file)))
+        .values(new_algo)
         .on_conflict(id)
-        .do_update()
-        .set(file.eq(excluded(file)))
+        .do_nothing()
         .get_result::<models::Algo>(conn)?;
 
     Ok(k.id)

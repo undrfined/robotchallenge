@@ -101,7 +101,7 @@ export default function GameInfoPage() {
               // eslint-disable-next-line react/no-array-index-key
               <div className={styles.opponent} key={i}>
                 <Avatar size="small" userId={l.userId} />
-                <div className={styles.opponentName}>{l.info?.language}</div>
+                <div className={styles.opponentName}>{l.language}</div>
 
                 <div className={styles.dropdown}>
                   <Version />
@@ -109,7 +109,7 @@ export default function GameInfoPage() {
                     Version
                   </div>
                   <div className={styles.dropdownContent}>
-                    {l.info?.version}
+                    {l.version}
                   </div>
                   <Dropdown />
                 </div>
@@ -120,12 +120,12 @@ export default function GameInfoPage() {
                     Algorithm
                   </div>
                   <div className={styles.dropdownContent}>
-                    {l.info?.name}
+                    {l.name}
                   </div>
                   <Dropdown />
                 </div>
 
-                <div className={styles.opponentVersion}>{l.info?.version}</div>
+                <div className={styles.opponentVersion}>{l.version}</div>
                 <Checkbox
                   checked={selected.includes(i)}
                   className={styles.checkbox}

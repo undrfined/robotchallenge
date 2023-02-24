@@ -1,4 +1,4 @@
-use crate::{actions, models, DbPool};
+use crate::{actions, models, utils, DbPool};
 use actix_multipart::Multipart;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{get, post, web, Error};
@@ -48,11 +48,21 @@ pub(crate) async fn create_algo(
             data.extend_from_slice(&chunk?);
         }
 
-        let uid = user.id.clone();
         let data = data.to_vec();
+
         let fid = web::block(move || {
+            let lib_info = utils::wasm_module::get_lib_info(&data).expect("failed to get lib info");
+
+            let new_algo = models::NewAlgo {
+                name: lib_info.name,
+                file: data.clone(),
+                user_id: user.id.clone(),
+                version: lib_info.version,
+                language: lib_info.language,
+            };
+
             let mut conn = pool.get()?;
-            actions::insert_new_algo(&mut conn, uid, data)
+            actions::insert_new_algo(&mut conn, new_algo)
         })
         .await
         .map_err(ErrorInternalServerError)?

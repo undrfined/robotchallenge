@@ -15,6 +15,9 @@ diesel::table! {
         id -> Int4,
         user_id -> Varchar,
         file -> Bytea,
+        name -> Varchar,
+        version -> Varchar,
+        language -> Varchar,
     }
 }
 

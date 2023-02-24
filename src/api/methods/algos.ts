@@ -1,4 +1,5 @@
 import { PostFileRequest, GetRequest, RequestType } from './types';
+import { ApiAlgo } from '../types';
 
 const BASE = 'algos';
 
@@ -11,11 +12,7 @@ export class PostAlgo extends PostFileRequest implements RequestType {
 export class GetAlgos extends GetRequest implements RequestType {
   type = BASE;
 
-  resultType?: {
-    file: number[];
-    id: number;
-    userId: string;
-  }[];
+  resultType?: ApiAlgo[];
 }
 
 type AlgosRequests = PostAlgo | GetAlgos;

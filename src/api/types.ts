@@ -1,4 +1,4 @@
-import { GameConfig, GameLibraryInfo } from '../types/gameTypes';
+import { GameConfig } from '../types/gameTypes';
 import { LottieIcon } from '../helpers/lottieIcons';
 
 export type ApiUser = {
@@ -23,6 +23,8 @@ export type ApiCategory = {
 export type ApiAlgo = {
   id: number;
   userId: string;
-  file: Blob;
-  info?: GameLibraryInfo;
+  file: number[]; // TODO get rid of this
+  version: string,
+  name: string,
+  language: string,
 };
