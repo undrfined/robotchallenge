@@ -10,7 +10,6 @@
   color: #fff;
   overflow: hidden;
   transform: perspective(1000px) rotateX(var(--rotate-x)) rotateY(var(--rotate-y));
-  filter: shadow(0px 0px 0px 0px rgba(255, 255, 255, 0.5));
 
   &::before {
     position: absolute;
@@ -22,9 +21,9 @@
     filter: blur(150px);
     border-radius: 50%;
     opacity: 0;
-    top: var(--pos-y);
-    left: var(--pos-x);
-    transform: translate(-50%, -50%);
+    top: 0;
+    left: 0;
+    transform: translate(calc(var(--pos-x, 0) - 50%), calc(var(--pos-y, 0) - 50%));
     pointer-events: none;
     z-index: -1;
     transition: 0.25s ease-in-out opacity;
