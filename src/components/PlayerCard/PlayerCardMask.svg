@@ -1,7 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 128" preserveAspectRatio="none">
-    <mask id="player_card_mask">
-        <rect width="100%" height="100%" x="0" y="0" fill="white"/>
-        <circle r="52px" cx="34px" cy="50%" fill="black"/>
-    </mask>
-    <rect width="100%" height="100%" x="0" y="0" fill="black" mask="url(#player_card_mask)"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 400 128"><mask id="a"><rect width="100%" height="100%" fill="#fff"/><circle cx="34" cy="50%" r="52"/></mask><rect width="100%" height="100%" mask="url(#a)"/></svg>
