@@ -8,6 +8,7 @@ import { ApiAlgo } from '../../../api/types';
 
 import styles from './OpponentCard.module.scss';
 import useEnsureUser from '../../../hooks/useEnsureUser';
+import { LANGUAGE_ICONS } from '../../../helpers/languageIcons';
 
 type OwnProps = {
   algo: ApiAlgo & {
@@ -21,6 +22,8 @@ export default function OpponentCard({
   algo, isSelected, onToggle,
 }: OwnProps) {
   const user = useEnsureUser(algo.userId);
+
+  const Icon = LANGUAGE_ICONS[algo.language];
 
   return (
     <div className={styles.opponent}>
@@ -44,6 +47,7 @@ export default function OpponentCard({
           Algorithm
         </div>
         <div className={styles.dropdownContent}>
+          <Icon />
           {algo.name}
         </div>
         <Dropdown />

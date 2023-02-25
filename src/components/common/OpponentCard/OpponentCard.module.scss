@@ -28,6 +28,14 @@
 .dropdownContent {
   white-space: nowrap;
   overflow: hidden;
+  display: inline-flex;
+  gap: 0.25rem;
+  align-items: center;
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
 }
 
 .checkbox {
