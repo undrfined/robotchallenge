@@ -92,7 +92,7 @@
       "eslint . --fix"
     ],
     "!(vendor)**/*.svg": [
-      "svgo", "git add"
+      "svgo"
     ]
   },
   "browserslist": {
