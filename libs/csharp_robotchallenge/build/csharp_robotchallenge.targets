@@ -259,8 +259,44 @@
 		<RemoveDir Directories="$(WasiSdkDownloadTempDir)" />
 	</Target>
 
-  <Target Name="WasmOpt" AfterTargets="CopyWasmToOutput">
-    <Message Importance="high" Text="Running wasm-opt..." />
-    <Exec Command="wasm-opt -O3 --enable-bulk-memory -o $(TargetDir)$(TargetName)-opt.wasm $(TargetDir)$(TargetName).wasm" />
-  </Target>
+    <PropertyGroup>
+        <BinaryenVersion>112</BinaryenVersion>
+        <BinaryenUrl Condition="$([MSBuild]::IsOSPlatform('Windows'))">https://github.com/WebAssembly/binaryen/releases/download/version_112/binaryen-version_112-x86_64-windows.tar.gz</BinaryenUrl>
+        <BinaryenUrl Condition="$([MSBuild]::IsOSPlatform('Linux'))">https://github.com/WebAssembly/binaryen/releases/download/version_112/binaryen-version_112-x86_64-linux.tar.gz</BinaryenUrl>
+        <BinaryenUrl Condition="$([MSBuild]::IsOSPlatform('OSX'))">https://github.com/WebAssembly/binaryen/releases/download/version_112/binaryen-version_112-x86_64-macos.tar.gz</BinaryenUrl>
+
+        <BinaryenRoot>$([System.IO.Path]::Combine("$([System.Environment]::GetFolderPath(SpecialFolder.UserProfile))", ".binaryen", "binaryen-version_$(BinaryenVersion)"))</BinaryenRoot>
+        <WasmOpt>$(BinaryenRoot)\bin\wasm-opt</WasmOpt>
+        <WasmOpt Condition="$([MSBuild]::IsOSPlatform('Windows'))">$(WasmOpt).exe</WasmOpt>
+
+        <RunWasmOptDependsOn>
+            $(RunWasmOptDependsOn);
+            CopyWasmToOutput;
+            ObtainBinaryen;
+        </RunWasmOptDependsOn>
+    </PropertyGroup>
+
+    <Target Name="ObtainBinaryen" Condition="!(Exists($(WasmOpt)))">
+        <PropertyGroup>
+            <BinaryenDownloadTempDir>$(IntermediateOutputPath)\binaryen-temp</BinaryenDownloadTempDir>
+        </PropertyGroup>
+
+        <MakeDir Directories="$(BinaryenDownloadTempDir)" />
+        <DownloadFile
+            SourceUrl="$(BinaryenUrl)"
+            DestinationFolder="$(BinaryenDownloadTempDir)">
+            <Output TaskParameter="DownloadedFile" ItemName="BinaryenDownloadTempFile" />
+        </DownloadFile>
+
+        <!-- Windows 10+ has tar built in, so this should work cross-platform -->
+        <Message Importance="high" Text="Extracting @(BinaryenDownloadTempFile) to $(BinaryenRoot)..." />
+        <MakeDir Directories="$(BinaryenRoot)" />
+        <Exec Command="tar -xf &quot;@(BinaryenDownloadTempFile)&quot; -C . --strip-components=1" WorkingDirectory="$(BinaryenRoot)" />
+        <RemoveDir Directories="$(BinaryenDownloadTempDir)" />
+    </Target>
+
+    <Target Name="RunWasmOpt" AfterTargets="CopyWasmToOutput" DependsOnTargets="$(RunWasmOptDependsOn)">
+      <Message Importance="high" Text="Running &quot;$(WasmOpt)&quot;..." />
+      <Exec Command="&quot;$(WasmOpt)&quot; -O3 --enable-bulk-memory -o $(TargetDir)$(TargetName)-opt.wasm $(TargetDir)$(TargetName).wasm" />
+    </Target>
 </Project>
