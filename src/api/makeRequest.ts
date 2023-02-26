@@ -3,6 +3,7 @@ import {
   GetFileRequest, GetRequest, PostFileRequest, PostRequest,
 } from './methods/types';
 import { compact, omit } from '../helpers/iteratees';
+import { nullsToUndefined } from '../helpers/nullsToUndefined';
 
 const ENDPOINT = `${window.location.protocol}//${process.env.APP_API_ENDPOINT}`;
 
@@ -39,15 +40,15 @@ export default function makeRequest<T extends Requests>(request: T): Promise<Res
     body: request instanceof PostFileRequest ? formData : (
       request instanceof PostRequest ? formDataJson : undefined
     ),
-  }).then((response) => {
+  }).then(async (response) => {
     if (!response.ok) {
       throw new Error(response.statusText);
     }
 
     if (request instanceof GetFileRequest) {
-      return response.blob() as unknown as ResultType<T>;
+      return await response.blob() as unknown as ResultType<T>;
     }
-    return response.json() as unknown as ResultType<T>;
+    return nullsToUndefined(await response.json()) as unknown as ResultType<T>;
   });
 }
 

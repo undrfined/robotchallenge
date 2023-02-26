@@ -1,0 +1,51 @@
+.root {
+    position: fixed;
+    inset: 0;
+    background-color: rgb(0 0 0 / 50%);
+    backdrop-filter: blur(32px);
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.25s ease-in-out opacity;
+}
+
+.open {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-content {
+    border-radius: 40px;
+    background-color: #171529;
+    position: relative;
+    width: 400px;
+    height: 400px;
+    overflow: hidden;
+
+    &::before {
+        position: absolute;
+        inset: 0;
+        content: '';
+        background: url("./ModalStroke.svg"),
+                    linear-gradient(0deg, #09061C 71.03%, rgb(9 6 28 / 10%) 123.55%),
+                    url("../../../assets/Background.png");
+        background-size: cover;
+        opacity: 1;
+        pointer-events: none;
+    }
+}
+
+.close-button {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    cursor: pointer;
+}
+
+.content {
+    position: relative;
+    z-index: 1;
+    padding: 4rem;
+}

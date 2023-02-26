@@ -5,6 +5,10 @@ import type { AppThunkApi } from '../index';
 import makeRequest, { ResultType } from '../../api/makeRequest';
 import { ApiUser } from '../../api/types';
 import { GetUserRequest } from '../../api/methods/users';
+// TODO fix this
+// eslint-disable-next-line import/no-cycle
+import { logout } from './authSlice';
+import { attachToUserGroup } from './userGroupsSlice';
 
 type UsersState = {
   users: Record<string, ApiUser>,
@@ -17,16 +21,12 @@ const initialState: UsersState = {
 
 export const getUserById = createAsyncThunk<
 ResultType<GetUserRequest>,
-string,
+string | undefined,
 AppThunkApi
 >(
-  'users/getUserInfo',
-  async (userId: string) => {
-    const result = await makeRequest(new GetUserRequest(userId));
-
-    console.log(result);
-
-    return result;
+  'users/getUserById',
+  async (userId) => {
+    return makeRequest(new GetUserRequest(userId));
   },
 );
 
@@ -46,7 +46,18 @@ export const usersReducer = createSlice({
       })
       .addCase(getUserById.fulfilled, (state, action) => {
         state.users[action.payload.id] = action.payload;
+        if (!state.currentUserId && action.meta.arg === undefined) {
+          state.currentUserId = action.payload.id;
+        }
       });
+
+    builder.addCase(logout.fulfilled, (state) => {
+      state.currentUserId = undefined;
+    });
+
+    builder.addCase(attachToUserGroup.fulfilled, (state, action) => {
+      state.users[action.payload.id] = action.payload;
+    });
   },
 });
 

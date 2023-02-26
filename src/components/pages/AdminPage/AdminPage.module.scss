@@ -1,4 +1,16 @@
 .root {
   display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  overflow: auto;
+  height: 100%;
+}
+
+.column {
+  display: flex;
   flex-direction: column;
+  flex-grow: 1;
+  gap: 0.25rem;
+  overflow: auto;
+  max-height: 100%;
 }

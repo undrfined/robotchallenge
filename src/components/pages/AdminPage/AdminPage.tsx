@@ -7,11 +7,13 @@ import LOTTIE_ICONS, { LottieIcon } from '../../../helpers/lottieIcons';
 import { GameConfig } from '../../../types/gameTypes';
 import Code from '../../../assets/icons/Code.svg';
 import Dropdown from '../../common/Dropdown/Dropdown';
+import { addUserGroup } from '../../../store/slices/userGroupsSlice';
 
 export default function AdminPage() {
   const dispatch = useAppDispatch();
 
   const nameRef = useRef<HTMLInputElement>(null);
+  const userGroupNameRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLInputElement>(null);
   const descriptionShortRef = useRef<HTMLInputElement>(null);
   const maxPointsRef = useRef<HTMLInputElement>(null);
@@ -46,6 +48,14 @@ export default function AdminPage() {
     }));
   }
 
+  const handleAddUserGroup = useCallback(() => {
+    dispatch(addUserGroup({
+      newUserGroup: {
+        name: userGroupNameRef.current!.value,
+      },
+    }));
+  }, [dispatch]);
+
   const handleAddCategory = useCallback(() => {
     dispatch(addCategory({
       newCategory: {
@@ -61,39 +71,46 @@ export default function AdminPage() {
 
   return (
     <div className={styles.root}>
-      <h1>Admin Page</h1>
-      <input type="text" ref={nameRef} placeholder="Name" />
-      <input type="text" ref={descriptionRef} placeholder="Description" />
-      <input type="text" ref={descriptionShortRef} placeholder="Short Description" />
-      <input type="text" ref={maxPointsRef} placeholder="Max Points" inputMode="numeric" />
-      <Dropdown
-        icon={Code}
-        name="Icon"
-        items={Object.keys(LOTTIE_ICONS)
-          .reduce((acc, name) => ({
-            ...acc,
-            [name]: {
-              name,
-              lottieIcon: name as LottieIcon,
-            },
-          }), {})}
-        selectedIndex={icon}
-        onSelect={setIcon as any}
-      />
-      {inputs.map((input) => (
-        <>
-          <span>{input}</span>
-          <input
-            type="text"
-            key={input}
-            placeholder={input}
-            inputMode="numeric"
-            value={gameConfig[input]}
-            onChange={handleChange}
-          />
-        </>
-      ))}
-      <Button onClick={handleAddCategory}>Add category</Button>
+      <div className={styles.column}>
+        <h1>Add Category</h1>
+        <input type="text" ref={nameRef} placeholder="Name" />
+        <input type="text" ref={descriptionRef} placeholder="Description" />
+        <input type="text" ref={descriptionShortRef} placeholder="Short Description" />
+        <input type="text" ref={maxPointsRef} placeholder="Max Points" inputMode="numeric" />
+        <Dropdown
+          icon={Code}
+          name="Icon"
+          items={Object.keys(LOTTIE_ICONS)
+            .reduce((acc, name) => ({
+              ...acc,
+              [name]: {
+                name,
+                lottieIcon: name as LottieIcon,
+              },
+            }), {})}
+          selectedIndex={icon}
+          onSelect={setIcon as any}
+        />
+        {inputs.map((input) => (
+          <>
+            <span>{input}</span>
+            <input
+              type="text"
+              key={input}
+              placeholder={input}
+              inputMode="numeric"
+              value={gameConfig[input]}
+              onChange={handleChange}
+            />
+          </>
+        ))}
+        <Button onClick={handleAddCategory}>Add category</Button>
+      </div>
+      <div className={styles.column}>
+        <h1>Add User Group</h1>
+        <input type="text" ref={userGroupNameRef} placeholder="User group name" />
+        <Button onClick={handleAddUserGroup}>Add category</Button>
+      </div>
     </div>
   );
 }

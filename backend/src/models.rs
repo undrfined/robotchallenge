@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::schema::algo_version;
 use crate::schema::algos;
 use crate::schema::categories;
+use crate::schema::user_groups;
 use crate::schema::users;
 
 #[derive(diesel_derive_enum::DbEnum, Debug, Clone, Serialize, Deserialize)]
@@ -32,6 +33,7 @@ pub struct User {
     pub avatar_url: String,
     pub name: String,
     pub role: UserRole,
+    pub user_group_id: Option<i32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable, Identifiable)]
@@ -99,4 +101,21 @@ pub struct NewCategory {
     pub game_config: serde_json::Value,
     pub max_points: i32,
     pub icon: CategoryIcon,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable, Identifiable)]
+#[serde(rename_all = "camelCase")]
+#[table_name = "user_groups"]
+pub struct UserGroup {
+    pub id: i32,
+    pub name: String,
+    pub created_at: chrono::NaiveDateTime,
+    pub updated_at: chrono::NaiveDateTime,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable)]
+#[serde(rename_all = "camelCase")]
+#[table_name = "user_groups"]
+pub struct NewUserGroup {
+    pub name: String,
 }

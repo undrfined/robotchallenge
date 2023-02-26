@@ -9,18 +9,21 @@ import useAppSelector from '../../../hooks/useAppSelector';
 import { CategoryId, fetchCategories } from '../../../store/slices/categoriesSlice';
 import AnimatedText from '../../common/AnimatedText/AnimatedText';
 import useAppDispatch from '../../../hooks/useAppDispatch';
-import { getUserInfo, login, logout } from '../../../store/slices/authSlice';
+import { login, logout } from '../../../store/slices/authSlice';
 import Button from '../../common/Button/Button';
 import Github from '../../../assets/icons/Github.svg';
 import Avatar from '../../common/Avatar/Avatar';
 import useContextMenu from '../../../hooks/useContextMenu';
 import Code from '../../../assets/icons/Code.svg';
 import Close from '../../../assets/icons/Close.svg';
+import SelectGroupModal from '../../SelectGroupModal/SelectGroupModal';
+import { getUserById } from '../../../store/slices/usersSlice';
+import { selectCurrentUser } from '../../../store/selectors/usersSelectors';
 
 export default function SelectGamePage() {
   const navigate = useNavigate();
   const categories = useAppSelector(selectCategories);
-  const user = useAppSelector((state) => state.auth.user);
+  const user = useAppSelector(selectCurrentUser);
   const isLoggingIn = useAppSelector((state) => state.auth.isLoggingIn);
   const dispatch = useAppDispatch();
 
@@ -40,7 +43,7 @@ export default function SelectGamePage() {
 
   useEffect(() => {
     if (!user && isLoggingIn) {
-      dispatch(getUserInfo());
+      dispatch(getUserById());
     }
     dispatch(fetchCategories());
   }, [dispatch, isLoggingIn, user]);
@@ -109,6 +112,8 @@ export default function SelectGamePage() {
           />
         ))}
       </main>
+
+      <SelectGroupModal />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import categories from './slices/categoriesSlice';
 import auth from './slices/authSlice';
 import algos from './slices/algosSlice';
 import users from './slices/usersSlice';
+import userGroups from './slices/userGroupsSlice';
 
 const store = configureStore({
   reducer: {
@@ -13,6 +14,7 @@ const store = configureStore({
     auth,
     algos,
     users,
+    userGroups,
   },
   devTools: true,
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({

@@ -37,6 +37,7 @@ pub fn insert_new_user(
         avatar_url: new_avatar_url,
         name: new_name,
         role: models::UserRole::User,
+        user_group_id: None,
     };
 
     diesel::insert_into(users)
@@ -166,4 +167,45 @@ pub fn insert_new_category(
         .get_result::<models::Category>(conn)?;
 
     Ok(created_category)
+}
+
+pub fn insert_new_user_group(
+    conn: &mut PgConnection,
+    new_user_group: models::NewUserGroup,
+) -> Result<models::UserGroup, DbError> {
+    use crate::schema::user_groups::dsl::*;
+
+    let created_user_group = diesel::insert_into(user_groups)
+        .values(&new_user_group)
+        .on_conflict(id)
+        .do_update()
+        .set((name.eq(excluded(name)),))
+        .get_result::<models::UserGroup>(conn)?;
+
+    Ok(created_user_group)
+}
+
+pub fn fetch_user_groups(conn: &mut PgConnection) -> Result<Vec<models::UserGroup>, DbError> {
+    let user_groups = {
+        use crate::schema::user_groups::dsl::*;
+
+        user_groups.limit(100).load::<models::UserGroup>(conn)?
+    };
+
+    Ok(user_groups)
+}
+
+pub fn attach_user_to_user_group(
+    conn: &mut PgConnection,
+    user_id: String,
+    new_user_group_id: i32,
+) -> Result<models::User, DbError> {
+    use crate::schema::users::dsl::*;
+
+    let u = diesel::update(users)
+        .filter(id.eq(user_id))
+        .set(user_group_id.eq(new_user_group_id))
+        .get_result::<models::User>(conn)?;
+
+    Ok(u)
 }

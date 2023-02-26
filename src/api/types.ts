@@ -6,6 +6,7 @@ export type ApiUser = {
   id: string;
   name: string;
   role: 'user' | 'admin';
+  userGroupId?: number;
 };
 
 export type ApiCategory = {
@@ -16,6 +17,16 @@ export type ApiCategory = {
   maxPoints: number;
   gameConfig: GameConfig;
   icon: LottieIcon;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ApiNewUserGroup = {
+  name: string;
+};
+
+export type ApiUserGroup = ApiNewUserGroup & {
+  id: number;
   createdAt: string;
   updatedAt: string;
 };

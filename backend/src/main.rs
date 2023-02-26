@@ -23,6 +23,7 @@ mod auth;
 mod categories;
 mod models;
 mod schema;
+mod user_groups;
 mod users;
 mod utils;
 
@@ -95,6 +96,12 @@ async fn main() -> std::io::Result<()> {
                 web::scope("auth")
                     .service(auth::login)
                     .service(auth::logout),
+            )
+            .service(
+                web::scope("userGroups")
+                    .service(user_groups::get_user_groups)
+                    .service(user_groups::create_user_group)
+                    .service(user_groups::attach_to_user_group),
             )
             .service(auth::callback) // TODO move to auth
     })

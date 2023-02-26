@@ -48,6 +48,15 @@ diesel::table! {
 }
 
 diesel::table! {
+    user_groups (id) {
+        id -> Int4,
+        name -> Varchar,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     use diesel::sql_types::*;
     use super::sql_types::UserRole;
 
@@ -56,15 +65,18 @@ diesel::table! {
         avatar_url -> Varchar,
         name -> Varchar,
         role -> UserRole,
+        user_group_id -> Nullable<Int4>,
     }
 }
 
 diesel::joinable!(algo_version -> algos (algo_id));
 diesel::joinable!(algos -> users (user_id));
+diesel::joinable!(users -> user_groups (user_group_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     algo_version,
     algos,
     categories,
+    user_groups,
     users,
 );
