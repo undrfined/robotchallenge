@@ -1,4 +1,4 @@
-import { GamePosition } from '../types/gameTypes';
+import type { GamePosition } from '../types/gameTypes';
 
 export function axialToPixel(hex: GamePosition, width: number) {
   const size = 50;

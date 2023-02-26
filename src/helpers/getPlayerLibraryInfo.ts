@@ -1,6 +1,6 @@
 import * as Comlink from 'comlink';
-import { GameLibraryInfo } from '../types/gameTypes';
-import { PlayerWorkerType } from '../workers/player.worker';
+import type { GameLibraryInfo } from '../types/gameTypes';
+import type { PlayerWorkerType } from '../workers/player.worker';
 
 export default async function getPlayerLibraryInfo(blob: Blob): Promise<GameLibraryInfo> {
   const worker = new Worker(new URL('../workers/player.worker.ts', import.meta.url));

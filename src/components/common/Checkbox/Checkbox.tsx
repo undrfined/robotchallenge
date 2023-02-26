@@ -1,4 +1,5 @@
-import React, { ChangeEvent, useCallback } from 'react';
+import type { ChangeEvent } from 'react';
+import React, { useCallback } from 'react';
 import cn from 'classnames';
 import styles from './Checkbox.module.scss';
 import Check from '../../../assets/icons/Check.svg';

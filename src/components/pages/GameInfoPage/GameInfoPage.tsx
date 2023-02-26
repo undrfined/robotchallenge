@@ -11,10 +11,11 @@ import Button from '../../common/Button/Button';
 import AnimatedText from '../../common/AnimatedText/AnimatedText';
 import { fetchAlgoFile, fetchAlgos, uploadAlgo } from '../../../store/slices/algosSlice';
 import OpponentCard from '../../common/OpponentCard/OpponentCard';
-import { GameLibraryInfo } from '../../../types/gameTypes';
-import { ApiAlgoId, ApiAlgoVersionId } from '../../../api/types';
+import type { GameLibraryInfo } from '../../../types/gameTypes';
+import type { ApiAlgoId, ApiAlgoVersionId } from '../../../api/types';
 import { isTruthy } from '../../../helpers/isTruthy';
-import { GameId, startGame } from '../../../store/slices/gamesSlice';
+import type { GameId } from '../../../store/slices/gamesSlice';
+import { startGame } from '../../../store/slices/gamesSlice';
 
 export default function GameInfoPage() {
   const { categoryId } = useParams() as { categoryId: string };

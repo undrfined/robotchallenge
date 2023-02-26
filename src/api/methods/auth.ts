@@ -1,4 +1,5 @@
-import { GetRequest, RequestType } from './types';
+import type { RequestType } from './types';
+import { GetRequest } from './types';
 
 const BASE = 'auth';
 

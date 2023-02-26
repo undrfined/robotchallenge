@@ -1,4 +1,4 @@
-import { Pointer } from 'wasm-ffi';
+import type { Pointer } from 'wasm-ffi';
 
 export default function ffiReadArray<T>(length: number, ptr: Pointer<T>) {
   const ref = ptr.ref();

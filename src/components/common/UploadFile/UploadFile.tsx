@@ -5,7 +5,7 @@ import Button from '../Button/Button';
 
 import Upload from '../../../assets/icons/Upload.svg';
 import verifyFile from '../../../helpers/verifyFile';
-import { GameLibraryInfo } from '../../../types/gameTypes';
+import type { GameLibraryInfo } from '../../../types/gameTypes';
 
 type OwnProps = {
   accept: string;

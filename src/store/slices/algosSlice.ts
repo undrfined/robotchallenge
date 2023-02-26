@@ -4,7 +4,7 @@ import makeRequest from '../../api/makeRequest';
 import {
   GetAlgoFile, GetAlgos, GetAlgoVersions, PostAlgo,
 } from '../../api/methods/algos';
-import {
+import type {
   ApiAlgo, ApiAlgoId, ApiAlgoVersion, ApiAlgoVersionId, ApiAlgoVersionWithFile,
 } from '../../api/types';
 import getPlayerLibraryInfo from '../../helpers/getPlayerLibraryInfo';

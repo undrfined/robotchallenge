@@ -1,4 +1,4 @@
-import { GamePosition } from '../types/gameTypes';
+import type { GamePosition } from '../types/gameTypes';
 
 export function axialDistance(a: GamePosition, b: GamePosition): number {
   return ((Math.abs(a.q - b.q) + Math.abs(a.q + a.r - b.q - b.r) + Math.abs(a.r - b.r)) / 2);

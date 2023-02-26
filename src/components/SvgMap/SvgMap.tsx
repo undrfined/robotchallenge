@@ -1,6 +1,6 @@
 import React from 'react';
 import cn from 'classnames';
-import { GameEnergyStation, GamePosition, GameRobot } from '../../types/gameTypes';
+import type { GameEnergyStation, GamePosition, GameRobot } from '../../types/gameTypes';
 import { PLAYER_COLORS } from '../../helpers/playerColors';
 import styles from './SvgMap.module.scss';
 import { axialToPixel } from '../../helpers/hexToPx';

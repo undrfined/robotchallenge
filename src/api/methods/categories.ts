@@ -1,5 +1,6 @@
-import { GetRequest, PostRequest, RequestType } from './types';
-import { ApiCategory } from '../types';
+import type { RequestType } from './types';
+import { GetRequest, PostRequest } from './types';
+import type { ApiCategory } from '../types';
 
 const BASE = 'categories';
 export class GetCategories extends GetRequest implements RequestType {

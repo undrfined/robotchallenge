@@ -4,7 +4,7 @@ import styles from './Log.module.scss';
 import Close from '../../assets/icons/Close.svg';
 import useAppSelector from '../../hooks/useAppSelector';
 import { selectGame } from '../../store/selectors/gamesSelectors';
-import { GameId } from '../../store/slices/gamesSlice';
+import type { GameId } from '../../store/slices/gamesSlice';
 
 type OwnProps = {
   isOpen?: boolean;

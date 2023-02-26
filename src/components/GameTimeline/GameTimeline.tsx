@@ -4,7 +4,7 @@ import Pause from '../../assets/icons/Pause.svg';
 import Play from '../../assets/icons/Play.svg';
 import Backwards from '../../assets/icons/Backwards.svg';
 import Forwards from '../../assets/icons/Forwards.svg';
-import { GameConfig } from '../../types/gameTypes';
+import type { GameConfig } from '../../types/gameTypes';
 
 type OwnProps = {
   roundNumber: number;

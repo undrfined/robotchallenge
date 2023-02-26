@@ -2,8 +2,9 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import storage from 'redux-persist/lib/storage';
 import { persistReducer } from 'redux-persist';
 import type { AppThunkApi } from '../index';
-import makeRequest, { ResultType } from '../../api/makeRequest';
-import { ApiUser } from '../../api/types';
+import type { ResultType } from '../../api/makeRequest';
+import makeRequest from '../../api/makeRequest';
+import type { ApiUser } from '../../api/types';
 import { GetUserRequest } from '../../api/methods/users';
 // TODO fix this
 // eslint-disable-next-line import/no-cycle

@@ -1,7 +1,8 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { ApiUser, ApiUserGroup } from '../../api/types';
+import type { ApiUser, ApiUserGroup } from '../../api/types';
 import type { AppThunkApi } from '../index';
-import makeRequest, { ParamsType, ResultType } from '../../api/makeRequest';
+import type { ParamsType, ResultType } from '../../api/makeRequest';
+import makeRequest from '../../api/makeRequest';
 import { AttachToUserGroup, GetUserGroups, PostUserGroup } from '../../api/methods/userGroups';
 
 type UserGroupsState = {

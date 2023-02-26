@@ -11,7 +11,7 @@ import Dropdown from '../Dropdown/Dropdown';
 import useAppSelector from '../../../hooks/useAppSelector';
 import { fetchAlgoVersions } from '../../../store/slices/algosSlice';
 import useAppDispatch from '../../../hooks/useAppDispatch';
-import { ApiAlgoId, ApiAlgoVersionId } from '../../../api/types';
+import type { ApiAlgoId, ApiAlgoVersionId } from '../../../api/types';
 
 type OwnProps = {
   userId: string;

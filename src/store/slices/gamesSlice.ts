@@ -1,11 +1,12 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import * as Comlink from 'comlink';
 import type { AppThunkApi } from '../index';
-import { CoreWorkerType } from '../../workers/core.worker';
-import { GameConfig, GameMap, GamePlayerActions } from '../../types/gameTypes';
-import createUUID, { UUID } from '../../helpers/createUUID';
-import { ApiAlgoVersionWithFile } from '../../api/types';
-import { CategoryId } from './categoriesSlice';
+import type { CoreWorkerType } from '../../workers/core.worker';
+import type { GameConfig, GameMap, GamePlayerActions } from '../../types/gameTypes';
+import type { UUID } from '../../helpers/createUUID';
+import createUUID from '../../helpers/createUUID';
+import type { ApiAlgoVersionWithFile } from '../../api/types';
+import type { CategoryId } from './categoriesSlice';
 import { selectCategory } from '../selectors/categoriesSelectors';
 
 export type MapState = {

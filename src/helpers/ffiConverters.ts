@@ -1,19 +1,21 @@
+import type {
+  EnergyStationStructType,
+  GameConfigStructType, LibraryInfoStructType,
+  MapStructType,
+  PlayerActionsType,
+  PlayerActionTypeEnum,
+  PositionStructType,
+  RobotStructType,
+} from './ffiStructs';
 import {
   CloneRobotFailedStruct,
   CloneRobotStruct,
   CollectEnergyFailedStruct,
   CollectEnergyStruct,
-  EnergyStationStructType,
-  GameConfigStructType, LibraryInfoStructType,
-  MapStructType,
   PlayerActionMoveFailedStruct,
-  PlayerActionMoveStruct,
-  PlayerActionsType,
-  PlayerActionTypeEnum,
-  PositionStructType,
-  RobotStructType, TimeoutStruct,
+  PlayerActionMoveStruct, TimeoutStruct,
 } from './ffiStructs';
-import {
+import type {
   GameConfig, GameEnergyStation, GameLibraryInfo, GameMap, GamePlayerActions, GamePosition, GameRobot,
 } from '../types/gameTypes';
 import ffiReadArray from './ffiReadArray';

@@ -89,6 +89,7 @@ module.exports = {
     'react/button-has-type': 'off',
     'react/require-default-props': 'off',
     'react/function-component-definition': 'off',
+    '@typescript-eslint/consistent-type-imports': 'error',
   },
   ignorePatterns: ['vendor/**', 'scripts/**', 'config/**', 'build/**'],
 };

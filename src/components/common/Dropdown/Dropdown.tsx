@@ -3,7 +3,8 @@ import cn from 'classnames';
 import Lottie from 'lottie-react';
 import styles from './Dropdown.module.scss';
 import DropdownIcon from '../../../assets/icons/Dropdown.svg';
-import LOTTIE_ICONS, { LottieIcon } from '../../../helpers/lottieIcons';
+import type { LottieIcon } from '../../../helpers/lottieIcons';
+import LOTTIE_ICONS from '../../../helpers/lottieIcons';
 
 export type DropdownItem = {
   name: string;

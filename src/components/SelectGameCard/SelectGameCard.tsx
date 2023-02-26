@@ -6,7 +6,7 @@ import cn from 'classnames';
 import styles from './SelectGameCard.module.scss';
 import Button from '../common/Button/Button';
 import LOTTIE_ICONS from '../../helpers/lottieIcons';
-import { ApiCategory } from '../../api/types';
+import type { ApiCategory } from '../../api/types';
 
 type OwnProps = {
   category: ApiCategory;

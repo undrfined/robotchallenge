@@ -1,5 +1,6 @@
-import { GetRequest, RequestType } from './types';
-import { ApiUser } from '../types';
+import type { RequestType } from './types';
+import { GetRequest } from './types';
+import type { ApiUser } from '../types';
 
 const BASE = 'users';
 export class GetUserRequest extends GetRequest implements RequestType {

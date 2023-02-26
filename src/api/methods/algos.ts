@@ -1,7 +1,8 @@
+import type { RequestType } from './types';
 import {
-  PostFileRequest, GetRequest, RequestType, GetFileRequest,
+  PostFileRequest, GetRequest, GetFileRequest,
 } from './types';
-import { ApiAlgo, ApiAlgoVersion } from '../types';
+import type { ApiAlgo, ApiAlgoVersion } from '../types';
 
 const BASE = 'algos';
 

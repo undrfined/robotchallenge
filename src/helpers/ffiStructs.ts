@@ -1,6 +1,5 @@
-import {
-  Pointer, StringPointer, Struct, types,
-} from 'wasm-ffi';
+import type { Pointer, StringPointer } from 'wasm-ffi';
+import { Struct, types } from 'wasm-ffi';
 
 export type PositionStructType = {
   q: number;

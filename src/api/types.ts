@@ -1,5 +1,5 @@
-import { GameConfig } from '../types/gameTypes';
-import { LottieIcon } from '../helpers/lottieIcons';
+import type { GameConfig } from '../types/gameTypes';
+import type { LottieIcon } from '../helpers/lottieIcons';
 
 export type ApiUser = {
   avatarUrl: string;

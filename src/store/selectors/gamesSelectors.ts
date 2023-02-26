@@ -1,5 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit';
-import { RootState } from '../index';
+import type { RootState } from '../index';
 
 const selectSelf = (state: RootState) => state.games;
 export const selectGames = createSelector(selectSelf, (state) => state.games);

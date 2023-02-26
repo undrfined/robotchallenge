@@ -1,7 +1,8 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { ApiCategory } from '../../api/types';
+import type { ApiCategory } from '../../api/types';
 import type { AppThunkApi } from '../index';
-import makeRequest, { ParamsType } from '../../api/makeRequest';
+import type { ParamsType } from '../../api/makeRequest';
+import makeRequest from '../../api/makeRequest';
 import { GetCategories, PostCategory } from '../../api/methods/categories';
 
 export type CategoryId = number;

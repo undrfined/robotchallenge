@@ -1,5 +1,6 @@
-import { GetRequest, PostRequest, RequestType } from './types';
-import { ApiNewUserGroup, ApiUser, ApiUserGroup } from '../types';
+import type { RequestType } from './types';
+import { GetRequest, PostRequest } from './types';
+import type { ApiNewUserGroup, ApiUser, ApiUserGroup } from '../types';
 
 const BASE = 'userGroups';
 export class GetUserGroups extends GetRequest implements RequestType {

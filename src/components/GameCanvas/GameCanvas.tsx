@@ -1,9 +1,10 @@
-import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from '@pronestor/react-zoom-pan-pinch';
+import type { ReactZoomPanPinchRef } from '@pronestor/react-zoom-pan-pinch';
+import { TransformComponent, TransformWrapper } from '@pronestor/react-zoom-pan-pinch';
 import React, {
   useCallback, useEffect, useMemo, useRef,
 } from 'react';
 import deepClone from 'deep-clone';
-import {
+import type {
   GameConfig, GameMap, GamePlayerActions, GamePosition,
 } from '../../types/gameTypes';
 

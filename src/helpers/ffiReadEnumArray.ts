@@ -1,4 +1,5 @@
-import { AbstractStructCtor, Pointer } from 'wasm-ffi';
+import type { AbstractStructCtor } from 'wasm-ffi';
+import { Pointer } from 'wasm-ffi';
 
 export default function ffiReadEnumArray(length: number, ptr: Pointer<number>, structs: AbstractStructCtor<any>[]) {
   const lengths = structs.map((struct) => {

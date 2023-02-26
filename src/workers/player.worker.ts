@@ -1,15 +1,19 @@
 import * as Comlink from 'comlink';
+import type { IWrapper, AbstractStructType } from 'wasm-ffi';
 import {
-  Wrapper, Pointer, IWrapper, AbstractStructType,
+  Wrapper, Pointer,
 } from 'wasm-ffi';
 import { init, WASI } from '@wasmer/wasi';
-import {
-  EnergyStationStruct, GameConfigStruct, GameConfigStructType, LibraryInfoStruct, LibraryInfoStructType, MapStruct,
+import type {
+  GameConfigStructType, LibraryInfoStructType,
   MapStructType,
+} from '../helpers/ffiStructs';
+import {
+  EnergyStationStruct, GameConfigStruct, LibraryInfoStruct, MapStruct,
   PositionStruct,
   RobotStruct,
 } from '../helpers/ffiStructs';
-import { GameConfig, GameLibraryInfo, GameMap } from '../types/gameTypes';
+import type { GameConfig, GameLibraryInfo, GameMap } from '../types/gameTypes';
 import { gameConfigToStruct, libraryInfoToObject } from '../helpers/ffiConverters';
 
 type Exports = {

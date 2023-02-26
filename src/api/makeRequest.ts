@@ -1,4 +1,4 @@
-import Requests from './methods/index';
+import type Requests from './methods/index';
 import {
   GetFileRequest, GetRequest, PostFileRequest, PostRequest,
 } from './methods/types';

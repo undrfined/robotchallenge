@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import js from '../assets/icons/languages/js.svg';
 import rust from '../assets/icons/languages/rust.svg';
 import cpp from '../assets/icons/languages/cpp.svg';

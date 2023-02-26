@@ -11,7 +11,8 @@ import GameTimeline from '../../GameTimeline/GameTimeline';
 import Timeout from '../../../assets/icons/Timeout.webm';
 import TimeoutTooMuch from '../../../assets/icons/TimeoutTooMuch.webm';
 import Log from '../../Log/Log';
-import { doRound, GameId } from '../../../store/slices/gamesSlice';
+import type { GameId } from '../../../store/slices/gamesSlice';
+import { doRound } from '../../../store/slices/gamesSlice';
 import useAppSelector from '../../../hooks/useAppSelector';
 import useAppDispatch from '../../../hooks/useAppDispatch';
 import {
