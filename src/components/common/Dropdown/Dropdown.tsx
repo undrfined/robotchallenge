@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import cn from 'classnames';
 import Lottie from 'lottie-react';
 import styles from './Dropdown.module.scss';
@@ -25,12 +25,30 @@ export default function Dropdown({
   const Icon = icon;
 
   const [isOpen, setIsOpen] = useState(false);
-  function handleClick() {
+
+  const handleClick = useCallback(() => {
     setIsOpen(!isOpen);
-  }
+  }, [isOpen]);
+
+  const handleDocumentClick = useCallback(() => {
+    setIsOpen(false);
+  }, []);
 
   const currentLottieIcon = selectedIndex !== undefined && items
       && Object.keys(items) && items[selectedIndex]?.lottieIcon;
+
+  useEffect(() => {
+    if (!isOpen) return undefined;
+
+    // Ignore propagated event when opening dropdown
+    requestAnimationFrame(() => {
+      document.addEventListener('click', handleDocumentClick, { once: true });
+    });
+
+    return () => {
+      document.removeEventListener('click', handleDocumentClick);
+    };
+  }, [handleClick, handleDocumentClick, isOpen]);
 
   const CurrentIcon = selectedIndex !== undefined && items && Object.keys(items) && items[selectedIndex]?.icon;
   return (
