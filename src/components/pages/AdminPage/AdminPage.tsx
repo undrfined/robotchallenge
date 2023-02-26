@@ -3,8 +3,10 @@ import styles from './AdminPage.module.scss';
 import Button from '../../common/Button/Button';
 import useAppDispatch from '../../../hooks/useAppDispatch';
 import { addCategory } from '../../../store/slices/categoriesSlice';
-import { LottieIcon } from '../../../helpers/lottieIcons';
+import LOTTIE_ICONS, { LottieIcon } from '../../../helpers/lottieIcons';
 import { GameConfig } from '../../../types/gameTypes';
+import Code from '../../../assets/icons/Code.svg';
+import Dropdown from '../../common/Dropdown/Dropdown';
 
 export default function AdminPage() {
   const dispatch = useAppDispatch();
@@ -13,7 +15,7 @@ export default function AdminPage() {
   const descriptionRef = useRef<HTMLInputElement>(null);
   const descriptionShortRef = useRef<HTMLInputElement>(null);
   const maxPointsRef = useRef<HTMLInputElement>(null);
-  const iconRef = useRef<HTMLInputElement>(null);
+  const [icon, setIcon] = useState<LottieIcon>('Robot');
 
   const inputs: (keyof GameConfig)[] = [
     'width', 'roundsCount', 'initialRobotsCount', 'startEnergy', 'rngSeed',
@@ -47,7 +49,7 @@ export default function AdminPage() {
   const handleAddCategory = useCallback(() => {
     dispatch(addCategory({
       newCategory: {
-        icon: iconRef.current!.value as LottieIcon,
+        icon,
         name: nameRef.current!.value,
         description: descriptionRef.current!.value,
         descriptionShort: descriptionShortRef.current!.value,
@@ -55,7 +57,7 @@ export default function AdminPage() {
         gameConfig,
       },
     }));
-  }, [dispatch, gameConfig]);
+  }, [dispatch, gameConfig, icon]);
 
   return (
     <div className={styles.root}>
@@ -64,7 +66,20 @@ export default function AdminPage() {
       <input type="text" ref={descriptionRef} placeholder="Description" />
       <input type="text" ref={descriptionShortRef} placeholder="Short Description" />
       <input type="text" ref={maxPointsRef} placeholder="Max Points" inputMode="numeric" />
-      <input type="text" ref={iconRef} placeholder="Icon" />
+      <Dropdown
+        icon={Code}
+        name="Icon"
+        items={Object.keys(LOTTIE_ICONS)
+          .reduce((acc, name) => ({
+            ...acc,
+            [name]: {
+              name,
+              lottieIcon: name as LottieIcon,
+            },
+          }), {})}
+        selectedIndex={icon}
+        onSelect={setIcon as any}
+      />
       {inputs.map((input) => (
         <>
           <span>{input}</span>

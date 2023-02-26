@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import cn from 'classnames';
+import Lottie from 'lottie-react';
 import styles from './Dropdown.module.scss';
 import DropdownIcon from '../../../assets/icons/Dropdown.svg';
+import LOTTIE_ICONS, { LottieIcon } from '../../../helpers/lottieIcons';
 
 export type DropdownItem = {
   name: string;
   icon?: React.FC<React.SVGProps<SVGSVGElement>>;
+  lottieIcon?: LottieIcon;
 };
 
 type OwnProps = {
@@ -26,6 +29,9 @@ export default function Dropdown({
     setIsOpen(!isOpen);
   }
 
+  const currentLottieIcon = selectedIndex !== undefined && items
+      && Object.keys(items) && items[selectedIndex]?.lottieIcon;
+
   const CurrentIcon = selectedIndex !== undefined && items && Object.keys(items) && items[selectedIndex]?.icon;
   return (
     <div className={styles.root} onClick={handleClick}>
@@ -37,6 +43,15 @@ export default function Dropdown({
         {selectedIndex !== undefined && items && Object.keys(items) && items[selectedIndex] ? (
           <>
             {CurrentIcon && <CurrentIcon className={styles.dropdownContentIcon} />}
+            {currentLottieIcon
+                && (
+                  <Lottie
+                    animationData={LOTTIE_ICONS[currentLottieIcon]}
+                    loop
+                    className={styles.dropdownContentIcon}
+                  />
+                )}
+
             {items && items[selectedIndex].name}
           </>
         ) : 'Loading...'}
@@ -44,6 +59,7 @@ export default function Dropdown({
       <div className={cn(styles.moreContent, isOpen && styles.open)}>
         {items && Object.keys(items).map((key) => {
           const ItemIcon = items[key].icon;
+          const lottieIcon = items[key].lottieIcon;
           return (
             <button
               key={key}
@@ -51,6 +67,14 @@ export default function Dropdown({
               onClick={() => onSelect(key)}
             >
               {ItemIcon && <ItemIcon className={styles.dropdownContentIcon} />}
+              {lottieIcon
+                    && (
+                      <Lottie
+                        animationData={LOTTIE_ICONS[lottieIcon]}
+                        loop
+                        className={styles.dropdownContentIcon}
+                      />
+                    )}
               {items[key].name}
             </button>
           );
