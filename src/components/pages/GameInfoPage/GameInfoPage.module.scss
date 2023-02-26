@@ -9,7 +9,7 @@
     position: absolute;
     inset: 0;
     content: '';
-    background: url(../../../assets/Background.png);
+    background: url("../../../assets/Background.png");
     background-size: cover;
     opacity: 0.1;
     z-index: -1;
@@ -23,7 +23,7 @@
     height: 40vh;
     content: '';
     aspect-ratio: 2/1;
-    background: url(../../../assets/BackgroundCircles.svg);
+    background: url("../../../assets/BackgroundCircles.svg");
     background-size: contain;
     background-repeat: no-repeat;
     z-index: -1;
@@ -46,7 +46,7 @@
   }
 }
 
-.closeButton {
+.close-button {
   cursor: pointer;
 }
 
@@ -63,9 +63,8 @@
   align-items: center;
   padding: 1rem;
   gap: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgb(255 255 255 / 12%);
   border-radius: 12px;
-
   margin-bottom: 60px;
   margin-top: 32px;
 
@@ -82,7 +81,7 @@
       height: 6px;
       border-radius: 50%;
       background: #E524BB;
-      box-shadow: 0 0 0 3px rgb(229, 36, 187, 0.2);
+      box-shadow: 0 0 0 3px rgb(229 36 187 / 20%);
     }
   }
 }

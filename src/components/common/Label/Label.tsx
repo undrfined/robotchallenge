@@ -14,7 +14,7 @@ export default function Label({
 }: OwnProps) {
   return (
     <div className={cn(styles.root, className)}>
-      <LabelIcon className={styles.labelIcon} />
+      <LabelIcon />
       <div className={styles.labelText}>{children}</div>
     </div>
   );

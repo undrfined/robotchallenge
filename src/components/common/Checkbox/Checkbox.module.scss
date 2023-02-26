@@ -3,11 +3,8 @@
   width: 1.5rem;
   height: 1.5rem;
   border-radius: 0.25rem;
-
-  border: 2px solid rgba(255, 255, 255, 0.2);
-
-  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.06);
-
+  border: 2px solid rgb(255 255 255 / 20%);
+  box-shadow: 0 0 0 4px rgb(255 255 255 / 6%);
   transition: 0.15s ease-in-out;
   transition-property: border-color, background, box-shadow;
 }
@@ -33,14 +30,13 @@
   stroke-dasharray: var(--offset) calc(var(--path-length) - var(--offset));
   stroke-dashoffset: var(--path-length);
   stroke: #FF0AE6;
-
   animation: 2s linear loader infinite forwards;
 }
 
 .checked {
   border-color: transparent;
   background: #FF0AE6;
-  box-shadow: 0 0 0 4px rgb(255, 10, 230, 0.2);
+  box-shadow: 0 0 0 4px rgb(255 10 230 / 20%);
 }
 
 .input {

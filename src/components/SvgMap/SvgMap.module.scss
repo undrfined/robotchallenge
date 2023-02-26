@@ -1,10 +1,8 @@
 .robot {
   position: relative;
   transition: 0.5s linear transform, 1s ease-in-out stroke;
-  //transition-delay: 600ms;
   transform-origin: calc(var(--x) + 70px) calc(var(--y) + 64px);
   transform: translate(var(--x), var(--y));
-
   animation: 0.25s ease-in-out appear;
 
   &.hidden {
@@ -29,28 +27,27 @@
 .energy-station {
   transition: 0.25s ease-in-out filter;
 }
+
 .empty-energy-station {
   filter: brightness(0.5);
 }
 
 @keyframes collecting-energy {
-  from {
-  }
   to {
     transform: translate(var(--to-x), var(--to-y));
     opacity: 0;
   }
 }
+
 .collecting-energy {
   stroke: white;
   stroke-width: 2;
   paint-order: stroke;
-
   animation: 0.25s linear forwards collecting-energy;
 }
 
 @keyframes pulse {
-  from {
+  0% {
     transform: translate(var(--x), var(--y)) scale(1);
   }
 
@@ -61,12 +58,12 @@
     stroke: red;
   }
 
-  to {
+  100% {
     transform: translate(var(--x), var(--y)) scale(1);
   }
 }
 
-.selectedCell {
+.selected-cell {
   transform-origin: 70px 64px;
   animation: pulse 1s forwards;
 }
@@ -77,7 +74,7 @@
   fill: black;
 }
 
-.robotText {
+.robot-text {
   font-size: 1.25rem;
   font-weight: 500;
   fill: white;

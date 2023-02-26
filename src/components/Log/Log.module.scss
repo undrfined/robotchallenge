@@ -1,5 +1,5 @@
 .root {
-  background: rgba(33, 33, 33, 0.8);
+  background: rgb(33 33 33 / 80%);
   backdrop-filter: blur(10px);
   right: 0;
   bottom: 0;
@@ -14,7 +14,6 @@
   border: 2px solid #403F44;
   border-right: 0;
   border-bottom: 0;
-
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -36,5 +35,5 @@
 .content {
   overflow: auto;
   white-space: pre;
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, Courier, monospace;
 }

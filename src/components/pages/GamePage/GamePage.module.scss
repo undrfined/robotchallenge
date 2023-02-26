@@ -4,7 +4,7 @@
   height: 100%;
 }
 
-.playerList {
+.player-list {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -27,7 +27,7 @@
   gap: 2rem;
   top: 0;
   z-index: 2;
-  background: linear-gradient(180deg, rgb(9, 6, 28) 0%, rgb(9, 6, 28) 90%, rgb(9, 6, 28, 0) 100%);
+  background: linear-gradient(180deg, rgb(9 6 28) 0%, rgb(9 6 28) 90%, rgb(9 6 28 / 0%) 100%);
 }
 
 .back {
@@ -51,7 +51,7 @@
     top: 0;
     width: 40px;
     height: 100%;
-    background: linear-gradient(to right, rgba(9, 6, 28, 0), rgb(9, 6, 28, 1));
+    background: linear-gradient(to right, rgb(9 6 28 / 0%), rgb(9 6 28 / 100%));
     z-index: 1;
     pointer-events: none;
   }

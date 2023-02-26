@@ -4,9 +4,8 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-
   user-select: none;
-  background: url(PlayerCardBackgroundStroke.svg);
+  background: url("PlayerCardBackgroundStroke.svg");
 }
 
 .root::before {
@@ -16,13 +15,10 @@
   display: block;
   content: "";
   border-radius: 40px;
-
   background: linear-gradient(180.45deg, #131714 28.45%, #0D0D0D 99.62%);
-
-  -webkit-mask-image: url(PlayerCardMask.svg);
-  -webkit-mask-repeat: no-repeat;
-  -webkit-mask-size: 100% 100%;
-
+  mask-image: url("PlayerCardMask.svg");
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%;
   z-index: -1;
 }
 
@@ -60,6 +56,7 @@
   position: absolute;
   right: -1px;
   top: 16px;
+
   --color-label: var(--player-color);
 }
 
