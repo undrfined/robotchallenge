@@ -8,6 +8,7 @@ import {
   ApiAlgo, ApiAlgoId, ApiAlgoVersion, ApiAlgoVersionId, ApiAlgoVersionWithFile,
 } from '../../api/types';
 import getPlayerLibraryInfo from '../../helpers/getPlayerLibraryInfo';
+import { selectCurrentUser } from '../selectors/usersSelectors';
 
 export type AlgoVersion = ApiAlgoVersionWithFile & {
   isLoading?: boolean
@@ -64,7 +65,7 @@ AppThunkApi
 >(
   'algos/uploadAlgo',
   async (blob, { getState }) => {
-    const currentUser = getState().auth.user;
+    const currentUser = selectCurrentUser(getState());
     if (!currentUser) throw new Error('User is not logged in');
 
     const libInfo = await getPlayerLibraryInfo(blob);
