@@ -2,6 +2,7 @@ use chrono;
 use diesel_derive_enum;
 use serde::{Deserialize, Serialize};
 
+use crate::schema::algo_version;
 use crate::schema::algos;
 use crate::schema::categories;
 use crate::schema::users;
@@ -39,10 +40,7 @@ pub struct User {
 pub struct Algo {
     pub id: i32,
     pub user_id: String,
-    #[serde(skip_serializing)]
-    pub file: Vec<u8>,
     pub name: String,
-    pub version: String,
     pub language: String,
 }
 
@@ -51,10 +49,29 @@ pub struct Algo {
 #[table_name = "algos"]
 pub struct NewAlgo {
     pub user_id: String,
-    pub file: Vec<u8>,
     pub name: String,
-    pub version: String,
     pub language: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable, Identifiable)]
+#[table_name = "algo_version"]
+#[serde(rename_all = "camelCase")]
+pub struct AlgoVersion {
+    pub id: i32,
+    pub algo_id: i32,
+    pub version: String,
+    #[serde(skip_serializing)]
+    pub file: Vec<u8>,
+    pub created_at: chrono::NaiveDateTime,
+    pub updated_at: chrono::NaiveDateTime,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable)]
+#[serde(rename_all = "camelCase")]
+#[table_name = "algo_version"]
+pub struct NewAlgoVersion {
+    pub version: String,
+    pub file: Vec<u8>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable, Identifiable)]

@@ -1,19 +1,26 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { AppThunkApi } from '../index';
 import makeRequest from '../../api/makeRequest';
-import { GetAlgoFile, GetAlgos, PostAlgo } from '../../api/methods/algos';
-import { ApiAlgo, ApiAlgoWithFile } from '../../api/types';
+import {
+  GetAlgoFile, GetAlgos, GetAlgoVersions, PostAlgo,
+} from '../../api/methods/algos';
+import {
+  ApiAlgo, ApiAlgoId, ApiAlgoVersion, ApiAlgoVersionId, ApiAlgoVersionWithFile,
+} from '../../api/types';
 import getPlayerLibraryInfo from '../../helpers/getPlayerLibraryInfo';
 
-type Algo = ApiAlgoWithFile & {
+export type AlgoVersion = ApiAlgoVersionWithFile & {
   isLoading?: boolean
 };
+
 type AlgosState = {
-  algos: Record<number, Algo>;
+  algos: Record<string, Record<ApiAlgoId, ApiAlgo>>;
+  algoVersions: Record<ApiAlgoId, Record<ApiAlgoVersionId, AlgoVersion>>;
 };
 
 const initialState: AlgosState = {
   algos: {},
+  algoVersions: {},
 };
 
 export const fetchAlgos = createAsyncThunk<
@@ -27,20 +34,31 @@ AppThunkApi
   },
 );
 
+export const fetchAlgoVersions = createAsyncThunk<
+ApiAlgoVersion[],
+ApiAlgoId,
+AppThunkApi
+>(
+  'algos/fetchAlgoVersions',
+  async (algoId) => {
+    return makeRequest(new GetAlgoVersions(algoId));
+  },
+);
+
 export const fetchAlgoFile = createAsyncThunk<
 Blob,
-number,
+{ algoId: ApiAlgoId, algoVersionId: ApiAlgoVersionId },
 AppThunkApi
 >(
   'algos/fetchAlgoFile',
-  async (id) => {
-    const result = await makeRequest(new GetAlgoFile(id));
+  async ({ algoVersionId }) => {
+    const result = await makeRequest(new GetAlgoFile(algoVersionId));
     return new Blob([result], { type: 'application/wasm' });
   },
 );
 
 export const uploadAlgo = createAsyncThunk<
-ApiAlgoWithFile,
+{ algo: ApiAlgo, algoVersion: ApiAlgoVersionWithFile },
 Blob,
 AppThunkApi
 >(
@@ -53,12 +71,18 @@ AppThunkApi
     const result = await makeRequest(new PostAlgo(blob));
 
     return {
-      id: result.id,
-      userId: currentUser.id,
-      file: blob,
-      name: libInfo.name,
-      version: libInfo.version,
-      language: libInfo.language,
+      algo: {
+        id: result.algoId,
+        userId: currentUser.id,
+        name: libInfo.name,
+        language: libInfo.language,
+      },
+      algoVersion: {
+        id: result.algoVersionId,
+        algoId: result.algoId,
+        file: blob,
+        version: libInfo.version,
+      },
     };
   },
 );
@@ -78,29 +102,59 @@ export const algosReducer = createSlice({
         // state.isLoggingIn = false;
       })
       .addCase(fetchAlgos.fulfilled, (state, action) => {
-        state.algos = action.payload.reduce((acc, algo) => {
-          acc[algo.id] = algo;
-          return acc;
-        }, {} as Record<number, Algo>);
+        action.payload.forEach((algo) => {
+          state.algos[algo.userId] = {
+            ...state.algos[algo.userId],
+            [algo.id]: algo,
+          };
+          state.algoVersions[algo.id] = { ...state.algoVersions[algo.id] };
+        });
       });
 
     builder
       .addCase(uploadAlgo.fulfilled, (state, action) => {
-        state.algos[action.payload.id] = action.payload;
+        state.algos[action.payload.algo.userId] = {
+          ...state.algos[action.payload.algo.userId],
+          [action.payload.algo.id]: action.payload.algo,
+        };
+        state.algoVersions[action.payload.algo.id] = {
+          ...state.algoVersions[action.payload.algo.id],
+          [action.payload.algoVersion.id]: action.payload.algoVersion,
+        };
       });
 
     builder
       .addCase(fetchAlgoFile.pending, (state, action) => {
-        if (state.algos[action.meta.arg].isLoading) throw Error('Algo is already loading');
-        if (state.algos[action.meta.arg].file) throw Error('Algo file is already loaded');
-        state.algos[action.meta.arg].isLoading = true;
+        const { algoId, algoVersionId } = action.meta.arg;
+        if (!state.algoVersions[algoId][algoVersionId]) throw Error('Algo version is not loaded');
+        if (state.algoVersions[algoId][algoVersionId]?.isLoading) throw Error('Algo is already loading');
+        if (state.algoVersions[algoId][algoVersionId]?.file) throw Error('Algo file is already loaded');
+
+        state.algoVersions[algoId][algoVersionId].isLoading = true;
       })
       .addCase(fetchAlgoFile.rejected, (state, action) => {
-        state.algos[action.meta.arg].isLoading = false;
+        const { algoId, algoVersionId } = action.meta.arg;
+
+        state.algoVersions[algoId][algoVersionId].isLoading = false;
       })
       .addCase(fetchAlgoFile.fulfilled, (state, action) => {
-        state.algos[action.meta.arg].file = action.payload;
-        state.algos[action.meta.arg].isLoading = false;
+        const { algoId, algoVersionId } = action.meta.arg;
+
+        state.algoVersions[algoId][algoVersionId].file = action.payload;
+        state.algoVersions[algoId][algoVersionId].isLoading = false;
+      });
+
+    builder
+      .addCase(fetchAlgoVersions.fulfilled, (state, action) => {
+        const algoId = action.meta.arg;
+
+        state.algoVersions[algoId] = {
+          ...state.algoVersions[algoId],
+          ...action.payload.reduce((acc, algoVersion) => {
+            acc[algoVersion.id] = algoVersion;
+            return acc;
+          }, {} as Record<ApiAlgoVersionId, AlgoVersion>),
+        };
       });
   },
 });

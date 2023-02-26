@@ -1,4 +1,5 @@
 use diesel::prelude::*;
+use diesel::result::Error::DatabaseError;
 use diesel::upsert::excluded;
 
 use crate::models;
@@ -48,16 +49,59 @@ pub fn insert_new_user(
     Ok(new_user)
 }
 
-pub fn insert_new_algo(conn: &mut PgConnection, new_algo: models::NewAlgo) -> Result<i32, DbError> {
+pub fn get_algo_by_name(
+    conn: &mut PgConnection,
+    algo_user_id: String,
+    algo_name: String,
+) -> Result<models::Algo, DbError> {
     use crate::schema::algos::dsl::*;
 
-    let k = diesel::insert_into(algos)
-        .values(new_algo)
-        .on_conflict(id)
-        .do_nothing()
-        .get_result::<models::Algo>(conn)?;
+    let algo = algos
+        .filter(name.eq(algo_name))
+        .filter(user_id.eq(algo_user_id))
+        .first::<models::Algo>(conn)
+        .optional()?
+        .unwrap();
 
-    Ok(k.id)
+    Ok(algo)
+}
+
+pub fn insert_new_algo(
+    conn: &mut PgConnection,
+    new_algo: models::NewAlgo,
+    new_algo_version: models::NewAlgoVersion,
+) -> Result<(i32, i32), DbError> {
+    let new_algo_id = {
+        use crate::schema::algos::dsl::*;
+
+        let result = diesel::insert_into(algos)
+            .values(&new_algo)
+            .returning(id)
+            .get_result::<i32>(conn);
+
+        match result {
+            Ok(i) => i,
+            Err(DatabaseError(UniqueViolation, info)) => {
+                println!("error: {:?}", info);
+                get_algo_by_name(conn, new_algo.user_id, new_algo.name)?.id
+            }
+            Err(e) => return Err(Box::new(e)),
+        }
+    };
+
+    println!("wow, inserted {:?}", new_algo_id);
+
+    let algo_version_id = {
+        use crate::schema::algo_version::dsl::*;
+
+        diesel::insert_into(algo_version)
+            .values((new_algo_version, algo_id.eq(new_algo_id)))
+            .returning(id)
+            .get_result(conn)?
+    };
+
+    println!("wow, inserted {:?} and {:?}", new_algo_id, algo_version_id);
+    Ok((new_algo_id, algo_version_id))
 }
 
 pub fn find_all_algos(conn: &mut PgConnection) -> Result<Vec<models::Algo>, DbError> {
@@ -68,11 +112,25 @@ pub fn find_all_algos(conn: &mut PgConnection) -> Result<Vec<models::Algo>, DbEr
     Ok(algos2)
 }
 
-pub fn get_algo_file(conn: &mut PgConnection, algo_id: i32) -> Result<Vec<u8>, DbError> {
-    use crate::schema::algos::dsl::*;
+pub fn find_algo_versions(
+    conn: &mut PgConnection,
+    new_algo_id: i32,
+) -> Result<Vec<models::AlgoVersion>, DbError> {
+    use crate::schema::algo_version::dsl::*;
 
-    let algo_file = algos
-        .filter(id.eq(algo_id))
+    let algo_versions = algo_version
+        .filter(algo_id.eq(new_algo_id))
+        .limit(100)
+        .load::<models::AlgoVersion>(conn)?;
+
+    Ok(algo_versions)
+}
+
+pub fn get_algo_file(conn: &mut PgConnection, algo_verion_id: i32) -> Result<Vec<u8>, DbError> {
+    use crate::schema::algo_version::dsl::*;
+
+    let algo_file = algo_version
+        .filter(id.eq(algo_verion_id))
         .select(file)
         .first::<Vec<u8>>(conn)?;
 

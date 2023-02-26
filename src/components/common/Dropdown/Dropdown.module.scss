@@ -1,0 +1,68 @@
+.root {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  padding: 0.5rem;
+  cursor: pointer;
+  position: relative;
+}
+
+.icon {
+  transition: 0.15s ease-in-out transform;
+}
+
+.flipped {
+  transform: rotate(180deg);
+}
+
+.dropdownName {
+  color: rgba(255, 255, 255, 0.6);
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
+
+  &::after {
+    content: ':';
+  }
+}
+
+.dropdownContent {
+  white-space: nowrap;
+  overflow: hidden;
+  display: inline-flex;
+  gap: 0.25rem;
+  align-items: center;
+}
+
+.more-content {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: calc(100% + 0.25rem);
+  left: 0;
+  width: 100%;
+  z-index: 1;
+
+  border-radius: 14px;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(20px);
+
+  opacity: 0;
+
+  transition: 0.25s ease-in-out opacity;
+}
+
+.dropdown-content-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.open {
+  opacity: 1;
+}
+
+.item {
+  composes: item from '../ContextMenu/ContextMenu.module.scss';
+}

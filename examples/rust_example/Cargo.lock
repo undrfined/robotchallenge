@@ -5,6 +5,8 @@ version = 3
 [[package]]
 name = "robotchallenge"
 version = "0.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8557aaead3a0ab87dc34eefffd70a5c7988db4c93bdcf529d07c8ee7a24d50f"
 
 [[package]]
 name = "rust_example"

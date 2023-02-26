@@ -1,7 +1,6 @@
 import getPlayerLibraryInfo from './getPlayerLibraryInfo';
-import { ApiAlgoWithFile } from '../api/types';
 
-export default async function verifyFile(file?: Blob): Promise<Omit<ApiAlgoWithFile, 'id' | 'userId'> | undefined> {
+export default async function verifyFile(file?: Blob) {
   if (!file) return undefined;
 
   try {
@@ -9,9 +8,7 @@ export default async function verifyFile(file?: Blob): Promise<Omit<ApiAlgoWithF
 
     return {
       file,
-      name: info.name,
-      version: info.version,
-      language: info.language,
+      info,
     };
   } catch (err) {
     return undefined;

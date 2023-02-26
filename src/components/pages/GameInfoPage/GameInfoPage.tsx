@@ -3,21 +3,23 @@ import { useNavigate, useParams } from 'react-router-dom';
 import styles from './GameInfoPage.module.scss';
 import useAppSelector from '../../../hooks/useAppSelector';
 import useAppDispatch from '../../../hooks/useAppDispatch';
-import { GameId, startGame } from '../../../store/slices/gamesSlice';
 import { selectGames } from '../../../store/selectors/gamesSelectors';
 import { selectCategory } from '../../../store/selectors/categoriesSelectors';
 import Back from '../../../assets/icons/Back.svg';
 import UploadFile from '../../common/UploadFile/UploadFile';
 import Button from '../../common/Button/Button';
-import { isTruthy } from '../../../helpers/isTruthy';
 import AnimatedText from '../../common/AnimatedText/AnimatedText';
 import { fetchAlgoFile, fetchAlgos, uploadAlgo } from '../../../store/slices/algosSlice';
-import { ApiAlgo, ApiAlgoWithFile } from '../../../api/types';
 import OpponentCard from '../../common/OpponentCard/OpponentCard';
+import { GameLibraryInfo } from '../../../types/gameTypes';
+import { ApiAlgoId, ApiAlgoVersionId } from '../../../api/types';
+import { isTruthy } from '../../../helpers/isTruthy';
+import { GameId, startGame } from '../../../store/slices/gamesSlice';
 
 export default function GameInfoPage() {
   const { categoryId } = useParams() as { categoryId: string };
   const categoryIdInt = Number(categoryId);
+
   const category = useAppSelector(selectCategory(categoryIdInt));
   if (!category) throw new Error('Category not found');
 
@@ -25,21 +27,37 @@ export default function GameInfoPage() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
-  const algos = useAppSelector((state) => state.algos.algos);
+  const algosByUser = useAppSelector((state) => state.algos.algos);
+  const versions = useAppSelector((state) => state.algos.algoVersions);
 
-  const [file, setFile] = useState<Omit<ApiAlgoWithFile, 'id' | 'userId'> | undefined>();
-  const [selected, setSelected] = useState<number[]>([]);
+  const [file, setFile] = useState<{
+    file: Blob;
+    info: GameLibraryInfo;
+  } | undefined>();
 
-  const handleUploadFile = useCallback((newFile: Omit<ApiAlgoWithFile, 'id' | 'userId'> | undefined) => {
+  // TODO we probably need a way to select multiple algo version from the same user, need to consult with Anna
+  const [selected, setSelected] = useState<{
+    userId: string; algoId: ApiAlgoId; algoVersionId: ApiAlgoVersionId;
+  }[]>([]);
+
+  const handleUploadFile = useCallback((newFile: {
+    file: Blob;
+    info: GameLibraryInfo;
+  } | undefined) => {
     setFile(file);
     if (newFile) {
       dispatch(uploadAlgo(newFile.file!));
     }
   }, [dispatch, file]);
 
-  const handleSelectFile = useCallback((checked: boolean, id: number) => {
-    setSelected(checked ? [...selected, id] : selected.filter((q) => q !== id));
-    if (checked) dispatch(fetchAlgoFile(id));
+  const handleSelectFile = useCallback((
+    checked: boolean, selectedUserId: string, algoId: ApiAlgoId, algoVersionId: ApiAlgoVersionId,
+  ) => {
+    const withoutUser = selected.filter((q) => q.userId !== selectedUserId);
+    setSelected(checked
+      ? [...withoutUser, { userId: selectedUserId, algoId, algoVersionId }]
+      : withoutUser);
+    if (checked) dispatch(fetchAlgoFile({ algoVersionId, algoId }));
   }, [dispatch, selected]);
 
   useEffect(() => {
@@ -47,17 +65,17 @@ export default function GameInfoPage() {
   }, [dispatch]);
 
   const handleStartGame = useCallback(() => {
-    const selectedFiles = selected.map((l) => algos[l]);
-    const allAlgos = [...selectedFiles, file].filter(isTruthy) as ApiAlgo[];
+    const selectedFiles = selected.map((l) => versions[l.algoId][l.algoVersionId]);
+    const allAlgos = [...selectedFiles].filter(isTruthy); // TODO include current file
     dispatch(startGame({
-      algos: allAlgos,
+      algoVersions: allAlgos,
       categoryId: categoryIdInt,
     })).then((a) => {
       // TODO types?
       const { id } = a.payload as { id: GameId };
       navigate(`/game/${id}`);
     });
-  }, [categoryIdInt, dispatch, file, algos, navigate, selected]);
+  }, [categoryIdInt, dispatch, navigate, selected, versions]);
 
   return (
     <div className={styles.root}>
@@ -80,12 +98,12 @@ export default function GameInfoPage() {
           <h2>Select opponents & Version</h2>
 
           <div className={styles.opponents}>
-            {Object.values(algos).map((algo) => (
+            {Object.keys(algosByUser).map((userId) => (
               <OpponentCard
-                key={algo.id}
-                algo={algo}
-                isSelected={selected.includes(algo.id)}
-                onToggle={handleSelectFile}
+                key={userId}
+                userId={userId}
+                selectedAlgos={selected}
+                onSelectAlgoVersion={handleSelectFile}
               />
             ))}
           </div>

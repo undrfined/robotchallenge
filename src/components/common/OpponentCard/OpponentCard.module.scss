@@ -1,41 +1,8 @@
-
 .opponent {
   display: flex;
   align-items: center;
   gap: 1rem;
   padding: 24px 20px;
-}
-
-.dropdown {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.07);
-  border-radius: 14px;
-  padding: 0.5rem;
-}
-
-.dropdownName {
-  color: rgba(255, 255, 255, 0.6);
-  margin-left: 0.25rem;
-  margin-right: 0.25rem;
-
-  &::after {
-    content: ':';
-  }
-}
-
-.dropdownContent {
-  white-space: nowrap;
-  overflow: hidden;
-  display: inline-flex;
-  gap: 0.25rem;
-  align-items: center;
-
-  svg {
-    width: 24px;
-    height: 24px;
-  }
 }
 
 .checkbox {

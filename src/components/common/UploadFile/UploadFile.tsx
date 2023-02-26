@@ -5,12 +5,18 @@ import Button from '../Button/Button';
 
 import Upload from '../../../assets/icons/Upload.svg';
 import verifyFile from '../../../helpers/verifyFile';
-import { ApiAlgoWithFile } from '../../../api/types';
+import { GameLibraryInfo } from '../../../types/gameTypes';
 
 type OwnProps = {
   accept: string;
-  file: Omit<ApiAlgoWithFile, 'id' | 'userId'> | undefined;
-  setFile: (data: Omit<ApiAlgoWithFile, 'id' | 'userId'> | undefined) => void,
+  file: {
+    file: Blob;
+    info: GameLibraryInfo;
+  } | undefined;
+  setFile: (data: {
+    file: Blob;
+    info: GameLibraryInfo;
+  } | undefined) => void,
 };
 
 export default function UploadFile({
@@ -27,7 +33,6 @@ export default function UploadFile({
     if (!f) return;
 
     setFile(f);
-    e.currentTarget.value = '';
   };
 
   function handleDragOver(e: React.DragEvent) {
@@ -87,7 +92,7 @@ export default function UploadFile({
       <h5>Drag & Drop your solution</h5>
       {file && (
         <p>
-          {file.name} ({file.version}) by {file.language}
+          {file.info.name} ({file.info.version})
         </p>
       )}
       <input type="file" ref={inputRef} accept={accept} onChange={handleChange} className={styles.input} />

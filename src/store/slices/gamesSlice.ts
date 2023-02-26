@@ -4,7 +4,7 @@ import type { AppThunkApi } from '../index';
 import { CoreWorkerType } from '../../workers/core.worker';
 import { GameConfig, GameMap, GamePlayerActions } from '../../types/gameTypes';
 import createUUID, { UUID } from '../../helpers/createUUID';
-import { ApiAlgoWithFile } from '../../api/types';
+import { ApiAlgoVersionWithFile } from '../../api/types';
 import { CategoryId } from './categoriesSlice';
 import { selectCategory } from '../selectors/categoriesSelectors';
 
@@ -68,21 +68,23 @@ export const startGame = createAsyncThunk<
 GameState,
 {
   categoryId: CategoryId;
-  algos: ApiAlgoWithFile[];
+  algoVersions: ApiAlgoVersionWithFile[];
 },
 AppThunkApi
 >(
   'games/startGame',
   async ({
-    categoryId, algos,
+    categoryId, algoVersions,
   }, { dispatch, getState }) => {
     const gameConfig = selectCategory(categoryId)(getState())?.gameConfig;
     if (!gameConfig) throw Error('Game config not found');
 
+    console.log(algoVersions);
+
     const gameConfig2 = {
       ...gameConfig,
       // TODO hack
-      playersCount: algos.length,
+      playersCount: algoVersions.length,
     };
     const coreWorker = new Worker(new URL('../../workers/core.worker.ts', import.meta.url));
     const core = Comlink.wrap<CoreWorkerType>(coreWorker);
@@ -103,7 +105,7 @@ AppThunkApi
     }));
 
     // TODO may be undefined
-    await core.initGame(gameConfig2, algos.map((algo) => algo.file!));
+    await core.initGame(gameConfig2, algoVersions.map((algo) => algo.file!));
 
     const mapStates = [{
       map: await core.getMap(),
@@ -117,11 +119,12 @@ AppThunkApi
       core,
       coreWorker,
       mapStates,
-      players: algos.reduce((acc, algo, i) => {
-        acc[i as PlayerId] = algo.userId;
+      players: algoVersions.reduce((acc, algoVersion, i) => {
+        // TODO this definitely needs a better data structure
+        acc[i as PlayerId] = Object.values(getState().algos.algos).map((l) => l[algoVersion.algoId]?.userId)[0];
         return acc;
       }, {} as Record<PlayerId, string>),
-      logs: new Array(algos.length).fill(null).reduce((acc, _, i) => {
+      logs: new Array(algoVersions.length).fill(null).reduce((acc, _, i) => {
         acc[i] = {
           owner: i,
           log: '',

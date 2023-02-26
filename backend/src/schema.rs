@@ -11,12 +11,21 @@ pub mod sql_types {
 }
 
 diesel::table! {
+    algo_version (id) {
+        id -> Int4,
+        algo_id -> Int4,
+        version -> Varchar,
+        file -> Bytea,
+        created_at -> Timestamp,
+        updated_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     algos (id) {
         id -> Int4,
         user_id -> Varchar,
-        file -> Bytea,
         name -> Varchar,
-        version -> Varchar,
         language -> Varchar,
     }
 }
@@ -50,9 +59,11 @@ diesel::table! {
     }
 }
 
+diesel::joinable!(algo_version -> algos (algo_id));
 diesel::joinable!(algos -> users (user_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
+    algo_version,
     algos,
     categories,
     users,

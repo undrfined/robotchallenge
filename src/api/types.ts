@@ -20,14 +20,22 @@ export type ApiCategory = {
   updatedAt: string;
 };
 
+export type ApiAlgoId = number;
+export type ApiAlgoVersionId = number;
+
 export type ApiAlgo = {
-  id: number;
+  id: ApiAlgoId;
   userId: string;
-  version: string,
   name: string,
   language: string,
 };
 
-export type ApiAlgoWithFile = ApiAlgo & {
+export type ApiAlgoVersion = {
+  id: ApiAlgoVersionId;
+  algoId: ApiAlgoId;
+  version: string;
+};
+
+export type ApiAlgoVersionWithFile = ApiAlgoVersion & {
   file?: Blob;
 };

@@ -22,7 +22,7 @@ public class Algorithm: IAlgorithm
         return new LibInfo
         {
             Name = "My Library",
-            Version = "1.2.3"
+            Version = "1.2.5"
         };
     }
 }
