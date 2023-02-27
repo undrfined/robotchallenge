@@ -7,10 +7,17 @@
   padding: 0.5rem;
   cursor: pointer;
   position: relative;
+  user-select: none;
 }
 
 .icon {
   transition: 0.15s ease-in-out transform;
+  margin-left: auto;
+  min-width: 24px;
+}
+
+.left-icon {
+  min-width: 24px;
 }
 
 .flipped {
@@ -50,16 +57,25 @@
   opacity: 0;
   pointer-events: none;
   transition: 0.25s ease-in-out opacity;
+  visibility: hidden;
+  outline: none;
 }
 
 .dropdown-content-icon {
+  min-width: 24px;
   width: 24px;
   height: 24px;
+}
+
+.dropdown-content-text {
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .open {
   opacity: 1;
   pointer-events: all;
+  visibility: visible;
 }
 
 .item {

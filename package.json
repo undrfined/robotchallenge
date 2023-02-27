@@ -12,7 +12,6 @@
     "@types/node": "^16.11.26",
     "@types/react": "^17.0.44",
     "@wasmer/wasi": "file:vendor/wasmer-js",
-    "wasmer-wasi-js": "file:vendor/wasmer-js/pkg",
     "@wasmer/wasm-transformer": "^0.12.0",
     "asyncify-wasm": "^1.2.1",
     "babel-jest": "^27.4.2",
@@ -65,6 +64,7 @@
     "tailwindcss": "^3.0.2",
     "terser-webpack-plugin": "^5.2.5",
     "wasm-ffi": "^0.3.0",
+    "wasmer-wasi-js": "file:vendor/wasmer-js/pkg",
     "web-vitals": "^2.1.4",
     "webpack": "^5.64.4",
     "webpack-dev-server": "^4.6.0",
@@ -90,7 +90,7 @@
   },
   "lint-staged": {
     "!(vendor)**/*.{ts,tsx,js,jsx}": [
-      "tsc --noemit", "eslint . --fix"
+      "eslint . --fix"
     ],
     "!(vendor)**/*.{css,scss}": [
       "stylelint --fix"

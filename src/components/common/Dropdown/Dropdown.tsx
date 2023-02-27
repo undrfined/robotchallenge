@@ -18,10 +18,11 @@ type OwnProps = {
   items: Record<string, DropdownItem> | undefined;
   selectedIndex: string | undefined;
   onSelect: (id: string) => void;
+  className?: string;
 };
 
 export default function Dropdown({
-  icon, name, selectedIndex, items, onSelect,
+  icon, name, selectedIndex, items, onSelect, className,
 }: OwnProps) {
   const Icon = icon;
 
@@ -53,8 +54,8 @@ export default function Dropdown({
 
   const CurrentIcon = selectedIndex !== undefined && items && Object.keys(items) && items[selectedIndex]?.icon;
   return (
-    <div className={styles.root} onClick={handleClick}>
-      <Icon />
+    <button className={cn(styles.root, className)} onClick={handleClick}>
+      <Icon className={styles.leftIcon} />
       <div className={styles.dropdownName}>
         {name}
       </div>
@@ -71,9 +72,9 @@ export default function Dropdown({
                   />
                 )}
 
-            {items && items[selectedIndex].name}
+            <span className={styles.dropdownContentText}>{items && items[selectedIndex].name}</span>
           </>
-        ) : 'Loading...'}
+        ) : <span className={styles.dropdownContentText}>Loading...</span>}
       </div>
       <div className={cn(styles.moreContent, isOpen && styles.open)}>
         {items && Object.keys(items).map((key) => {
@@ -100,6 +101,6 @@ export default function Dropdown({
         })}
       </div>
       <DropdownIcon className={cn(styles.icon, isOpen && styles.flipped)} />
-    </div>
+    </button>
   );
 }

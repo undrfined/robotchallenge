@@ -77,36 +77,42 @@ export default function OpponentCard({
 
   return (
     <div className={styles.opponent}>
-      <Avatar size="small" userId={userId} />
-      <div className={styles.opponentName}>{user?.name}</div>
+      <div className={styles.playerInfo}>
+        <Avatar size="small" userId={userId} />
+        <div className={styles.opponentName}>{user?.name}</div>
+      </div>
 
-      <Dropdown
-        icon={Code}
-        name="Algorithm"
-        items={Object.keys(algosByUser)
-          .reduce((acc, algoId) => ({
+      <div className={styles.dropdowns}>
+        <Dropdown
+          icon={Code}
+          className={styles.dropdown}
+          name="Algorithm"
+          items={Object.keys(algosByUser)
+            .reduce((acc, algoId) => ({
+              ...acc,
+              [algoId]: {
+                name: algosByUser[Number(algoId)].name,
+                icon: LANGUAGE_ICONS[algosByUser[Number(algoId)].language],
+              },
+            }), {})}
+          selectedIndex={selectedAlgo.id.toString()}
+          onSelect={handleSelectAlgoId}
+        />
+
+        <Dropdown
+          icon={Version}
+          className={styles.dropdown}
+          name="Version"
+          items={versions && Object.values(versions).reduce((acc, version) => ({
             ...acc,
-            [algoId]: {
-              name: algosByUser[Number(algoId)].name,
-              icon: LANGUAGE_ICONS[algosByUser[Number(algoId)].language],
+            [version.id]: {
+              name: version.version,
             },
           }), {})}
-        selectedIndex={selectedAlgo.id.toString()}
-        onSelect={handleSelectAlgoId}
-      />
-
-      <Dropdown
-        icon={Version}
-        name="Version"
-        items={versions && Object.values(versions).reduce((acc, version) => ({
-          ...acc,
-          [version.id]: {
-            name: version.version,
-          },
-        }), {})}
-        selectedIndex={selectedVersionId?.toString()}
-        onSelect={handleSelectVersionId}
-      />
+          selectedIndex={selectedVersionId?.toString()}
+          onSelect={handleSelectVersionId}
+        />
+      </div>
 
       <Checkbox
         checked={!selectedVersion?.isLoading && isAlgoSelected}
