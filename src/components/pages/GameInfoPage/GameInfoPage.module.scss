@@ -57,6 +57,37 @@
   gap: 1rem
 }
 
+.languages {
+  display: flex;
+  height: 7rem;
+}
+
+.language {
+  position: relative;
+  width: 4rem;
+  height: 4rem;
+  transition: 0.25s ease-in-out transform;
+
+  --c: calc(-73px * (var(--index, 0) / 2));
+
+  transform: var(--transform) scale(1);
+  cursor: pointer;
+  text-decoration: none;
+
+  &:hover {
+    transform: var(--transform) scale(1.1);
+    z-index: 1;
+  }
+
+  &:nth-child(even) {
+    --transform: translate(var(--c), 48px);
+  }
+
+  &:nth-child(odd) {
+    --transform: translateX(var(--c));
+  }
+}
+
 .timer {
   display: flex;
   flex-direction: column;

@@ -16,6 +16,7 @@ import type { ApiAlgoId, ApiAlgoVersionId } from '../../../api/types';
 import { isTruthy } from '../../../helpers/isTruthy';
 import type { GameId } from '../../../store/slices/gamesSlice';
 import { startGame } from '../../../store/slices/gamesSlice';
+import { LANGUAGE_ICONS } from '../../../helpers/languageIcons';
 
 export default function GameInfoPage() {
   const { categoryId } = useParams() as { categoryId: string };
@@ -120,6 +121,21 @@ export default function GameInfoPage() {
           <li>Upload your algorithm</li>
           <li>Start the game</li>
         </ol>
+
+        <div className={styles.languages}>
+          {Object.keys(LANGUAGE_ICONS).map((language, index) => {
+            const Icon = LANGUAGE_ICONS[language];
+            return (
+              <a
+                href={`https://github.com/undrfined/robotchallenge/tree/master/examples/${language}_example`}
+                className={styles.language}
+                style={{ '--index': index }}
+              >
+                <Icon />
+              </a>
+            );
+          })}
+        </div>
 
         <UploadFile
           accept="application/wasm"
