@@ -20,11 +20,13 @@ import Close from '../../../assets/icons/Close.svg';
 import SelectGroupModal from '../../SelectGroupModal/SelectGroupModal';
 import { getUserById } from '../../../store/slices/usersSlice';
 import { selectCurrentUser } from '../../../store/selectors/usersSelectors';
+import useEnsureUserGroup from '../../../hooks/useEnsureUserGroup';
 
 export default function SelectGamePage() {
   const navigate = useNavigate();
   const categories = useAppSelector(selectCategories);
   const user = useAppSelector(selectCurrentUser);
+  const userGroup = useEnsureUserGroup(user?.userGroupId);
   const isLoggingIn = useAppSelector((state) => state.auth.isLoggingIn);
   const dispatch = useAppDispatch();
 
@@ -90,6 +92,7 @@ export default function SelectGamePage() {
               <>
                 <Avatar userId={user.id} size="tiny" />
                 {user.name}
+                {userGroup && ` (${userGroup.name})`}
               </>
             ) : (
               <>
