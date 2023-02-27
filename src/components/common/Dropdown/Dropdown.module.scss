@@ -56,7 +56,9 @@
   backdrop-filter: blur(20px);
   opacity: 0;
   pointer-events: none;
-  transition: 0.25s ease-in-out opacity;
+  transition-property: opacity, visibility;
+  transition-duration: 0.25s;
+  transition-timing-function: ease-in-out;
   visibility: hidden;
   outline: none;
 }
