@@ -8,6 +8,7 @@ import createUUID from '../../helpers/createUUID';
 import type { ApiAlgoVersionWithFile } from '../../api/types';
 import type { CategoryId } from './categoriesSlice';
 import { selectCategory } from '../selectors/categoriesSelectors';
+import { compact } from '../../helpers/iteratees';
 
 export type MapState = {
   map: GameMap;
@@ -122,7 +123,9 @@ AppThunkApi
       mapStates,
       players: algoVersions.reduce((acc, algoVersion, i) => {
         // TODO this definitely needs a better data structure
-        acc[i as PlayerId] = Object.values(getState().algos.algos).map((l) => l[algoVersion.algoId]?.userId)[0];
+        acc[i as PlayerId] = compact(
+          Object.values(getState().algos.algos).map((l) => l[algoVersion.algoId]?.userId),
+        )[0];
         return acc;
       }, {} as Record<PlayerId, string>),
       logs: new Array(algoVersions.length).fill(null).reduce((acc, _, i) => {
