@@ -44,6 +44,7 @@ diesel::table! {
         icon -> CategoryIcon,
         created_at -> Timestamp,
         updated_at -> Timestamp,
+        deadline_at -> Nullable<Timestamp>,
     }
 }
 

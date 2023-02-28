@@ -163,6 +163,7 @@ pub fn insert_new_category(
             game_config.eq(excluded(game_config)),
             max_points.eq(excluded(max_points)),
             icon.eq(excluded(icon)),
+            deadline_at.eq(excluded(deadline_at)),
         ))
         .get_result::<models::Category>(conn)?;
 

@@ -19,6 +19,7 @@ export type ApiCategory = {
   icon: LottieIcon;
   createdAt: string;
   updatedAt: string;
+  deadlineAt?: string;
 };
 
 export type ApiNewUserGroup = {

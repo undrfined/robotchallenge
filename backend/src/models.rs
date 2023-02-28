@@ -89,9 +89,10 @@ pub struct Category {
     pub icon: CategoryIcon,
     pub created_at: chrono::NaiveDateTime,
     pub updated_at: chrono::NaiveDateTime,
+    pub deadline_at: Option<chrono::NaiveDateTime>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable)]
+#[derive(Debug, Clone, Serialize, Deserialize, Insertable)]
 #[serde(rename_all = "camelCase")]
 #[table_name = "categories"]
 pub struct NewCategory {
@@ -101,6 +102,7 @@ pub struct NewCategory {
     pub game_config: serde_json::Value,
     pub max_points: i32,
     pub icon: CategoryIcon,
+    pub deadline_at: Option<chrono::NaiveDateTime>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable, Identifiable)]

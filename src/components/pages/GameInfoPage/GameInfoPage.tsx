@@ -14,9 +14,10 @@ import OpponentCard from '../../common/OpponentCard/OpponentCard';
 import type { GameLibraryInfo } from '../../../types/gameTypes';
 import type { ApiAlgoId, ApiAlgoVersionId } from '../../../api/types';
 import { isTruthy } from '../../../helpers/isTruthy';
-import type { GameId } from '../../../store/slices/gamesSlice';
 import { startGame } from '../../../store/slices/gamesSlice';
 import { LANGUAGE_ICONS } from '../../../helpers/languageIcons';
+import useInterval from '../../../hooks/useInterval';
+import { formatRemainingTime } from '../../../helpers/timeFormatters';
 
 export default function GameInfoPage() {
   const { categoryId } = useParams() as { categoryId: string };
@@ -66,18 +67,33 @@ export default function GameInfoPage() {
     dispatch(fetchAlgos());
   }, [dispatch]);
 
-  const handleStartGame = useCallback(() => {
+  const handleStartGame = useCallback(async () => {
     const selectedFiles = selected.map((l) => versions[l.algoId][l.algoVersionId]);
     const allAlgos = [...selectedFiles].filter(isTruthy); // TODO include current file
-    dispatch(startGame({
+
+    const result = await dispatch(startGame({
       algoVersions: allAlgos,
       categoryId: categoryIdInt,
-    })).then((a) => {
-      // TODO types?
-      const { id } = a.payload as { id: GameId };
+    }));
+
+    if (result.payload) {
+      const { id } = result.payload;
       navigate(`/game/${id}`);
-    });
+    } else {
+      // TODO better error message
+      alert(`Error starting game ${result.error.message}`);
+    }
   }, [categoryIdInt, dispatch, navigate, selected, versions]);
+
+  const timeStart = category.deadlineAt ? Date.parse(`${category.deadlineAt}Z`) : undefined;
+  const [timeRemaining, setTimeRemaining] = useState(timeStart ? timeStart - new Date().getTime() : undefined);
+
+  useInterval(() => {
+    if (timeStart === undefined) return;
+    const now = new Date();
+
+    setTimeRemaining(timeStart - now.getTime());
+  }, timeStart ? 1000 : undefined);
 
   return (
     <div className={styles.root}>
@@ -88,14 +104,17 @@ export default function GameInfoPage() {
         </h1>
         <AnimatedText text={category.description} containerType="p" delay={200} />
 
-        <div className={styles.timer}>
-          <h4>TIME REMAINING</h4>
-          <div className={styles.timerRemaining}>
-            <div>10 days</div>
-            <div>12 hours</div>
-            <div>17 minutes</div>
+        {timeRemaining && timeStart && (
+          <div className={styles.timer}>
+            <h4>TIME REMAINING</h4>
+            <div className={styles.timerRemaining}>
+              {formatRemainingTime(Math.floor(timeRemaining / 1000)).map((q) => (
+                <div key={q}>{q}</div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
         <div className={styles.selectOpponents}>
           <h2>Select opponents & Version</h2>
 

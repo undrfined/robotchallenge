@@ -9,6 +9,7 @@ import type { GameConfig } from '../../../types/gameTypes';
 import Code from '../../../assets/icons/Code.svg';
 import Dropdown from '../../common/Dropdown/Dropdown';
 import { addUserGroup } from '../../../store/slices/userGroupsSlice';
+import { toNaiveDateTime } from '../../../helpers/timeFormatters';
 
 export default function AdminPage() {
   const dispatch = useAppDispatch();
@@ -18,6 +19,7 @@ export default function AdminPage() {
   const descriptionRef = useRef<HTMLInputElement>(null);
   const descriptionShortRef = useRef<HTMLInputElement>(null);
   const maxPointsRef = useRef<HTMLInputElement>(null);
+  const dateRef = useRef<HTMLInputElement>(null);
   const [icon, setIcon] = useState<LottieIcon>('Robot');
 
   const inputs: (keyof GameConfig)[] = [
@@ -66,6 +68,7 @@ export default function AdminPage() {
         descriptionShort: descriptionShortRef.current!.value,
         maxPoints: Number(maxPointsRef.current!.value),
         gameConfig,
+        deadlineAt: toNaiveDateTime(new Date(Date.parse(dateRef.current!.value))),
       },
     }));
   }, [dispatch, gameConfig, icon]);
@@ -78,6 +81,7 @@ export default function AdminPage() {
         <input type="text" ref={descriptionRef} placeholder="Description" />
         <input type="text" ref={descriptionShortRef} placeholder="Short Description" />
         <input type="text" ref={maxPointsRef} placeholder="Max Points" inputMode="numeric" />
+        <input type="datetime-local" ref={dateRef} placeholder="Deadline" className={styles.dateInput} />
         <Dropdown
           icon={Code}
           name="Icon"
