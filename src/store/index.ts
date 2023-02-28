@@ -21,6 +21,7 @@ const store = configureStore({
   devTools: true,
   middleware: (getDefaultMiddleware) => getDefaultMiddleware({
     serializableCheck: false,
+    thunk: true,
   }),
 });
 const persistor = persistStore(store);
@@ -31,6 +32,7 @@ export type AppDispatch = typeof store.dispatch;
 export type AppThunkApi = {
   dispatch: AppDispatch;
   state: RootState;
+  rejectValue: undefined;
 };
 
 export default { store, persistor };

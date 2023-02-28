@@ -2,8 +2,8 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { ApiUser, ApiUserGroup } from '../../api/types';
 import type { AppThunkApi } from '../index';
 import type { ParamsType, ResultType } from '../../api/makeRequest';
-import makeRequest from '../../api/makeRequest';
 import { AttachToUserGroup, GetUserGroups, PostUserGroup } from '../../api/methods/userGroups';
+import { api } from '../thunks/apiThunks';
 
 type UserGroupsState = {
   userGroups: ApiUserGroup[];
@@ -19,8 +19,8 @@ void,
 AppThunkApi
 >(
   'userGroups/fetchUserGroups',
-  () => {
-    return makeRequest(new GetUserGroups());
+  (_, { dispatch }) => {
+    return api(dispatch, new GetUserGroups());
   },
 );
 
@@ -30,8 +30,8 @@ ParamsType<PostUserGroup>,
 AppThunkApi
 >(
   'userGroups/addUserGroup',
-  async ({ newUserGroup }) => {
-    return makeRequest(new PostUserGroup(newUserGroup));
+  async ({ newUserGroup }, { dispatch }) => {
+    return api(dispatch, new PostUserGroup(newUserGroup));
   },
 );
 
@@ -41,8 +41,8 @@ number,
 AppThunkApi
 >(
   'userGroups/attachUserToGroup',
-  async (userGroupId) => {
-    return makeRequest(new AttachToUserGroup(userGroupId));
+  async (userGroupId, { dispatch }) => {
+    return api(dispatch, new AttachToUserGroup(userGroupId));
   },
 );
 

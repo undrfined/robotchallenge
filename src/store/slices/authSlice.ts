@@ -2,11 +2,11 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import storage from 'redux-persist/lib/storage';
 import { persistReducer } from 'redux-persist';
 import type { AppThunkApi } from '../index';
-import makeRequest from '../../api/makeRequest';
 import { AuthRequest, LogOutRequest } from '../../api/methods/auth';
 // TODO fix this
 // eslint-disable-next-line import/no-cycle
 import { getUserById } from './usersSlice';
+import { api, apiThunk } from '../thunks/apiThunks';
 
 type AuthState = {
   isLoggingIn: boolean;
@@ -22,8 +22,8 @@ void,
 AppThunkApi
 >(
   'auth/login',
-  async () => {
-    const result = await makeRequest(new AuthRequest());
+  async (_, { dispatch }) => {
+    const result = await api(dispatch, new AuthRequest());
 
     window.location.href = result.redirectUrl;
   },
@@ -35,8 +35,8 @@ void,
 AppThunkApi
 >(
   'auth/logout',
-  () => {
-    return makeRequest(new LogOutRequest());
+  async (_, { dispatch }) => {
+    return api(dispatch, new LogOutRequest());
   },
 );
 
@@ -57,6 +57,12 @@ export const authSlice = createSlice({
 
     builder.addCase(getUserById.fulfilled, (state, action) => {
       if (action.meta.arg === undefined) state.isLoggingIn = false;
+    });
+
+    builder.addCase(apiThunk.rejected, (state, action) => {
+      if (action.error.message === 'Unauthorized') {
+        state.isLoggingIn = false;
+      }
     });
   },
 });

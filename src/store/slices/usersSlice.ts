@@ -3,13 +3,13 @@ import storage from 'redux-persist/lib/storage';
 import { persistReducer } from 'redux-persist';
 import type { AppThunkApi } from '../index';
 import type { ResultType } from '../../api/makeRequest';
-import makeRequest from '../../api/makeRequest';
 import type { ApiUser } from '../../api/types';
 import { GetUserRequest } from '../../api/methods/users';
 // TODO fix this
 // eslint-disable-next-line import/no-cycle
 import { logout } from './authSlice';
 import { attachToUserGroup } from './userGroupsSlice';
+import { api, apiThunk } from '../thunks/apiThunks';
 
 type UsersState = {
   users: Record<string, ApiUser>,
@@ -26,8 +26,8 @@ string | undefined,
 AppThunkApi
 >(
   'users/getUserById',
-  async (userId) => {
-    return makeRequest(new GetUserRequest(userId));
+  async (userId, { dispatch }) => {
+    return api(dispatch, new GetUserRequest(userId));
   },
 );
 
@@ -58,6 +58,12 @@ export const usersReducer = createSlice({
 
     builder.addCase(attachToUserGroup.fulfilled, (state, action) => {
       state.users[action.payload.id] = action.payload;
+    });
+
+    builder.addCase(apiThunk.rejected, (state, action) => {
+      if (action.error.message === 'Unauthorized') {
+        state.currentUserId = undefined;
+      }
     });
   },
 });

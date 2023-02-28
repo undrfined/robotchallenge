@@ -2,8 +2,8 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { ApiCategory } from '../../api/types';
 import type { AppThunkApi } from '../index';
 import type { ParamsType } from '../../api/makeRequest';
-import makeRequest from '../../api/makeRequest';
 import { GetCategories, PostCategory } from '../../api/methods/categories';
+import { api } from '../thunks/apiThunks';
 
 export type CategoryId = number;
 
@@ -94,8 +94,8 @@ void,
 AppThunkApi
 >(
   'categories/fetchCategories',
-  async () => {
-    return makeRequest(new GetCategories());
+  async (_, { dispatch }) => {
+    return api(dispatch, new GetCategories());
   },
 );
 
@@ -105,8 +105,8 @@ ParamsType<PostCategory>,
 AppThunkApi
 >(
   'categories/addCategory',
-  async ({ newCategory }) => {
-    return makeRequest(new PostCategory(newCategory));
+  async ({ newCategory }, { dispatch }) => {
+    return api(dispatch, new PostCategory(newCategory));
   },
 );
 

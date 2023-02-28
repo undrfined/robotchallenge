@@ -1,6 +1,5 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { AppThunkApi } from '../index';
-import makeRequest from '../../api/makeRequest';
 import {
   GetAlgoFile, GetAlgos, GetAlgoVersions, PostAlgo,
 } from '../../api/methods/algos';
@@ -9,6 +8,7 @@ import type {
 } from '../../api/types';
 import getPlayerLibraryInfo from '../../helpers/getPlayerLibraryInfo';
 import { selectCurrentUser } from '../selectors/usersSelectors';
+import { api } from '../thunks/apiThunks';
 
 export type AlgoVersion = ApiAlgoVersionWithFile & {
   isLoading?: boolean
@@ -30,8 +30,8 @@ void,
 AppThunkApi
 >(
   'algos/fetchAlgos',
-  () => {
-    return makeRequest(new GetAlgos());
+  (_, { dispatch }) => {
+    return api(dispatch, new GetAlgos());
   },
 );
 
@@ -41,8 +41,8 @@ ApiAlgoId,
 AppThunkApi
 >(
   'algos/fetchAlgoVersions',
-  async (algoId) => {
-    return makeRequest(new GetAlgoVersions(algoId));
+  async (algoId, { dispatch }) => {
+    return api(dispatch, new GetAlgoVersions(algoId));
   },
 );
 
@@ -52,8 +52,8 @@ Blob,
 AppThunkApi
 >(
   'algos/fetchAlgoFile',
-  async ({ algoVersionId }) => {
-    const result = await makeRequest(new GetAlgoFile(algoVersionId));
+  async ({ algoVersionId }, { dispatch }) => {
+    const result = await api(dispatch, new GetAlgoFile(algoVersionId));
     return new Blob([result], { type: 'application/wasm' });
   },
 );
@@ -64,12 +64,12 @@ Blob,
 AppThunkApi
 >(
   'algos/uploadAlgo',
-  async (blob, { getState }) => {
+  async (blob, { getState, dispatch }) => {
     const currentUser = selectCurrentUser(getState());
     if (!currentUser) throw new Error('User is not logged in');
 
     const libInfo = await getPlayerLibraryInfo(blob);
-    const result = await makeRequest(new PostAlgo(blob));
+    const result = await api(dispatch, new PostAlgo(blob));
 
     return {
       algo: {

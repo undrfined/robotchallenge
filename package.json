@@ -6,7 +6,7 @@
     "@babel/core": "^7.16.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.3",
     "@pronestor/react-zoom-pan-pinch": "^2.3.0",
-    "@reduxjs/toolkit": "^1.9.2",
+    "@reduxjs/toolkit": "^1.9.3",
     "@storybook/preset-scss": "^1.0.3",
     "@types/jest": "^27.4.1",
     "@types/node": "^16.11.26",
@@ -200,6 +200,6 @@
     "stylelint-config-standard": "^30.0.1",
     "stylelint-config-standard-scss": "^7.0.1",
     "svgo": "^3.0.2",
-    "typescript": "^4.9.4"
+    "typescript": "^4.9.5"
   }
 }

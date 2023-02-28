@@ -7,6 +7,12 @@ import { nullsToUndefined } from '../helpers/nullsToUndefined';
 
 const ENDPOINT = `${window.location.protocol}//${process.env.APP_API_ENDPOINT}`;
 
+export class UnauthorizedError extends Error {
+  constructor() {
+    super('Unauthorized');
+  }
+}
+
 export default function makeRequest<T extends Requests>(request: T): Promise<ResultType<T>> {
   const formData = new FormData();
   let formDataJson: string | undefined;
@@ -42,7 +48,8 @@ export default function makeRequest<T extends Requests>(request: T): Promise<Res
     ),
   }).then(async (response) => {
     if (!response.ok) {
-      throw new Error(response.statusText);
+      if (response.status === 401) throw new UnauthorizedError();
+      throw Error(response.statusText);
     }
 
     if (request instanceof GetFileRequest) {

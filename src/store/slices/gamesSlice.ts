@@ -81,8 +81,6 @@ AppThunkApi
     const gameConfig = selectCategory(categoryId)(getState())?.gameConfig;
     if (!gameConfig) throw Error('Game config not found');
 
-    console.log(algoVersions);
-
     const gameConfig2 = {
       ...gameConfig,
       // TODO hack
