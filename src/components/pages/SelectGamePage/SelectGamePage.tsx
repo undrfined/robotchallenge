@@ -7,7 +7,6 @@ import SelectGameCard from '../../SelectGameCard/SelectGameCard';
 import { selectCategories } from '../../../store/selectors/categoriesSelectors';
 import useAppSelector from '../../../hooks/useAppSelector';
 import type { CategoryId } from '../../../store/slices/categoriesSlice';
-import { fetchCategories } from '../../../store/slices/categoriesSlice';
 import AnimatedText from '../../common/AnimatedText/AnimatedText';
 import useAppDispatch from '../../../hooks/useAppDispatch';
 import { login, logout } from '../../../store/slices/authSlice';
@@ -48,7 +47,6 @@ export default function SelectGamePage() {
     if (!user && isLoggingIn) {
       dispatch(getUserById());
     }
-    dispatch(fetchCategories());
   }, [dispatch, isLoggingIn, user]);
 
   const {
