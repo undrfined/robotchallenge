@@ -74,17 +74,22 @@
   cursor: pointer;
   text-decoration: none;
 
-  &:hover {
-    transform: var(--transform) scale(1.1);
-    z-index: 1;
-  }
-
   &:nth-child(even) {
     --transform: translate(var(--c), 48px);
   }
 
   &:nth-child(odd) {
     --transform: translateX(var(--c));
+  }
+
+  &:hover:not(&-disabled) {
+    transform: var(--transform) scale(1.1);
+    z-index: 1;
+  }
+
+  &-disabled {
+    filter: grayscale(1) brightness(0.5);
+    pointer-events: none;
   }
 }
 

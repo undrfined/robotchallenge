@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import cn from 'classnames';
 import styles from './GameInfoPage.module.scss';
 import useAppSelector from '../../../hooks/useAppSelector';
 import useAppDispatch from '../../../hooks/useAppDispatch';
@@ -15,7 +16,7 @@ import type { GameLibraryInfo } from '../../../types/gameTypes';
 import type { ApiAlgoId, ApiAlgoVersionId } from '../../../api/types';
 import { isTruthy } from '../../../helpers/isTruthy';
 import { startGame } from '../../../store/slices/gamesSlice';
-import { LANGUAGE_ICONS } from '../../../helpers/languageIcons';
+import { LANGUAGES } from '../../../helpers/languages';
 import useInterval from '../../../hooks/useInterval';
 import { formatRemainingTime } from '../../../helpers/timeFormatters';
 
@@ -142,13 +143,15 @@ export default function GameInfoPage() {
         </ol>
 
         <div className={styles.languages}>
-          {Object.keys(LANGUAGE_ICONS).map((language, index) => {
-            const Icon = LANGUAGE_ICONS[language];
+          {Object.keys(LANGUAGES).map((languageKey, index) => {
+            const { icon, name, isDisabled } = LANGUAGES[languageKey];
+            const Icon = icon;
             return (
               <a
-                href={`https://github.com/undrfined/robotchallenge/tree/master/examples/${language}_example`}
-                className={styles.language}
+                href={`https://github.com/undrfined/robotchallenge/tree/master/examples/${languageKey}_example`}
+                className={cn(styles.language, isDisabled && styles.languageDisabled)}
                 style={{ '--index': index }}
+                title={name}
               >
                 <Icon />
               </a>

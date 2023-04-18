@@ -6,7 +6,7 @@ import Checkbox from '../Checkbox/Checkbox';
 
 import styles from './OpponentCard.module.scss';
 import useEnsureUser from '../../../hooks/useEnsureUser';
-import { LANGUAGE_ICONS } from '../../../helpers/languageIcons';
+import { LANGUAGES } from '../../../helpers/languages';
 import Dropdown from '../Dropdown/Dropdown';
 import useAppSelector from '../../../hooks/useAppSelector';
 import { fetchAlgoVersions } from '../../../store/slices/algosSlice';
@@ -92,7 +92,7 @@ export default function OpponentCard({
               ...acc,
               [algoId]: {
                 name: algosByUser[Number(algoId)].name,
-                icon: LANGUAGE_ICONS[algosByUser[Number(algoId)].language],
+                icon: LANGUAGES[algosByUser[Number(algoId)].language].icon,
               },
             }), {})}
           selectedIndex={selectedAlgo.id.toString()}
