@@ -11,6 +11,7 @@ import AdminPage from './components/pages/AdminPage/AdminPage';
 import type { CategoryId } from './store/slices/categoriesSlice';
 import { fetchCategories } from './store/slices/categoriesSlice';
 import { selectCategories, selectCategory } from './store/selectors/categoriesSelectors';
+import NotSupportedPage from './components/pages/NotSupportedPage/NotSupportedPage';
 
 const router = createBrowserRouter([
   {
@@ -47,12 +48,14 @@ const router = createBrowserRouter([
   },
 ]);
 
+const windowSize = window.innerWidth;
+const isMobile = windowSize < 768;
 const container = document.getElementById('root')!;
 const root = createRoot(container);
 root.render(
   <React.StrictMode>
     <Provider store={store.store}>
-      <RouterProvider router={router} />
+      {!isMobile ? <RouterProvider router={router} /> : <NotSupportedPage />}
     </Provider>
   </React.StrictMode>,
 );
