@@ -2,6 +2,7 @@ import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '../index';
 
 const selectSelf = (state: RootState) => state.games;
+export const selectIsGameLoading = createSelector(selectSelf, (state) => state.isLoading);
 export const selectGames = createSelector(selectSelf, (state) => state.games);
 export const selectGame = (gameId: string) => createSelector(selectGames, (games) => games[gameId]);
 export const selectGameConfig = (gameId: string) => createSelector(selectGame(gameId), (game) => game.gameConfig);

@@ -4,7 +4,7 @@ import cn from 'classnames';
 import styles from './GameInfoPage.module.scss';
 import useAppSelector from '../../../hooks/useAppSelector';
 import useAppDispatch from '../../../hooks/useAppDispatch';
-import { selectGames } from '../../../store/selectors/gamesSelectors';
+import { selectIsGameLoading } from '../../../store/selectors/gamesSelectors';
 import { selectCategory } from '../../../store/selectors/categoriesSelectors';
 import Back from '../../../assets/icons/Back.svg';
 import UploadFile from '../../common/UploadFile/UploadFile';
@@ -27,7 +27,7 @@ export default function GameInfoPage() {
   const category = useAppSelector(selectCategory(categoryIdInt));
   if (!category) throw new Error('Category not found');
 
-  const { isLoading } = useAppSelector(selectGames);
+  const isLoading = useAppSelector(selectIsGameLoading);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -165,8 +165,8 @@ export default function GameInfoPage() {
           setFile={handleUploadFile}
         />
 
-        <Button onClick={handleStartGame}>
-          {isLoading ? 'loading...' : 'START'}
+        <Button onClick={handleStartGame} isLoading={isLoading}>
+          START
         </Button>
       </div>
     </div>

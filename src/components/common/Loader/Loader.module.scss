@@ -1,0 +1,23 @@
+.root {
+  width: 24px;
+  height: 24px;
+  position: relative;
+}
+
+@keyframes loader {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.loader-rect {
+  --path-length: 69px; // nice
+  --offset: calc(var(--progress, 0.4) * var(--path-length));
+
+  stroke-dasharray: var(--offset) calc(var(--path-length) - var(--offset));
+  stroke-dashoffset: var(--path-length);
+  stroke: var(--loader-color, #FF0AE6);
+  stroke-linecap: round;
+  animation: 2s linear loader infinite forwards;
+  transition: 0.25s ease-in-out stroke-dasharray, 0.1s ease-in-out stroke;
+}

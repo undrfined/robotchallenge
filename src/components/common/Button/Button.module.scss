@@ -13,6 +13,8 @@
   gap: 0.5rem;
   color: #fff;
 
+  --loader-color: #FF0AE6;
+
   &:active, &:focus {
     transform: scale(0.95);
   }
@@ -22,6 +24,8 @@
   background: url("./ButtonStroke.svg");
 
   &:hover, &:focus {
+    --loader-color: #FFF;
+
     background-color: #E524BB;
   }
 }
