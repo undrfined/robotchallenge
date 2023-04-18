@@ -40,6 +40,7 @@
   height: 10px;
   border-radius: 10px;
   background: rgb(255 255 255 / 10%);
+  margin: 0;
 
   &:focus {
     outline: none;
@@ -83,7 +84,8 @@
 // Track
 .timeline-fill-track {
   position: absolute;
-  width: calc(var(--progress, 0) * 100%);
+  width: calc(var(--progress, 0) * (100% - 20px) + 10px);
+  min-width: 10px;
   height: 10px;
   border-radius: 10px;
   background: #F000E6;
@@ -92,7 +94,8 @@
 
 .timeline-fill-track-calculated {
   position: absolute;
-  width: calc(var(--progress, 0) * 100%);
+  width: calc(var(--progress, 0) * (100% - 20px) + 10px);
+  min-width: 10px;
   height: 10px;
   border-radius: 10px;
   background: rgb(255 255 255 / 10%);
