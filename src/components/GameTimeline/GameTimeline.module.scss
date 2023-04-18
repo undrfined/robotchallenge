@@ -24,6 +24,23 @@
 .control-button {
   flex-shrink: 0;
   cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.control-button-subtext {
+  font-size: 10px;
+  color: rgb(255 255 255 / 60%);
+  position: absolute;
+  bottom: -1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.reversed {
+  transform: rotate(180deg);
 }
 
 .timeline-wrapper {

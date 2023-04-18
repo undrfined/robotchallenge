@@ -2,8 +2,8 @@ import React from 'react';
 import styles from './GameTimeline.module.scss';
 import Pause from '../../assets/icons/Pause.svg';
 import Play from '../../assets/icons/Play.svg';
-import Backwards from '../../assets/icons/Backwards.svg';
-import Forwards from '../../assets/icons/Forwards.svg';
+import NextRound from '../../assets/icons/NextRound.svg';
+import NextStep from '../../assets/icons/NextStep.svg';
 import type { GameConfig } from '../../types/gameTypes';
 
 type OwnProps = {
@@ -46,16 +46,23 @@ export default function GameTimeline({
 
   return (
     <div className={styles.root}>
-      <Backwards onClick={handleBackwardsClick} className={styles.controlButton} />
-      <Backwards
+      <button className={styles.controlButton} onClick={handleBackwardsClick}>
+        <NextRound className={styles.reversed} />
+        <span className={styles.controlButtonSubtext}>1 round</span>
+      </button>
+      <button
+        className={styles.controlButton}
         onClick={() => {
           if (step === undefined) return;
           onChangeStep(step - 1);
         }}
-        className={styles.controlButton}
-      />
+      >
+        <NextStep className={styles.reversed} />
+        <span className={styles.controlButtonSubtext}>1 step</span>
+
+      </button>
       <PlayComponent onClick={onTogglePause} className={styles.controlButton} />
-      <Forwards
+      <button
         onClick={() => {
           if (step === undefined) {
             onChangeStep(0);
@@ -64,8 +71,15 @@ export default function GameTimeline({
           onChangeStep(step + 1);
         }}
         className={styles.controlButton}
-      />
-      <Forwards onClick={handleForwardsClick} className={styles.controlButton} />
+      >
+        <NextStep />
+        <span className={styles.controlButtonSubtext}>1 step</span>
+      </button>
+
+      <button onClick={handleForwardsClick} className={styles.controlButton}>
+        <NextRound />
+        <span className={styles.controlButtonSubtext}>1 round</span>
+      </button>
       <div className={styles.timelineWrapper}>
         <div
           className={styles.timelineFillTrackCalculated}
