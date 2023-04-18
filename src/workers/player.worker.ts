@@ -94,21 +94,11 @@ const PlayerWorker = {
     }
   },
   getLibraryInfo: async (): Promise<GameLibraryInfo> => {
-    try {
-      const result = libraryInfoToObject(wrapper.get_lib_info());
-      console.log(wasi.getStdoutString());
-      console.log(wasi.getStderrString());
-      return result;
-    } catch (e) {
-      console.log(wasi.getStdoutString());
-      console.log(wasi.getStderrString());
-      console.error(e);
-      return {
-        name: 'Error',
-        version: '0.0.0',
-        language: 'none',
-      };
-    }
+    if (!wrapper.get_lib_info) throw new Error('get_lib_info not found');
+    const result = libraryInfoToObject(wrapper.get_lib_info());
+    console.log(wasi.getStdoutString());
+    console.log(wasi.getStderrString());
+    return result;
   },
   initWasi: async (
     file: File | Blob,

@@ -27,12 +27,18 @@ export default function UploadFile({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [isDragging, setIsDragging] = useState(false);
+  const [error, setError] = useState<string | undefined>();
 
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = await verifyFile(e.currentTarget.files?.[0]);
-    if (!f) return;
+    try {
+      setError(undefined);
+      const f = await verifyFile(e.currentTarget.files?.[0]);
+      if (!f) return;
 
-    setFile(f);
+      setFile(f);
+    } catch (err) {
+      setError((err as Error).message);
+    }
   };
 
   function handleDragOver(e: React.DragEvent) {
@@ -47,27 +53,32 @@ export default function UploadFile({
 
   async function handleDrop(e: React.DragEvent) {
     setIsDragging(false);
+    setError(undefined);
 
     e.preventDefault();
 
-    if (e.dataTransfer.items) {
-      setFile(await verifyFile([...e.dataTransfer.items].map((item) => {
-        if (item.kind !== 'file') {
-          return undefined;
-        }
+    try {
+      if (e.dataTransfer.items) {
+        setFile(await verifyFile([...e.dataTransfer.items].map((item) => {
+          if (item.kind !== 'file') {
+            return undefined;
+          }
 
-        const f = item.getAsFile();
+          const f = item.getAsFile();
 
-        if (!f) {
-          return undefined;
-        }
+          if (!f) {
+            return undefined;
+          }
 
-        return f;
-      })[0]));
-    } else {
-      setFile(await verifyFile([...e.dataTransfer.files].map((f) => {
-        return f;
-      })[0]));
+          return f;
+        })[0]));
+      } else {
+        setFile(await verifyFile([...e.dataTransfer.files].map((f) => {
+          return f;
+        })[0]));
+      }
+    } catch (err) {
+      setError((err as Error).message);
     }
   }
 
@@ -93,6 +104,11 @@ export default function UploadFile({
       {file && (
         <p>
           {file.info.name} ({file.info.version})
+        </p>
+      )}
+      {error && (
+        <p className={styles.error}>
+          {error}
         </p>
       )}
       <input type="file" ref={inputRef} accept={accept} onChange={handleChange} className={styles.input} />

@@ -4,24 +4,25 @@ import type { PlayerWorkerType } from '../workers/player.worker';
 
 export default async function getPlayerLibraryInfo(blob: Blob): Promise<GameLibraryInfo> {
   const worker = new Worker(new URL('../workers/player.worker.ts', import.meta.url));
-  const comlink = Comlink.wrap<PlayerWorkerType>(worker);
 
-  await comlink.initWasi(blob,
-    Comlink.proxy(() => {
-      return 1;
-    }),
-    Comlink.proxy(() => {
-      return 1;
-    }),
-    Comlink.proxy(() => {
-      return 1;
-    }),
-    Comlink.proxy(() => {
-    }));
+  try {
+    const comlink = Comlink.wrap<PlayerWorkerType>(worker);
 
-  const info = await comlink.getLibraryInfo();
+    await comlink.initWasi(blob,
+      Comlink.proxy(() => {
+        return 1;
+      }),
+      Comlink.proxy(() => {
+        return 1;
+      }),
+      Comlink.proxy(() => {
+        return 1;
+      }),
+      Comlink.proxy(() => {
+      }));
 
-  worker.terminate();
-
-  return info;
+    return await comlink.getLibraryInfo();
+  } finally {
+    worker.terminate();
+  }
 }
