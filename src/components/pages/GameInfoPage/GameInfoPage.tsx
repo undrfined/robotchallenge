@@ -137,9 +137,10 @@ export default function GameInfoPage() {
         <h2>Step by step instruction</h2>
 
         <ol>
-          <li>Download the game</li>
-          <li>Upload your algorithm</li>
-          <li>Start the game</li>
+          <li>Pick the programming language of your choice below</li>
+          <li>Create your algorithm and compile it to .wasm file using instructions in readme</li>
+          <li>Upload your .wasm file</li>
+          <li>Start the game!</li>
         </ol>
 
         <div className={styles.languages}>
