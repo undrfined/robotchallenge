@@ -297,6 +297,6 @@
 
     <Target Name="RunWasmOpt" AfterTargets="CopyWasmToOutput" DependsOnTargets="$(RunWasmOptDependsOn)">
       <Message Importance="high" Text="Running &quot;$(WasmOpt)&quot;..." />
-      <Exec Command="&quot;$(WasmOpt)&quot; -O3 --enable-bulk-memory -o $(TargetDir)$(TargetName)-opt.wasm $(TargetDir)$(TargetName).wasm" />
+      <Exec Command="&quot;$(WasmOpt)&quot; -O3 --enable-bulk-memory -o $(TargetDir)$(TargetName).wasm $(TargetDir)$(TargetName).wasm" />
     </Target>
 </Project>
