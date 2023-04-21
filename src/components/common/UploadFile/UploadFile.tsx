@@ -5,17 +5,21 @@ import Button from '../Button/Button';
 
 import Upload from '../../../assets/icons/Upload.svg';
 import verifyFile from '../../../helpers/verifyFile';
-import type { GameLibraryInfo } from '../../../types/gameTypes';
+import useAppDispatch from '../../../hooks/useAppDispatch';
+import type { AlgoVersion } from '../../../store/slices/algosSlice';
+import { uploadAlgo } from '../../../store/slices/algosSlice';
+import type { ApiAlgo } from '../../../api/types';
+import Loader from '../Loader/Loader';
 
 type OwnProps = {
   accept: string;
   file: {
-    file: Blob;
-    info: GameLibraryInfo;
+    algo: ApiAlgo;
+    algoVersion: AlgoVersion;
   } | undefined;
   setFile: (data: {
-    file: Blob;
-    info: GameLibraryInfo;
+    algo: ApiAlgo;
+    algoVersion: AlgoVersion;
   } | undefined) => void,
 };
 
@@ -25,20 +29,34 @@ export default function UploadFile({
   setFile,
 }: OwnProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const dispatch = useAppDispatch();
 
+  const [isLoading, setLoading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | undefined>();
 
-  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUploadFile = useCallback(async (newFile?: Blob) => {
     try {
-      setError(undefined);
-      const f = await verifyFile(e.currentTarget.files?.[0]);
-      if (!f) return;
+      setLoading(true);
+      if (!newFile) throw new Error('No file selected');
 
-      setFile(f);
+      const f = await verifyFile(newFile);
+      if (!f) throw new Error('Invalid file');
+
+      const result = await dispatch(uploadAlgo(f.file!));
+      if (!result.payload) throw new Error('Error uploading file');
+
+      setFile(result.payload);
     } catch (err) {
       setError((err as Error).message);
+    } finally {
+      setLoading(false);
     }
+  }, [dispatch, setFile]);
+
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setError(undefined);
+    await handleUploadFile(e.currentTarget.files?.[0]);
   };
 
   function handleDragOver(e: React.DragEvent) {
@@ -57,28 +75,22 @@ export default function UploadFile({
 
     e.preventDefault();
 
-    try {
-      if (e.dataTransfer.items) {
-        setFile(await verifyFile([...e.dataTransfer.items].map((item) => {
-          if (item.kind !== 'file') {
-            return undefined;
-          }
+    if (e.dataTransfer.items) {
+      await handleUploadFile([...e.dataTransfer.items].map((item) => {
+        if (item.kind !== 'file') {
+          return undefined;
+        }
 
-          const f = item.getAsFile();
+        const f = item.getAsFile();
 
-          if (!f) {
-            return undefined;
-          }
+        if (!f) {
+          return undefined;
+        }
 
-          return f;
-        })[0]));
-      } else {
-        setFile(await verifyFile([...e.dataTransfer.files].map((f) => {
-          return f;
-        })[0]));
-      }
-    } catch (err) {
-      setError((err as Error).message);
+        return f;
+      }).filter(Boolean)[0]);
+    } else {
+      await handleUploadFile([...e.dataTransfer.files].filter(Boolean)[0]);
     }
   }
 
@@ -97,13 +109,13 @@ export default function UploadFile({
       onDrop={handleDrop}
     >
       <div className={styles.icon}>
-        <Upload />
+        {isLoading ? <Loader /> : <Upload />}
       </div>
 
       <h5>Drag & Drop your solution</h5>
       {file && (
         <p>
-          {file.info.name} ({file.info.version})
+          {file.algo.name} ({file.algoVersion.version})
         </p>
       )}
       {error && (

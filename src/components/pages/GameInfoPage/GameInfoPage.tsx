@@ -10,10 +10,12 @@ import Back from '../../../assets/icons/Back.svg';
 import UploadFile from '../../common/UploadFile/UploadFile';
 import Button from '../../common/Button/Button';
 import AnimatedText from '../../common/AnimatedText/AnimatedText';
-import { fetchAlgoFile, fetchAlgos, uploadAlgo } from '../../../store/slices/algosSlice';
+import type { AlgoVersion } from '../../../store/slices/algosSlice';
+import { fetchAlgoFile, fetchAlgos } from '../../../store/slices/algosSlice';
 import OpponentCard from '../../common/OpponentCard/OpponentCard';
-import type { GameLibraryInfo } from '../../../types/gameTypes';
-import type { ApiAlgoId, ApiAlgoVersionId } from '../../../api/types';
+import type {
+  ApiAlgo, ApiAlgoId, ApiAlgoVersionId,
+} from '../../../api/types';
 import { isTruthy } from '../../../helpers/isTruthy';
 import { startGame } from '../../../store/slices/gamesSlice';
 import { LANGUAGES } from '../../../helpers/languages';
@@ -35,24 +37,13 @@ export default function GameInfoPage() {
   const versions = useAppSelector((state) => state.algos.algoVersions);
 
   const [file, setFile] = useState<{
-    file: Blob;
-    info: GameLibraryInfo;
+    algo: ApiAlgo; algoVersion: AlgoVersion;
   } | undefined>();
 
   // TODO we probably need a way to select multiple algo version from the same user, need to consult with Anna
   const [selected, setSelected] = useState<{
     userId: string; algoId: ApiAlgoId; algoVersionId: ApiAlgoVersionId;
   }[]>([]);
-
-  const handleUploadFile = useCallback((newFile: {
-    file: Blob;
-    info: GameLibraryInfo;
-  } | undefined) => {
-    setFile(file);
-    if (newFile) {
-      dispatch(uploadAlgo(newFile.file!));
-    }
-  }, [dispatch, file]);
 
   const handleSelectFile = useCallback((
     checked: boolean, selectedUserId: string, algoId: ApiAlgoId, algoVersionId: ApiAlgoVersionId,
@@ -70,7 +61,7 @@ export default function GameInfoPage() {
 
   const handleStartGame = useCallback(async () => {
     const selectedFiles = selected.map((l) => versions[l.algoId][l.algoVersionId]);
-    const allAlgos = [...selectedFiles].filter(isTruthy); // TODO include current file
+    const allAlgos = [...selectedFiles, file?.algoVersion].filter(isTruthy);
 
     const result = await dispatch(startGame({
       algoVersions: allAlgos,
@@ -84,7 +75,7 @@ export default function GameInfoPage() {
       // TODO better error message
       alert(`Error starting game ${result.error.message}`);
     }
-  }, [categoryIdInt, dispatch, navigate, selected, versions]);
+  }, [categoryIdInt, dispatch, file?.algoVersion, navigate, selected, versions]);
 
   const timeStart = category.deadlineAt ? Date.parse(`${category.deadlineAt}Z`) : undefined;
   const [timeRemaining, setTimeRemaining] = useState(timeStart ? timeStart - new Date().getTime() : undefined);
@@ -163,7 +154,7 @@ export default function GameInfoPage() {
         <UploadFile
           accept="application/wasm"
           file={file}
-          setFile={handleUploadFile}
+          setFile={setFile}
         />
 
         <Button onClick={handleStartGame} isLoading={isLoading}>
