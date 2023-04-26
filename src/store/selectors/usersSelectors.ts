@@ -6,3 +6,4 @@ export const selectUsers = createSelector(selectSelf, (state) => state.users);
 export const selectUser = (userId: string) => createSelector(selectUsers, (users) => users[userId]);
 export const selectCurrentUser = createSelector(selectSelf,
   (state) => (state.currentUserId ? state.users[state.currentUserId] : undefined));
+export const selectIsLoggedIn = createSelector(selectCurrentUser, (user) => Boolean(user));

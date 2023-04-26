@@ -8,13 +8,15 @@ export type ContextMenuItem = {
   onClick: VoidFunction;
 };
 
-export default function useContextMenu(contextMenuItems: (ContextMenuItem | boolean | undefined)[]) {
+export default function useContextMenu(
+  contextMenuItems: (ContextMenuItem | boolean | undefined)[], isDisabled?: boolean,
+) {
   const [isOpen, setOpen] = useState(false);
   const [position, setPosition] = useState<[number, number]>([0, 0]);
   const compactContextMenuItems = compact(contextMenuItems);
 
   function openContextMenu(e: React.MouseEvent) {
-    if (!compactContextMenuItems.length) return;
+    if (!compactContextMenuItems.length || isDisabled) return;
     e.preventDefault();
     e.stopPropagation();
     setOpen(true);
@@ -33,9 +35,9 @@ export default function useContextMenu(contextMenuItems: (ContextMenuItem | bool
   );
 
   return {
-    isOpen,
+    isOpen: isOpen && !isDisabled,
     openContextMenu,
     closeContextMenu,
-    contextMenu,
+    contextMenu: !isDisabled ? contextMenu : undefined,
   };
 }

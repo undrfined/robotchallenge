@@ -15,6 +15,7 @@ export default function Button({
   buttonStyle = 'primary',
   isLoading,
   children,
+  disabled,
   ...otherProps
 }: OwnProps) {
   return (
@@ -22,6 +23,7 @@ export default function Button({
       {...otherProps}
       className={cn(styles.root, className, styles[buttonStyle])}
       type={type}
+      disabled={disabled || isLoading}
     >
       {children}
       {isLoading && <Loader />}

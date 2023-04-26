@@ -21,6 +21,8 @@ import { startGame } from '../../../store/slices/gamesSlice';
 import { LANGUAGES } from '../../../helpers/languages';
 import useInterval from '../../../hooks/useInterval';
 import { formatRemainingTime } from '../../../helpers/timeFormatters';
+import { selectIsLoggedIn } from '../../../store/selectors/usersSelectors';
+import LoginButton from '../../common/LoginButton/LoginButton';
 
 export default function GameInfoPage() {
   const { categoryId } = useParams() as { categoryId: string };
@@ -30,6 +32,8 @@ export default function GameInfoPage() {
   if (!category) throw new Error('Category not found');
 
   const isLoading = useAppSelector(selectIsGameLoading);
+  const isLoggedIn = useAppSelector(selectIsLoggedIn);
+
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -151,15 +155,22 @@ export default function GameInfoPage() {
           })}
         </div>
 
-        <UploadFile
-          accept="application/wasm"
-          file={file}
-          setFile={setFile}
-        />
+        {isLoggedIn ? (
+          <>
+            <UploadFile
+              accept="application/wasm"
+              file={file}
+              setFile={setFile}
+            />
 
-        <Button onClick={handleStartGame} isLoading={isLoading}>
-          START
-        </Button>
+            <Button onClick={handleStartGame} isLoading={isLoading}>
+              START
+            </Button>
+          </>
+        ) : (
+          <LoginButton className={styles.loginButton} />
+        )}
+
       </div>
     </div>
   );

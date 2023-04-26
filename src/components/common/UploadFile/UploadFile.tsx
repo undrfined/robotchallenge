@@ -112,7 +112,7 @@ export default function UploadFile({
         {isLoading ? <Loader /> : <Upload />}
       </div>
 
-      <h5>Drag & Drop your solution</h5>
+      <h5>Drag & Drop your .wasm file</h5>
       {file && (
         <p>
           {file.algo.name} ({file.algoVersion.version})
@@ -123,10 +123,17 @@ export default function UploadFile({
           {error}
         </p>
       )}
-      <input type="file" ref={inputRef} accept={accept} onChange={handleChange} className={styles.input} />
+      <input
+        type="file"
+        ref={inputRef}
+        accept={accept}
+        onChange={handleChange}
+        disabled={isLoading}
+        className={styles.input}
+      />
 
-      <Button buttonStyle="secondary" className={styles.button} onClick={handleOpenPicker}>
-        Upload
+      <Button buttonStyle="secondary" className={styles.button} onClick={handleOpenPicker} disabled={isLoading}>
+        {isLoading ? 'Uploading...' : 'Upload'}
       </Button>
     </div>
   );
