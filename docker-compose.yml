@@ -70,6 +70,8 @@ services:
     volumes:
       - letsencrypt_certs:/etc/letsencrypt
       - certbot_acme_challenge:/var/www/certbot
+    links:
+      - nginx
 
   cron:
     build: ./cron
