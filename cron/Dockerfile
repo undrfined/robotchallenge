@@ -1,7 +1,7 @@
 FROM alpine:3.16
 
-COPY --from=library/docker:latest /usr/local/bin/docker /usr/bin/docker
-COPY --from=docker/compose:latest /usr/local/bin/docker-compose /usr/bin/docker-compose
+RUN apk update && \
+    apk add --no-cache docker-cli docker-cli-compose
 
 COPY renew_certs.sh /etc/periodic/daily/renew_certs
 
