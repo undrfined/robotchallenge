@@ -3,13 +3,13 @@ import cn from 'classnames';
 import styles from './UploadFile.module.scss';
 import Button from '../Button/Button';
 
-import Upload from '../../../assets/icons/Upload.svg';
 import verifyFile from '../../../helpers/verifyFile';
 import useAppDispatch from '../../../hooks/useAppDispatch';
 import type { AlgoVersion } from '../../../store/slices/algosSlice';
 import { uploadAlgo } from '../../../store/slices/algosSlice';
 import type { ApiAlgo } from '../../../api/types';
 import Loader from '../Loader/Loader';
+import Icon from '../Icon/Icon';
 
 type OwnProps = {
   accept: string;
@@ -109,7 +109,7 @@ export default function UploadFile({
       onDrop={handleDrop}
     >
       <div className={styles.icon}>
-        {isLoading ? <Loader /> : <Upload />}
+        {isLoading ? <Loader /> : <Icon name="Upload" />}
       </div>
 
       <h5>Drag & Drop your .wasm file</h5>

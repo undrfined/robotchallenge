@@ -6,7 +6,6 @@ import useAppSelector from '../../../hooks/useAppSelector';
 import useAppDispatch from '../../../hooks/useAppDispatch';
 import { selectIsGameLoading } from '../../../store/selectors/gamesSelectors';
 import { selectCategory } from '../../../store/selectors/categoriesSelectors';
-import Back from '../../../assets/icons/Back.svg';
 import UploadFile from '../../common/UploadFile/UploadFile';
 import Button from '../../common/Button/Button';
 import AnimatedText from '../../common/AnimatedText/AnimatedText';
@@ -23,6 +22,7 @@ import useInterval from '../../../hooks/useInterval';
 import { formatRemainingTime } from '../../../helpers/timeFormatters';
 import { selectIsLoggedIn } from '../../../store/selectors/usersSelectors';
 import LoginButton from '../../common/LoginButton/LoginButton';
+import Icon from '../../common/Icon/Icon';
 
 export default function GameInfoPage() {
   const { categoryId } = useParams() as { categoryId: string };
@@ -95,7 +95,7 @@ export default function GameInfoPage() {
     <div className={styles.root}>
       <div className={styles.info}>
         <h1>
-          <Back onClick={() => navigate('/')} className={styles.closeButton} />
+          <Icon name="Back" onClick={() => navigate('/')} className={styles.closeButton} />
           <AnimatedText text={category.name} containerType="span" delay={0} />
         </h1>
         <AnimatedText text={category.description} containerType="p" delay={200} />
@@ -141,7 +141,6 @@ export default function GameInfoPage() {
         <div className={styles.languages}>
           {Object.keys(LANGUAGES).map((languageKey, index) => {
             const { icon, name, isDisabled } = LANGUAGES[languageKey];
-            const Icon = icon;
             return (
               <a
                 href={`https://github.com/undrfined/robotchallenge/tree/master/examples/${languageKey}_example`}
@@ -149,7 +148,7 @@ export default function GameInfoPage() {
                 style={{ '--index': index }}
                 title={name}
               >
-                <Icon />
+                <Icon name={icon} />
               </a>
             );
           })}

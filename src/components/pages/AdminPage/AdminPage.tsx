@@ -6,7 +6,6 @@ import { addCategory } from '../../../store/slices/categoriesSlice';
 import type { LottieIcon } from '../../../helpers/lottieIcons';
 import LOTTIE_ICONS from '../../../helpers/lottieIcons';
 import type { GameConfig } from '../../../types/gameTypes';
-import Code from '../../../assets/icons/Code.svg';
 import Dropdown from '../../common/Dropdown/Dropdown';
 import { addUserGroup } from '../../../store/slices/userGroupsSlice';
 import { toNaiveDateTime } from '../../../helpers/timeFormatters';
@@ -83,7 +82,7 @@ export default function AdminPage() {
         <input type="text" ref={maxPointsRef} placeholder="Max Points" inputMode="numeric" />
         <input type="datetime-local" ref={dateRef} placeholder="Deadline" className={styles.dateInput} />
         <Dropdown
-          icon={Code}
+          icon="Code"
           name="Icon"
           items={Object.keys(LOTTIE_ICONS)
             .reduce((acc, name) => ({

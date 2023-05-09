@@ -2,12 +2,9 @@ import React from 'react';
 import styles from './PlayerCard.module.scss';
 import Label from '../common/Label/Label';
 import { PlayerCardStats } from '../common/PlayerCardStats/PlayerCardStats';
-import EnergyIcon from '../../assets/icons/EnergyIcon.svg';
-import RobotIcon from '../../assets/icons/RobotIcon.svg';
-import More from '../../assets/icons/More.svg';
-import Log from '../../assets/icons/Log.svg';
 import useContextMenu from '../../hooks/useContextMenu';
 import Avatar from '../common/Avatar/Avatar';
+import Icon from '../common/Icon/Icon';
 
 type OwnProps = {
   playerName: string;
@@ -36,7 +33,7 @@ export default function PlayerCard({
   } = useContextMenu([
     {
       label: 'View log',
-      icon: Log,
+      icon: 'Log',
       onClick: onViewLog,
     },
   ]);
@@ -47,9 +44,9 @@ export default function PlayerCard({
       <div className={styles.info}>
         <div className={styles.playerName}>{playerName}</div>
         <div className={styles.stats}>
-          <PlayerCardStats icon={EnergyIcon}>{energy}</PlayerCardStats>
-          <PlayerCardStats icon={RobotIcon}>{robotsLeft}/{maxRobots}</PlayerCardStats>
-          <More className={styles.more} onClick={openContextMenu} />
+          <PlayerCardStats icon="EnergyIcon">{energy}</PlayerCardStats>
+          <PlayerCardStats icon="RobotIcon">{robotsLeft}/{maxRobots}</PlayerCardStats>
+          <Icon name="More" className={styles.more} onClick={openContextMenu} />
           {contextMenu}
         </div>
       </div>

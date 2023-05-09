@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import ContextMenu from '../components/common/ContextMenu/ContextMenu';
 import { compact } from '../helpers/iteratees';
+import type { IconType } from '../components/common/Icon/Icon';
 
 export type ContextMenuItem = {
   label: string;
-  icon: React.FC<React.SVGProps<SVGSVGElement>>;
+  icon: IconType;
   onClick: VoidFunction;
 };
 

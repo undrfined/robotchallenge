@@ -4,7 +4,7 @@ import type { GameEnergyStation, GamePosition, GameRobot } from '../../types/gam
 import { PLAYER_COLORS } from '../../helpers/playerColors';
 import styles from './SvgMap.module.scss';
 import { axialToPixel } from '../../helpers/hexToPx';
-import Energy from '../../assets/icons/EnergyIcon.svg';
+import Icon from '../common/Icon/Icon';
 
 type OwnProps = {
   width: number;
@@ -84,7 +84,15 @@ export default function SvgMap({
                 // eslint-disable-next-line max-len
                 d="M93.8453 22.6987L117.691 64L93.8453 105.301L46.1547 105.301L22.3094 64L46.1547 22.6987L93.8453 22.6987Z"
               />
-              <Energy width="48" height="48" x="46" y="40" style={{ color: 'black' }} transform="scale(5)" />
+              <Icon
+                name="EnergyIcon"
+                width="48"
+                height="48"
+                x="46"
+                y="40"
+                style={{ color: 'black' }}
+                transform="scale(5)"
+              />
               <text className={styles.energyText} x="52" y="42">{energyStation.energy}</text>
             </g>
           );
@@ -131,7 +139,8 @@ export default function SvgMap({
                 style={{ '--to-x': `${toPx - px}px`, '--to-y': `${toPy - py}px` }}
                 className={styles.collectingEnergy}
               >
-                <Energy
+                <Icon
+                  name="EnergyIcon"
                   width="48"
                   height="48"
                   x="46"

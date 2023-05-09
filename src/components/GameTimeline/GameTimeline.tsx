@@ -1,10 +1,7 @@
 import React from 'react';
 import styles from './GameTimeline.module.scss';
-import Pause from '../../assets/icons/Pause.svg';
-import Play from '../../assets/icons/Play.svg';
-import NextRound from '../../assets/icons/NextRound.svg';
-import NextStep from '../../assets/icons/NextStep.svg';
 import type { GameConfig } from '../../types/gameTypes';
+import Icon from '../common/Icon/Icon';
 
 type OwnProps = {
   roundNumber: number;
@@ -42,12 +39,10 @@ export default function GameTimeline({
     }
   }
 
-  const PlayComponent = isPaused ? Play : Pause;
-
   return (
     <div className={styles.root}>
       <button className={styles.controlButton} onClick={handleBackwardsClick}>
-        <NextRound className={styles.reversed} />
+        <Icon name="NextRound" className={styles.reversed} />
         <span className={styles.controlButtonSubtext}>1 round</span>
       </button>
       <button
@@ -57,11 +52,11 @@ export default function GameTimeline({
           onChangeStep(step - 1);
         }}
       >
-        <NextStep className={styles.reversed} />
+        <Icon name="NextStep" className={styles.reversed} />
         <span className={styles.controlButtonSubtext}>1 step</span>
 
       </button>
-      <PlayComponent onClick={onTogglePause} className={styles.controlButton} />
+      <Icon name={isPaused ? 'Play' : 'Pause'} onClick={onTogglePause} className={styles.controlButton} />
       <button
         onClick={() => {
           if (step === undefined) {
@@ -72,12 +67,12 @@ export default function GameTimeline({
         }}
         className={styles.controlButton}
       >
-        <NextStep />
+        <Icon name="NextStep" />
         <span className={styles.controlButtonSubtext}>1 step</span>
       </button>
 
       <button onClick={handleForwardsClick} className={styles.controlButton}>
-        <NextRound />
+        <Icon name="NextRound" />
         <span className={styles.controlButtonSubtext}>1 round</span>
       </button>
       <div className={styles.timelineWrapper}>

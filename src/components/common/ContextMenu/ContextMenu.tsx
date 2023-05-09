@@ -5,6 +5,7 @@ import styles from './ContextMenu.module.scss';
 import getAdjustedBoundingClientRect from '../../../helpers/getAdjustedBoundingClientRect';
 import type { ContextMenuItem } from '../../../hooks/useContextMenu';
 import useResizeObserver from '../../../hooks/useResizeObserver';
+import Icon from '../Icon/Icon';
 
 type OwnProps = {
   isOpen: boolean;
@@ -77,11 +78,10 @@ export default function ContextMenu({
         }}
       >
         {contextMenuItems.map(({ label, icon, onClick }) => {
-          const Icon = icon;
           return (
             <button className={styles.item} key={label} onClick={onClick} tabIndex={0}>
               <div className={styles.itemIcon}>
-                <Icon />
+                <Icon name={icon} />
               </div>
               {label}
             </button>

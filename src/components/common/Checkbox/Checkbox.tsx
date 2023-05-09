@@ -2,7 +2,7 @@ import type { ChangeEvent } from 'react';
 import React, { useCallback } from 'react';
 import cn from 'classnames';
 import styles from './Checkbox.module.scss';
-import Check from '../../../assets/icons/Check.svg';
+import Icon from '../Icon/Icon';
 
 type OwnProps = {
   checked?: boolean;
@@ -42,7 +42,7 @@ export default function Checkbox({
         </svg>
       )}
       <input type="checkbox" className={styles.input} checked={checked} {...rest} onChange={handleChange} />
-      {checked && <Check className={styles.check} />}
+      {checked && <Icon name="Check" className={styles.check} />}
     </label>
   );
 }

@@ -48,6 +48,7 @@
     "prompts": "^2.4.2",
     "react": "^18.2.0",
     "react-app-polyfill": "^3.0.0",
+    "react-children-utilities": "^2.9.0",
     "react-dev-utils": "^12.0.0",
     "react-dom": "^18.2.0",
     "react-redux": "^8.0.5",

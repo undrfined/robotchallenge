@@ -1,17 +1,15 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Avatar from '../Avatar/Avatar';
-import Github from '../../../assets/icons/Github.svg';
 import Button from '../Button/Button';
 import useEnsureUserGroup from '../../../hooks/useEnsureUserGroup';
 import useAppSelector from '../../../hooks/useAppSelector';
 import { selectCurrentUser } from '../../../store/selectors/usersSelectors';
 import { login, logout } from '../../../store/slices/authSlice';
 import useContextMenu from '../../../hooks/useContextMenu';
-import Code from '../../../assets/icons/Code.svg';
-import Close from '../../../assets/icons/Close.svg';
 import useAppDispatch from '../../../hooks/useAppDispatch';
 import { selectIsLoggingIn } from '../../../store/selectors/authSelectors';
+import Icon from '../Icon/Icon';
 
 type OwnProps = {
   withContextMenu?: boolean;
@@ -44,11 +42,11 @@ export default function LoginButton({
       onClick: () => {
         navigate('/admin/');
       },
-      icon: Code,
+      icon: 'Code',
     },
     {
       label: 'Log Out',
-      icon: Close,
+      icon: 'Close',
       onClick: () => {
         dispatch(logout());
       },
@@ -65,7 +63,7 @@ export default function LoginButton({
         </>
       ) : (
         <>
-          <Github />
+          <Icon name="Github" />
           {isLoggingIn ? 'Loading...' : 'Sign in'}
         </>
       )}

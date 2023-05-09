@@ -20,9 +20,8 @@ import {
   selectGameMapStates,
   selectPlayers,
 } from '../../../store/selectors/gamesSelectors';
-import Back from '../../../assets/icons/Back.svg';
-import More from '../../../assets/icons/More.svg';
 import useContextMenu from '../../../hooks/useContextMenu';
+import Icon from '../../common/Icon/Icon';
 
 export default function GamePage() {
   const { gameId } = useParams() as { gameId: GameId };
@@ -120,12 +119,12 @@ export default function GamePage() {
   } = useContextMenu([
     {
       label: 'Stop game',
-      icon: More,
+      icon: 'More',
       onClick: () => {},
     },
     {
       label: 'Unstop game',
-      icon: More,
+      icon: 'More',
       onClick: () => {},
     },
   ]);
@@ -167,9 +166,9 @@ export default function GamePage() {
 
       <div className={styles.playerList}>
         <div className={styles.header}>
-          <Back className={styles.back} onClick={() => navigate(-1)} />
+          <Icon name="Back" className={styles.back} onClick={() => navigate(-1)} />
           <h2>Game</h2>
-          <More className={styles.more} onClick={openContextMenu} />
+          <Icon name="More" className={styles.more} onClick={openContextMenu} />
           {contextMenu}
         </div>
         {playerStats.map(({

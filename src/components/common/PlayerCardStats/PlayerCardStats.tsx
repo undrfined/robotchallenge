@@ -1,10 +1,12 @@
 import React from 'react';
 import cn from 'classnames';
 import styles from './PlayerCardStats.module.scss';
+import type { IconType } from '../Icon/Icon';
+import Icon from '../Icon/Icon';
 
 type OwnProps = {
   children: React.ReactNode;
-  icon: React.FC<React.SVGProps<SVGSVGElement>>;
+  icon: IconType;
   className?: string;
 };
 
@@ -13,11 +15,10 @@ export function PlayerCardStats({
   icon,
   className,
 }: OwnProps) {
-  const Icon = icon;
   return (
     <div className={cn(styles.root, className)}>
       <div className={styles.iconWrapper}>
-        <Icon className={styles.icon} />
+        <Icon name={icon} className={styles.icon} />
       </div>
       <div className={styles.text}>{children}</div>
     </div>

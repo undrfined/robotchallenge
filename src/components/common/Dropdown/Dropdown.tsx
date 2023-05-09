@@ -2,18 +2,19 @@ import React, { useCallback, useEffect, useState } from 'react';
 import cn from 'classnames';
 import Lottie from 'lottie-react';
 import styles from './Dropdown.module.scss';
-import DropdownIcon from '../../../assets/icons/Dropdown.svg';
 import type { LottieIcon } from '../../../helpers/lottieIcons';
 import LOTTIE_ICONS from '../../../helpers/lottieIcons';
+import type { IconType } from '../Icon/Icon';
+import Icon from '../Icon/Icon';
 
 export type DropdownItem = {
   name: string;
-  icon?: React.FC<React.SVGProps<SVGSVGElement>>;
+  icon?: IconType;
   lottieIcon?: LottieIcon;
 };
 
 type OwnProps = {
-  icon: React.FC<React.SVGProps<SVGSVGElement>>;
+  icon: IconType;
   name: string;
   items: Record<string, DropdownItem> | undefined;
   selectedIndex: string | undefined;
@@ -24,8 +25,6 @@ type OwnProps = {
 export default function Dropdown({
   icon, name, selectedIndex, items, onSelect, className,
 }: OwnProps) {
-  const Icon = icon;
-
   const [isOpen, setIsOpen] = useState(false);
 
   const handleClick = useCallback(() => {
@@ -52,17 +51,17 @@ export default function Dropdown({
     };
   }, [handleClick, handleDocumentClick, isOpen]);
 
-  const CurrentIcon = selectedIndex !== undefined && items && Object.keys(items) && items[selectedIndex]?.icon;
+  const currentIcon = selectedIndex !== undefined && items && Object.keys(items) && items[selectedIndex]?.icon;
   return (
     <button className={cn(styles.root, className)} onClick={handleClick}>
-      <Icon className={styles.leftIcon} />
+      <Icon name={icon} className={styles.leftIcon} />
       <div className={styles.dropdownName}>
         {name}
       </div>
       <div className={styles.dropdownContent}>
         {selectedIndex !== undefined && items && Object.keys(items) && items[selectedIndex] ? (
           <>
-            {CurrentIcon && <CurrentIcon className={styles.dropdownContentIcon} />}
+            {currentIcon && <Icon name={currentIcon} className={styles.dropdownContentIcon} />}
             {currentLottieIcon
                 && (
                   <Lottie
@@ -78,7 +77,7 @@ export default function Dropdown({
       </div>
       <div className={cn(styles.moreContent, isOpen && styles.open)}>
         {items && Object.keys(items).map((key) => {
-          const ItemIcon = items[key].icon;
+          const itemIcon = items[key].icon;
           const lottieIcon = items[key].lottieIcon;
           return (
             <button
@@ -86,7 +85,7 @@ export default function Dropdown({
               className={cn(styles.item, key === selectedIndex && styles.selected)}
               onClick={() => onSelect(key)}
             >
-              {ItemIcon && <ItemIcon className={styles.dropdownContentIcon} />}
+              {itemIcon && <Icon name={itemIcon} className={styles.dropdownContentIcon} />}
               {lottieIcon
                     && (
                       <Lottie
@@ -100,7 +99,7 @@ export default function Dropdown({
           );
         })}
       </div>
-      <DropdownIcon className={cn(styles.icon, isOpen && styles.flipped)} />
+      <Icon name="Dropdown" className={cn(styles.icon, isOpen && styles.flipped)} />
     </button>
   );
 }

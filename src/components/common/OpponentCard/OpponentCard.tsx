@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Avatar from '../Avatar/Avatar';
-import Version from '../../../assets/icons/Version.svg';
-import Code from '../../../assets/icons/Code.svg';
 import Checkbox from '../Checkbox/Checkbox';
 
 import styles from './OpponentCard.module.scss';
@@ -84,7 +82,7 @@ export default function OpponentCard({
 
       <div className={styles.dropdowns}>
         <Dropdown
-          icon={Code}
+          icon="Code"
           className={styles.dropdown}
           name="Algorithm"
           items={Object.keys(algosByUser)
@@ -100,7 +98,7 @@ export default function OpponentCard({
         />
 
         <Dropdown
-          icon={Version}
+          icon="Version"
           className={styles.dropdown}
           name="Version"
           items={versions && Object.values(versions).reduce((acc, version) => ({

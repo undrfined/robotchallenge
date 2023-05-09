@@ -3,7 +3,7 @@ import React from 'react';
 
 import cn from 'classnames';
 import styles from './Modal.module.scss';
-import Close from '../../../assets/icons/Close.svg';
+import Icon from '../Icon/Icon';
 
 const $modalRoot = document.querySelector('#modal')! as HTMLElement;
 
@@ -20,7 +20,7 @@ export default function Modal({
       <div className={styles.modalContent}>
         <div className={cn(styles.content, className)}>
           {children}
-          <Close className={styles.closeButton} />
+          <Icon name="Close" className={styles.closeButton} />
         </div>
       </div>
     </div>,
