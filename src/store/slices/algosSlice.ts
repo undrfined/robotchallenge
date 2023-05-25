@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import type { AppThunkApi } from '../index';
 import {
-  GetAlgoFile, GetAlgos, GetAlgoVersions, PostAlgo,
+  GetAlgoFile, GetAlgos, GetAlgoVersions, PostAlgo, Run,
 } from '../../api/methods/algos';
 import type {
   ApiAlgo, ApiAlgoId, ApiAlgoVersion, ApiAlgoVersionId, ApiAlgoVersionWithFile,
@@ -9,6 +9,7 @@ import type {
 import getPlayerLibraryInfo from '../../helpers/getPlayerLibraryInfo';
 import { selectCurrentUser } from '../selectors/usersSelectors';
 import { api } from '../thunks/apiThunks';
+import type { ResultType } from '../../api/makeRequest';
 
 export type AlgoVersion = ApiAlgoVersionWithFile & {
   isLoading?: boolean
@@ -55,6 +56,17 @@ AppThunkApi
   async ({ algoVersionId }, { dispatch }) => {
     const result = await api(dispatch, new GetAlgoFile(algoVersionId));
     return new Blob([result], { type: 'application/wasm' });
+  },
+);
+
+export const runGame = createAsyncThunk<
+ResultType<Run>,
+ApiAlgoVersionId[],
+AppThunkApi
+>(
+  'algos/runGame',
+  async (algoVersions, { dispatch }) => {
+    return api(dispatch, new Run({ algoVersions }));
   },
 );
 

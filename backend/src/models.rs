@@ -8,7 +8,7 @@ use crate::schema::categories;
 use crate::schema::user_groups;
 use crate::schema::users;
 
-#[derive(diesel_derive_enum::DbEnum, Debug, Clone, Serialize, Deserialize)]
+#[derive(diesel_derive_enum::DbEnum, Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[ExistingTypePath = "crate::schema::sql_types::UserRole"]
 pub enum UserRole {

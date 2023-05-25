@@ -8,6 +8,7 @@
     "@pronestor/react-zoom-pan-pinch": "^2.3.0",
     "@reduxjs/toolkit": "^1.9.3",
     "@storybook/preset-scss": "^1.0.3",
+    "@testing-library/jest-dom": "^5.16.5",
     "@types/jest": "^27.4.1",
     "@types/node": "^16.11.26",
     "@types/react": "^17.0.44",

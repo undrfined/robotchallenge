@@ -26,6 +26,7 @@ pub fn insert_new_user(
     uid: String,
     new_avatar_url: String,
     new_name: String,
+    new_role: Option<models::UserRole>,
 ) -> Result<models::User, DbError> {
     // It is common when using Diesel with Actix Web to import schema-related
     // modules inside a function's scope (rather than the normal module's scope)
@@ -36,7 +37,7 @@ pub fn insert_new_user(
         id: uid,
         avatar_url: new_avatar_url,
         name: new_name,
-        role: models::UserRole::User,
+        role: new_role.unwrap_or(models::UserRole::User),
         user_group_id: None,
     };
 
@@ -83,8 +84,9 @@ pub fn insert_new_algo(
         match result {
             Ok(i) => i,
             Err(DatabaseError(UniqueViolation, info)) => {
-                println!("error: {:?}", info);
-                get_algo_by_name(conn, new_algo.user_id, new_algo.name)?.id
+                let k = get_algo_by_name(conn, new_algo.user_id, new_algo.name)?.id;
+                println!("error ds: {:?} {:?}", info, k);
+                k
             }
             Err(e) => return Err(Box::new(e)),
         }
@@ -121,6 +123,20 @@ pub fn find_algo_versions(
 
     let algo_versions = algo_version
         .filter(algo_id.eq(new_algo_id))
+        .limit(100)
+        .load::<models::AlgoVersion>(conn)?;
+
+    Ok(algo_versions)
+}
+
+pub fn find_algos(
+    conn: &mut PgConnection,
+    algo_versions: Vec<i32>,
+) -> Result<Vec<models::AlgoVersion>, DbError> {
+    use crate::schema::algo_version::dsl::*;
+
+    let algo_versions = algo_version
+        .filter(id.eq_any(algo_versions))
         .limit(100)
         .load::<models::AlgoVersion>(conn)?;
 

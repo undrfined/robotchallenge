@@ -1,5 +1,6 @@
 extern crate wasmer_types;
 
+use serde::{Deserialize, Serialize};
 use wasmer::{
     imports, AsStoreRef, FromToNativeWasmType, Function, Instance, Module, Store, TypedFunction,
     WasmPtr,
@@ -15,6 +16,7 @@ pub struct InternalLibInfo {
     pub version: WasmPtr<u8>,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
 pub struct LibInfo {
     pub name: String,
     pub language: String,

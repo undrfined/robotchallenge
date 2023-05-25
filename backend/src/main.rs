@@ -8,9 +8,7 @@ use actix_web::cookie::Key;
 use actix_web::middleware::{Logger, NormalizePath, TrailingSlash};
 use actix_web::{web, App, HttpServer};
 use dotenv::dotenv;
-use std::env;
 
-use diesel::pg::Pg;
 use diesel::{
     prelude::*,
     r2d2::{self, ConnectionManager},
@@ -21,39 +19,25 @@ mod actions;
 mod algos;
 mod auth;
 mod categories;
+mod db;
 mod models;
 mod schema;
+mod tests;
 mod user_groups;
 mod users;
 mod utils;
 
 type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
-pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations/");
-
-fn run_migrations(
-    connection: &mut impl MigrationHarness<Pg>,
-) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
-    connection.run_pending_migrations(MIGRATIONS)?;
-
-    Ok(())
-}
-
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
+    std::env::set_var("RUST_LOG", "actix_web=trace");
+    env_logger::init();
 
     let redis_connection_string = "redis:6379";
 
-    let conn_spec = env::var("DATABASE_URL").expect("Please specify DATABASE_URL");
-    let manager = ConnectionManager::<PgConnection>::new(conn_spec);
-    let pool = r2d2::Pool::builder()
-        .build(manager)
-        .expect("Failed to create pool.");
-
-    let mut conn = pool.get().unwrap();
-    run_migrations(&mut conn).unwrap();
-
+    let (pool, s, s2) = db::init_db();
     // let key = Key::generate();
     let k: [u8; 64] = [
         34, 22, 36, 247, 253, 133, 134, 177, 54, 1, 39, 6, 242, 231, 90, 159, 18, 3, 187, 31, 140,
@@ -89,6 +73,7 @@ async fn main() -> std::io::Result<()> {
                 web::scope("algos")
                     .service(algos::create_algo)
                     .service(algos::get_algo_versions)
+                    .service(algos::run)
                     .service(algos::get_algos)
                     .service(algos::get_algo_file),
             )

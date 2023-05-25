@@ -1,8 +1,9 @@
 import type { RequestType } from './types';
 import {
-  PostFileRequest, GetRequest, GetFileRequest,
+  PostFileRequest, GetRequest, GetFileRequest, PostRequest,
 } from './types';
 import type { ApiAlgo, ApiAlgoVersion } from '../types';
+import type { GameLibraryInfo } from '../../types/gameTypes';
 
 const BASE = 'algos';
 
@@ -38,5 +39,15 @@ export class GetAlgoFile extends GetFileRequest implements RequestType {
   }
 }
 
-type AlgosRequests = PostAlgo | GetAlgos | GetAlgoFile | GetAlgoVersions;
+export class Run extends PostRequest implements RequestType {
+  type = `${BASE}/run`;
+
+  constructor(public payload: { algoVersions: number[] }) {
+    super();
+  }
+
+  resultType?: GameLibraryInfo[];
+}
+
+type AlgosRequests = PostAlgo | GetAlgos | GetAlgoFile | GetAlgoVersions | Run;
 export default AlgosRequests;

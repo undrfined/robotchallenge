@@ -1,5 +1,7 @@
+use crate::models::UserRole;
 use crate::{actions, DbPool};
 use actix_identity::Identity;
+use actix_web::error::ErrorInternalServerError;
 use actix_web::{get, web, Error, HttpMessage, HttpRequest, HttpResponse, Responder};
 use oauth2::basic::BasicClient;
 use oauth2::reqwest::async_http_client;
@@ -16,13 +18,14 @@ use url::Url;
 #[derive(Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Info {
-    redirect_url: String,
+    pub redirect_url: String,
 }
 
 #[derive(Deserialize, Serialize)]
 pub struct CallbackInfo {
-    code: String,
-    state: String,
+    pub code: String,
+    pub state: String,
+    pub role: Option<UserRole>,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -70,71 +73,117 @@ pub(crate) async fn callback(
 ) -> impl Responder {
     println!("code: {}", callback_info.code);
     println!("state: {}", callback_info.state);
+
     let c = &callback_info.code;
     let s = &callback_info.state;
-    let code = AuthorizationCode::new(c.to_string());
-    let state = CsrfToken::new(s.to_string());
+    let new_role = match cfg!(test) {
+        true => callback_info.role.clone(),
+        false => None,
+    };
 
-    let client = BasicClient::new(
-        ClientId::new(env::var("GH_CLIENT_ID").unwrap()),
-        Some(ClientSecret::new(env::var("GH_CLIENT_SECRET").unwrap())),
-        AuthUrl::new("https://github.com/login/oauth/authorize".to_string()).unwrap(),
-        Some(TokenUrl::new("https://github.com/login/oauth/access_token".to_string()).unwrap()),
-    );
-    let token_result = client
-        .exchange_code(code)
-        // .set_pkce_verifier(PkceCodeVerifier::new(s.to_string()))
-        .request_async(async_http_client)
-        .await;
+    let user = match cfg!(test) {
+        true => {
+            println!("test mode");
+            Ok(GhUser {
+                login: "test".to_string(),
+                id: UserId(1),
+                node_id: "1".to_string(),
+                avatar_url: Url::parse("https://avatars.githubusercontent.com/u/123?v=4").unwrap(),
+                gravatar_id: "1".to_string(),
+                url: Url::parse("https://api.github.com/users/test").unwrap(),
+                html_url: Url::parse("https://google.com").unwrap(),
+                followers_url: Url::parse("https://google.com").unwrap(),
+                following_url: Url::parse("https://google.com").unwrap(),
+                gists_url: Url::parse("https://google.com").unwrap(),
+                starred_url: Url::parse("https://google.com").unwrap(),
+                subscriptions_url: Url::parse("https://google.com").unwrap(),
+                organizations_url: Url::parse("https://google.com").unwrap(),
+                repos_url: Url::parse("https://google.com").unwrap(),
+                events_url: Url::parse("https://google.com").unwrap(),
+                received_events_url: Url::parse("https://google.com").unwrap(),
+                r#type: "as".to_string(),
+                site_admin: false,
+                bio: Some("Bio".to_string()),
+                name: Some("name".to_string()),
+            })
+        }
+        false => {
+            let code = AuthorizationCode::new(c.to_string());
+            let state = CsrfToken::new(s.to_string());
 
-    if let Ok(token) = token_result {
-        // NB: Github returns a single comma-separated "scope" parameter instead of multiple
-        // space-separated scopes. Github-specific clients can parse this scope into
-        // multiple scopes by splitting at the commas. Note that it's not safe for the
-        // library to do this by default because RFC 6749 allows scopes to contain commas.
-        // let scopes = if let Some(scopes_vec) = token.scopes() {
-        //     scopes_vec
-        //         .iter()
-        //         .map(|comma_separated| comma_separated.split(','))
-        //         .flatten()
-        //         .collect::<Vec<_>>()
-        // } else {
-        //     Vec::new()
-        // };
-        println!(
-            "Github returned the following scopes:\n{:?} {:?}\n",
-            token.scopes(),
-            token.access_token().secret(),
-        );
+            let client = BasicClient::new(
+                ClientId::new(env::var("GH_CLIENT_ID").unwrap()),
+                Some(ClientSecret::new(env::var("GH_CLIENT_SECRET").unwrap())),
+                AuthUrl::new("https://github.com/login/oauth/authorize".to_string()).unwrap(),
+                Some(
+                    TokenUrl::new("https://github.com/login/oauth/access_token".to_string())
+                        .unwrap(),
+                ),
+            );
+            let token_result = client
+                .exchange_code(code)
+                // .set_pkce_verifier(PkceCodeVerifier::new(s.to_string()))
+                .request_async(async_http_client)
+                .await;
 
-        let octocrab = Octocrab::builder()
-            .personal_token(token.access_token().secret().to_owned())
-            .build()
-            .unwrap();
-        let user: GhUser = octocrab.get("/user", None::<&()>).await.unwrap();
-        println!("user: {:?}", user);
+            if let Ok(token) = token_result {
+                // NB: Github returns a single comma-separated "scope" parameter instead of multiple
+                // space-separated scopes. Github-specific clients can parse this scope into
+                // multiple scopes by splitting at the commas. Note that it's not safe for the
+                // library to do this by default because RFC 6749 allows scopes to contain commas.
+                // let scopes = if let Some(scopes_vec) = token.scopes() {
+                //     scopes_vec
+                //         .iter()
+                //         .map(|comma_separated| comma_separated.split(','))
+                //         .flatten()
+                //         .collect::<Vec<_>>()
+                // } else {
+                //     Vec::new()
+                // };
+                println!(
+                    "Github returned the following scopes:\n{:?} {:?}\n",
+                    token.scopes(),
+                    token.access_token().secret(),
+                );
 
-        let id = user.id.to_string();
-        let extensions = &http_request.extensions();
-        Identity::login(extensions, id.clone()).expect("failed to log in");
+                let octocrab = Octocrab::builder()
+                    .personal_token(token.access_token().secret().to_owned())
+                    .build()
+                    .unwrap();
+                let user: GhUser = octocrab.get("/user", None::<&()>).await.unwrap();
+                println!("user: {:?}", user);
 
-        // use web::block to offload blocking Diesel code without blocking server thread
-        let user = web::block(move || {
-            let mut conn = pool.get()?;
-            actions::insert_new_user(
-                &mut conn,
-                id.clone(),
-                String::from(user.avatar_url.to_string()),
-                String::from(match user.name {
-                    Some(name) => name,
-                    None => user.login.to_string(),
-                }),
-            )
-        })
-        .await
-        .unwrap();
-        // sessions.write().unwrap().map.insert(id, user2.clone());
+                Ok(user)
+            } else {
+                Err(ErrorInternalServerError("failed to get token"))
+            }
+        }
     }
+    .map_err(|e| {
+        println!("error: {:?}", e);
+        ErrorInternalServerError("failed to get token")
+    })
+    .unwrap();
+
+    let id = user.id.to_string();
+    let extensions = &http_request.extensions();
+    Identity::login(extensions, id.clone()).expect("failed to log in");
+
+    let user = web::block(move || {
+        let mut conn = pool.get()?;
+        actions::insert_new_user(
+            &mut conn,
+            id.clone(),
+            String::from(user.avatar_url.to_string()),
+            String::from(match user.name {
+                Some(name) => name,
+                None => user.login.to_string(),
+            }),
+            new_role,
+        )
+    })
+    .await
+    .unwrap();
 
     let redirect_url = env::var("APP_UI_ENDPOINT").unwrap();
     HttpResponse::TemporaryRedirect()

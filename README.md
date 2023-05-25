@@ -123,3 +123,13 @@ If you're deploying with docker compose, you'll need to set up Let's Encrypt. Yo
 
 - `DOMAINS` - a domain that you want to use for the app. For example, `DOMAINS="example.com"`
 - `CERTBOT_EMAILS` - an email address that will be used for Let's Encrypt notifications. For example, `CERTBOT_EMAILS="example@example.com"`
+
+## Running tests
+
+Create a `.env.test` file and populate it with the same values as `.env` file.
+
+Then run:
+
+```sh
+cargo test
+```

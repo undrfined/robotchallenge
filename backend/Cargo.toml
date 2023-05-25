@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 actix-web = "4"
+actix-http = "3.3.1"
 actix-identity = "0.5.2"
 actix-session = { version = "0.7.2", features = ["redis-actor-session"] }
 serde = { version = "1.0", features = ["derive"] }
@@ -19,8 +20,9 @@ dotenv = "0.15.0"
 octocrab = "0.18.1"
 log = "0.4.17"
 actix-cors = "0.6.4"
-diesel = { version = "2.0.3", features = ["postgres", "r2d2", "serde_json", "chrono"] }
+diesel = { version = "2.0.4", features = ["postgres", "r2d2", "serde_json", "chrono"] }
 diesel_migrations = "2.0.0"
+diesel_derives = "2.0.2"
 diesel-derive-enum = { version = "2.0.1", features = ["postgres"] }
 actix-multipart = "0.5.0"
 chrono = "0.4.23"
@@ -28,3 +30,6 @@ wasmer = "3.2.0-alpha.1"
 wasmer-wasi = "3.2.0-alpha.1"
 wasmer-derive = "3.2.0-alpha.1"
 wasmer-types = "3.2.0-alpha.1"
+serial_test = "2.0.0"
+diesel_logger = "0.2.0"
+env_logger = "0.10.0"

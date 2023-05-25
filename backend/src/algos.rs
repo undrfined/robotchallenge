@@ -1,14 +1,21 @@
+use crate::utils::wasm_module::LibInfo;
 use crate::{actions, models, utils, DbPool};
 use actix_multipart::Multipart;
 use actix_web::error::ErrorInternalServerError;
 use actix_web::{get, post, web, Error, HttpResponse, Responder};
 use serde::{Deserialize, Serialize};
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct AlgoJsonResult {
-    algo_id: i32,
-    algo_version_id: i32,
+    pub algo_id: i32,
+    pub algo_version_id: i32,
+}
+
+#[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RunGamePayload {
+    pub algo_versions: Vec<i32>,
 }
 
 #[get("/")]
@@ -21,12 +28,9 @@ pub(crate) async fn get_algos(
     })
     .await
     .map_err(ErrorInternalServerError)?
-    .map_err(ErrorInternalServerError);
+    .map_err(ErrorInternalServerError)?;
 
-    match algos {
-        Ok(algos) => Ok(web::Json(algos)),
-        Err(err) => Err(ErrorInternalServerError(err)),
-    }
+    Ok(web::Json(algos))
 }
 
 #[get("/{algo_id}/")]
@@ -40,12 +44,32 @@ pub(crate) async fn get_algo_versions(
     })
     .await
     .map_err(ErrorInternalServerError)?
-    .map_err(ErrorInternalServerError);
+    .map_err(ErrorInternalServerError)?;
 
-    match algo {
-        Ok(algo_version) => Ok(web::Json(algo_version)),
-        Err(err) => Err(ErrorInternalServerError(err)),
-    }
+    Ok(web::Json(algo))
+}
+
+#[post("/run/")]
+pub(crate) async fn run(
+    user: models::User,
+    pool: web::Data<DbPool>,
+    payload: web::Json<RunGamePayload>,
+) -> Result<web::Json<Vec<LibInfo>>, Error> {
+    let algos = payload.algo_versions.clone();
+    let algos_fetched = web::block(move || {
+        let mut conn = pool.get()?;
+        actions::find_algos(&mut conn, algos)
+    })
+    .await
+    .map_err(ErrorInternalServerError)?
+    .map_err(ErrorInternalServerError)?;
+
+    let lib_infos = algos_fetched
+        .iter()
+        .map(|x| utils::wasm_module::get_lib_info(&x.file).unwrap())
+        .collect();
+
+    Ok(web::Json(lib_infos))
 }
 
 #[post("/")]
@@ -58,6 +82,7 @@ pub(crate) async fn create_algo(
     use futures::{StreamExt, TryStreamExt};
 
     if let Ok(Some(mut field)) = payload.try_next().await {
+        println!("Field: {:?}", field);
         let content_type = field.content_disposition();
         let filename = content_type.get_filename().unwrap();
         println!("File name: {:?}, type {:?}", filename, content_type);
@@ -90,8 +115,7 @@ pub(crate) async fn create_algo(
         })
         .await
         .map_err(ErrorInternalServerError)?
-        .map_err(ErrorInternalServerError)
-        .unwrap();
+        .map_err(ErrorInternalServerError)?;
 
         return Ok(web::Json(AlgoJsonResult {
             algo_id: fid.0,
@@ -113,10 +137,7 @@ pub(crate) async fn get_algo_file(
     })
     .await
     .map_err(ErrorInternalServerError)?
-    .map_err(ErrorInternalServerError);
+    .map_err(ErrorInternalServerError)?;
 
-    match algo_file {
-        Ok(algo_file) => Ok(HttpResponse::Ok().body(algo_file)),
-        Err(err) => Err(ErrorInternalServerError(err)),
-    }
+    Ok(HttpResponse::Ok().body(algo_file))
 }
