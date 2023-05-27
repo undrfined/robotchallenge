@@ -27,12 +27,9 @@ pub fn get_lib_info(data: &Vec<u8>) -> Result<LibInfo, ()> {
     let mut store = Store::default();
     let module = Module::new(&store, data).unwrap();
     let wasi_env = WasiState::new("robotchallenge")
-        // .args(&["world"])
-        // .env("KEY", "Value")
         .finalize(&mut store)
         .unwrap();
 
-    // The module doesn't import anything, so we create an empty import object.
     let mut import_object = imports! {
         "robotchallenge" => {
             "move_robot" => Function::new_typed(&mut store, move |q: i32, r: i32| {

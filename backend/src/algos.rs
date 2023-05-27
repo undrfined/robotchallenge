@@ -82,12 +82,8 @@ pub(crate) async fn create_algo(
     use futures::{StreamExt, TryStreamExt};
 
     if let Ok(Some(mut field)) = payload.try_next().await {
-        println!("Field: {:?}", field);
         let content_type = field.content_disposition();
-        let filename = content_type.get_filename().unwrap();
-        println!("File name: {:?}, type {:?}", filename, content_type);
 
-        // Get data to Vec<u8>
         let mut data = web::BytesMut::new();
         while let Some(chunk) = field.next().await {
             data.extend_from_slice(&chunk?);
@@ -109,7 +105,6 @@ pub(crate) async fn create_algo(
                 version: lib_info.version,
             };
 
-            println!("inserting {:?}", new_algo);
             let mut conn = pool.get()?;
             actions::insert_new_algo(&mut conn, new_algo, new_algo_version)
         })
