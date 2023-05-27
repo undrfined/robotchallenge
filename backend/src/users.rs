@@ -9,10 +9,10 @@ pub(crate) async fn get_user(user: models::User) -> Result<web::Json<models::Use
 
 #[get("/{id}/")]
 pub(crate) async fn get_user_by_id(
-    path: web::Path<(String)>,
+    path: web::Path<String>,
     pool: web::Data<DbPool>,
 ) -> Result<web::Json<models::User>, Error> {
-    let (user_id) = path.into_inner();
+    let user_id = path.into_inner();
     let user = web::block(move || {
         let mut conn = pool.get()?;
         actions::find_user_by_uid(&mut conn, user_id)

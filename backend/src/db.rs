@@ -1,12 +1,12 @@
 use crate::DbPool;
-use diesel::migration::{Migration, MigrationSource};
+
 use diesel::pg::Pg;
 use diesel::r2d2::ConnectionManager;
 use diesel::row::NamedRow;
-use diesel::{r2d2, sql_query, Connection, PgConnection, QueryDsl, RunQueryDsl};
+use diesel::{r2d2, sql_query, Connection, PgConnection, RunQueryDsl};
 use diesel_logger::LoggingConnection;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-use futures::StreamExt;
+
 use std::env;
 use std::sync::atomic::AtomicU32;
 use url::Url;

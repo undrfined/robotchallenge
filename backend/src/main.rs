@@ -13,7 +13,7 @@ use diesel::{
     prelude::*,
     r2d2::{self, ConnectionManager},
 };
-use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
+
 
 mod actions;
 mod algos;
@@ -37,7 +37,7 @@ async fn main() -> std::io::Result<()> {
 
     let redis_connection_string = "redis:6379";
 
-    let (pool, s, s2) = db::init_db();
+    let (pool, _s, _s2) = db::init_db();
     // let key = Key::generate();
     let k: [u8; 64] = [
         34, 22, 36, 247, 253, 133, 134, 177, 54, 1, 39, 6, 242, 231, 90, 159, 18, 3, 187, 31, 140,

@@ -109,7 +109,7 @@ pub(crate) async fn callback(
         }
         false => {
             let code = AuthorizationCode::new(c.to_string());
-            let state = CsrfToken::new(s.to_string());
+            let _state = CsrfToken::new(s.to_string());
 
             let client = BasicClient::new(
                 ClientId::new(env::var("GH_CLIENT_ID").unwrap()),
@@ -169,7 +169,7 @@ pub(crate) async fn callback(
     let extensions = &http_request.extensions();
     Identity::login(extensions, id.clone()).expect("failed to log in");
 
-    let user = web::block(move || {
+    let _user = web::block(move || {
         let mut conn = pool.get()?;
         actions::insert_new_user(
             &mut conn,
@@ -205,7 +205,7 @@ pub(crate) async fn login() -> Result<web::Json<Info>, Error> {
     .set_redirect_uri(RedirectUrl::new(env::var("GH_REDIRECT_URI").unwrap()).unwrap());
 
     // Generate a PKCE challenge.
-    let (pkce_challenge, pkce_verifier) = PkceCodeChallenge::new_random_sha256();
+    let (pkce_challenge, _pkce_verifier) = PkceCodeChallenge::new_random_sha256();
 
     // Generate the full authorization URL.
     let (auth_url, csrf_token) = client

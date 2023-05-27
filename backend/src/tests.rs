@@ -1,31 +1,31 @@
 #[cfg(test)]
 mod tests {
     use crate::models::{
-        Algo, AlgoVersion, Category, CategoryIcon, NewCategory, NewUserGroup, UserGroup, UserRole,
+        Algo, Category, CategoryIcon, NewCategory, NewUserGroup, UserGroup, UserRole,
     };
-    use crate::{algos, auth, categories, models, user_groups, users, DbPool};
+    use crate::{algos, auth, categories, user_groups, users, DbPool};
     use actix_cors::Cors;
     use actix_identity::IdentityMiddleware;
-    use std::future::Future;
-    use std::io::Read;
+    
+    
     use std::path::PathBuf;
     use std::{env, fs};
 
-    use actix_http::header::{HeaderMap, HeaderName, HeaderValue};
+    
     use actix_http::{header, HttpMessage, Request};
-    use actix_multipart::Multipart;
+    
     use actix_session::{storage, SessionMiddleware};
     use actix_web::body::MessageBody;
     use actix_web::cookie::{Cookie, Key};
     use actix_web::middleware::{Logger, NormalizePath, TrailingSlash};
-    use actix_web::{test, HttpRequest};
-    use actix_web::{web, App, Error};
+    use actix_web::{test};
+    use actix_web::{web, App};
     use serde_json::json;
 
     use crate::algos::{AlgoJsonResult, RunGamePayload};
     use crate::utils::wasm_module::LibInfo;
     use actix_web::test::TestRequest;
-    use actix_web::{dev as ax_dev, dev::Service as _, Error as AxError};
+    use actix_web::{dev as ax_dev, Error as AxError};
     use diesel::{sql_query, Connection, PgConnection, RunQueryDsl};
 
     pub struct DeadDrop {
@@ -147,7 +147,7 @@ mod tests {
     ) {
         dotenv::from_filename(".env.test").ok();
         let (pool, url, name) = crate::db::init_db();
-        let mut conn = pool.get().unwrap();
+        let _conn = pool.get().unwrap();
 
         let app = test::init_service(app!(pool)).await;
         let dd = DeadDrop {
@@ -160,7 +160,7 @@ mod tests {
 
     #[actix_web::test]
     async fn admin_can_insert_category() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
         let cookie = login(&app, UserRole::Admin).await;
 
         let new_category = NewCategory {
@@ -192,7 +192,7 @@ mod tests {
 
     #[actix_web::test]
     async fn user_cant_insert_category() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
         let cookie = login(&app, UserRole::User).await;
 
         let new_category = NewCategory {
@@ -218,7 +218,7 @@ mod tests {
 
     #[actix_web::test]
     async fn category_list_should_be_empty() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
 
         let req = TestRequest::default().uri("/categories").to_request();
         let resp = test::call_service(&app, req).await;
@@ -229,7 +229,7 @@ mod tests {
 
     #[actix_web::test]
     async fn login_should_word() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
         let cookie = login(&app, UserRole::User).await;
         let req = TestRequest::default()
             .uri("/users/")
@@ -242,7 +242,7 @@ mod tests {
 
     #[actix_web::test]
     async fn logout_should_work() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
         let cookie = login(&app, UserRole::User).await;
         let req = TestRequest::default()
             .uri("/users/")
@@ -273,7 +273,7 @@ mod tests {
 
     #[actix_web::test]
     async fn should_return_user_groups() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
 
         let req = TestRequest::default().uri("/userGroups/").to_request();
         let resp = test::call_service(&app, req).await;
@@ -283,7 +283,7 @@ mod tests {
 
     #[actix_web::test]
     async fn should_not_attach_to_non_existent_user_group() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
         let cookie = login(&app, UserRole::User).await;
 
         let req = TestRequest::default()
@@ -296,7 +296,7 @@ mod tests {
 
     #[actix_web::test]
     async fn should_attach_to_user_group() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
         let cookie = login(&app, UserRole::Admin).await;
 
         let user_group = NewUserGroup {
@@ -323,7 +323,7 @@ mod tests {
 
     #[actix_web::test]
     async fn user_cant_create_user_group() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
         let cookie = login(&app, UserRole::User).await;
 
         let user_group = NewUserGroup {
@@ -340,7 +340,7 @@ mod tests {
 
     #[actix_web::test]
     async fn admin_can_create_user_group() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
         let cookie = login(&app, UserRole::Admin).await;
 
         let user_group = NewUserGroup {
@@ -359,7 +359,7 @@ mod tests {
 
     #[actix_web::test]
     async fn can_get_algos() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
 
         let req = TestRequest::default().uri("/algos/").to_request();
         let resp = test::call_service(&app, req).await;
@@ -370,7 +370,7 @@ mod tests {
 
     #[actix_web::test]
     async fn cant_upload_without_login() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
 
         let req = TestRequest::post().uri("/algos/").to_request();
         let resp = test::call_service(&app, req).await;
@@ -382,7 +382,7 @@ mod tests {
 
     #[actix_web::test]
     async fn cant_upload_without_payload() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
         let cookie = login(&app, UserRole::User).await;
 
         let req = TestRequest::post()
@@ -398,7 +398,7 @@ mod tests {
 
     #[actix_web::test]
     async fn cant_upload_with_invalid_payload() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
         let cookie = login(&app, UserRole::User).await;
 
         let req = TestRequest::post()
@@ -415,7 +415,7 @@ mod tests {
 
     #[actix_web::test]
     async fn can_upload_algo() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
         let cookie = login(&app, UserRole::User).await;
         let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         d.push("__mock__/csharp.wasm");
@@ -450,7 +450,7 @@ mod tests {
 
     #[actix_web::test]
     async fn can_upload_new_algo_version() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
         let cookie = login(&app, UserRole::User).await;
         let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         d.push("__mock__/csharp.wasm");
@@ -513,7 +513,7 @@ mod tests {
 
     #[actix_web::test]
     async fn cant_upload_same_algo_version() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
         let cookie = login(&app, UserRole::User).await;
         let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         d.push("__mock__/csharp.wasm");
@@ -572,7 +572,7 @@ mod tests {
 
     #[actix_web::test]
     async fn cant_upload_algo_without_get_lib_info() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
         let cookie = login(&app, UserRole::User).await;
         let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         d.push("__mock__/rust_no_lib_info.wasm");
@@ -602,7 +602,7 @@ mod tests {
 
     #[actix_web::test]
     async fn can_run_algo() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
         let cookie = login(&app, UserRole::User).await;
         let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         d.push("__mock__/csharp.wasm");
@@ -652,7 +652,7 @@ mod tests {
 
     #[actix_web::test]
     async fn cant_run_non_existent_algo() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
         let run_game_payload = RunGamePayload {
             algo_versions: vec![1],
         };
@@ -667,7 +667,7 @@ mod tests {
 
     #[actix_web::test]
     async fn can_run_multiple_algos() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
         let cookie = login(&app, UserRole::User).await;
         let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         d.push("__mock__/csharp.wasm");
@@ -747,7 +747,7 @@ mod tests {
 
     #[actix_web::test]
     async fn can_retrieve_algo_file() {
-        let (app, dead_drop) = init_test().await;
+        let (app, _dead_drop) = init_test().await;
         let cookie = login(&app, UserRole::User).await;
         let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         d.push("__mock__/csharp.wasm");

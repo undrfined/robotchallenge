@@ -2,7 +2,7 @@ use crate::utils::wasm_module::LibInfo;
 use crate::{actions, models, utils, DbPool};
 use actix_multipart::Multipart;
 use actix_web::error::ErrorInternalServerError;
-use actix_web::{get, post, web, Error, HttpResponse, Responder};
+use actix_web::{get, post, web, Error, HttpResponse};
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -51,7 +51,7 @@ pub(crate) async fn get_algo_versions(
 
 #[post("/run/")]
 pub(crate) async fn run(
-    user: models::User,
+    _user: models::User,
     pool: web::Data<DbPool>,
     payload: web::Json<RunGamePayload>,
 ) -> Result<web::Json<Vec<LibInfo>>, Error> {
@@ -78,11 +78,11 @@ pub(crate) async fn create_algo(
     pool: web::Data<DbPool>,
     mut payload: Multipart,
 ) -> Result<web::Json<AlgoJsonResult>, Error> {
-    use actix_web::{middleware, web, App, Error, HttpResponse, HttpServer};
+    use actix_web::{web};
     use futures::{StreamExt, TryStreamExt};
 
     if let Ok(Some(mut field)) = payload.try_next().await {
-        let content_type = field.content_disposition();
+        let _content_type = field.content_disposition();
 
         let mut data = web::BytesMut::new();
         while let Some(chunk) = field.next().await {
