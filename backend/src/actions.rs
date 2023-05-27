@@ -83,7 +83,7 @@ pub fn insert_new_algo(
 
         match result {
             Ok(i) => i,
-            Err(DatabaseError(UniqueViolation, info)) => {
+            Err(DatabaseError(diesel::result::DatabaseErrorKind::UniqueViolation, info)) => {
                 let k = get_algo_by_name(conn, new_algo.user_id, new_algo.name)?.id;
                 println!("error ds: {:?} {:?}", info, k);
                 k
