@@ -77,6 +77,7 @@ export default function GameInfoPage() {
       navigate(`/game/${id}`);
     } else {
       // TODO better error message
+      // eslint-disable-next-line no-alert
       alert(`Error starting game ${result.error.message}`);
     }
   }, [categoryIdInt, dispatch, file?.algoVersion, navigate, selected, versions]);

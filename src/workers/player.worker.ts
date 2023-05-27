@@ -96,7 +96,9 @@ const PlayerWorker = {
   getLibraryInfo: async (): Promise<GameLibraryInfo> => {
     if (!wrapper.get_lib_info) throw new Error('get_lib_info not found');
     const result = libraryInfoToObject(wrapper.get_lib_info());
+    // eslint-disable-next-line no-console
     console.log(wasi.getStdoutString());
+    // eslint-disable-next-line no-console
     console.log(wasi.getStderrString());
     return result;
   },
