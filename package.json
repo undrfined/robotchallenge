@@ -197,6 +197,7 @@
     "eslint-plugin-react": "^7.31.11",
     "eslint-plugin-react-hooks": "^4.6.0",
     "husky": "^8.0.2",
+    "jest-location-mock": "^1.0.9",
     "lint-staged": "^13.1.0",
     "stylelint": "^15.2.0",
     "stylelint-config-standard": "^30.0.1",
