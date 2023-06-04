@@ -3,7 +3,7 @@
   padding: 24px 20px;
   display: grid;
   grid-template-areas: "player-info dropdowns dropdowns checkbox";
-  grid-template-columns: 1fr 1fr 1fr auto;
+  grid-template-columns: 1fr 2fr 1fr auto;
   align-items: center;
 }
 
