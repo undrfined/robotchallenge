@@ -10,10 +10,12 @@ import { api, apiThunk } from '../thunks/apiThunks';
 
 type AuthState = {
   isLoggingIn: boolean;
+  isRedirecting: boolean;
 };
 
 const initialState: AuthState = {
   isLoggingIn: false,
+  isRedirecting: false,
 };
 
 export const login = createAsyncThunk<
@@ -50,9 +52,11 @@ export const authSlice = createSlice({
     builder
       .addCase(login.pending, (state) => {
         state.isLoggingIn = true;
+        state.isRedirecting = true;
       })
       .addCase(login.rejected, (state) => {
         state.isLoggingIn = false;
+        state.isRedirecting = false;
       });
 
     builder.addCase(getUserById.fulfilled, (state, action) => {
@@ -70,6 +74,7 @@ export const authSlice = createSlice({
 const persistConfig = {
   key: 'auth',
   storage,
+  blacklist: ['isRedirecting'],
 };
 
 export default persistReducer(persistConfig, authSlice.reducer);

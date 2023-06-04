@@ -3,3 +3,4 @@ import type { RootState } from '../index';
 
 const selectSelf = (state: RootState) => state.auth;
 export const selectIsLoggingIn = createSelector(selectSelf, (state) => state.isLoggingIn);
+export const selectIsRedirecting = createSelector(selectSelf, (state) => state.isRedirecting);

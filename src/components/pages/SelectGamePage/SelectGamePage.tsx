@@ -13,13 +13,14 @@ import SelectGroupModal from '../../SelectGroupModal/SelectGroupModal';
 import { getUserById } from '../../../store/slices/usersSlice';
 import { selectCurrentUser } from '../../../store/selectors/usersSelectors';
 import LoginButton from '../../common/LoginButton/LoginButton';
-import { selectIsLoggingIn } from '../../../store/selectors/authSelectors';
+import { selectIsLoggingIn, selectIsRedirecting } from '../../../store/selectors/authSelectors';
 
 export default function SelectGamePage() {
   const navigate = useNavigate();
   const categories = useAppSelector(selectCategories);
   const user = useAppSelector(selectCurrentUser);
   const isLoggingIn = useAppSelector(selectIsLoggingIn);
+  const isRedirecting = useAppSelector(selectIsRedirecting);
   const dispatch = useAppDispatch();
 
   const handleSelectCategory = (id: CategoryId) => {
@@ -29,10 +30,10 @@ export default function SelectGamePage() {
   };
 
   useEffect(() => {
-    if (!user && isLoggingIn) {
+    if (!user && isLoggingIn && !isRedirecting) {
       dispatch(getUserById());
     }
-  }, [dispatch, isLoggingIn, user]);
+  }, [dispatch, isLoggingIn, isRedirecting, user]);
 
   const [scrollLeft, setScrollLeft] = useState<number | undefined>(undefined);
   function handleScroll(e: React.UIEvent<HTMLDivElement>) {
